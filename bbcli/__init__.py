@@ -1,7 +1,7 @@
 """Top-level package for RP To-Do."""
 # rptodo/__init__.py
 
-__app_name__ = "rptodo"
+__app_name__ = "bbcli"
 __version__ = "0.1.0"
 
 (
