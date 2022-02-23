@@ -6,7 +6,7 @@ runner = CliRunner()
 
 def test_version():
 	# invokes the command line and checks the version
-	result = runner.invoke(cli.app, ["--version"])
+	result = runner.invoke(cli.app, ['--version'])
 	assert result.exit_code == 0
 
 	assert result.output == f"{__app_name__} v{__version__}\n"
