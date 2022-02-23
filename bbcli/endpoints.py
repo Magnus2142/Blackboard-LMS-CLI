@@ -9,12 +9,41 @@ from typing import Optional
 
 app = typer.Typer()
 
-cookies = {'BbRouter': 'expires:1645202601,id:2480855EED2012DA032F19DEE1610883,signature:81a13d5bdf4946a82a632a9035c0f35811f217671da872677b1d1c32e7a3c339,site:f4fe20be-98b0-4ecd-9039-d18ce2989292,timeout:10800,user:15bd75dd85af4f56b31283276eb8da7c,v:2,xsrf:1bea7fee-fa91-4197-991f-1d266fd1ceee'}
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
+cookies = {'BbRouter': 'expires:1645636281,id:B2D974616358A83C4663CE3CEC57040F,signature:c77518e494765a09f4cc1b8d390964f05da9d35a1fcdf88350dd105b7151cce6,site:f4fe20be-98b0-4ecd-9039-d18ce2989292,timeout:10800,user:7fa494bb9cd54a7395923f41a1771ccc,v:2,xsrf:2692c68d-69f7-4ec8-b67b-f2a56b2cb85a'}
+headers = {'X-Blackboard-XSRF': '2692c68d-69f7-4ec8-b67b-f2a56b2cb85a',
+           'Content-Type': 'application/json'}
 
 
 @app.command()
-def getuser(user_name: str = typer.Argument('hanswf', help='Name of the user'))-> None:
+def postannouncement(title: str = typer.Option(..., '--title', '-t', prompt=True), body: str = typer.Option(..., '--body', '-b', prompt=True), config: typer.FileText = typer.Option(...)):
+
+    data = {
+        "title": title,
+        "body": body,
+        "availability": {
+            "duration": {
+                "type": "Permanent",
+                "start": "2022-02-21T18:03:42.241Z",
+                "end": "2022-02-21T18:03:42.241Z"
+            }
+        },
+    }
+
+    data = json.dumps(data)
+
+    url = f'{base_url}courses/_33050_1/announcements'
+    x = requests.post(
+        url,
+        headers=headers,
+        cookies=cookies,
+        data=data)
+
+    typer.echo(x.text)
+
+
+@app.command()
+def getuser(user_name: str = typer.Argument('hanswf', help='Name of the user')) -> None:
     '''
     Get the user. 
     Specify the user_name as an option, or else it will use the default user_name
