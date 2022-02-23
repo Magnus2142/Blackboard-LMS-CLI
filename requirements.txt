@@ -2,3 +2,7 @@ typer==0.3.2
 colorama==0.4.4
 shellingham==1.4.0
 pytest==6.2.4
+requests==2.27.1
+python-dotenv==0.19.2
+beautifulsoup4==4.10.0
+lxml==4.8.0
