@@ -6,6 +6,11 @@ import typer
 #from string_builder import StringBuilder
 import click
 from typing import Optional
+import os
+import tempfile
+import subprocess
+
+EDITOR = os.environ.get('EDITOR') if os.environ.get('EDITOR') else 'vim'
 
 app = typer.Typer()
 
