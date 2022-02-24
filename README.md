@@ -7,12 +7,16 @@ to run the tests:
 ### 1. git clone project:
 
 **With SSH:**
-`git@gitlab.stud.idi.ntnu.no:mattiaae/idatt2900-072.git`
+
+`git clone git@gitlab.stud.idi.ntnu.no:mattiaae/idatt2900-072.git`
+
 `cd idatt2900-072`
 
 
 **With HTTPS:**
+
 `git clone https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072.git`
+
 `cd idatt2900-072`
 
 
