@@ -1,26 +1,36 @@
 # IDATT2900-072
 
 to run the tests:
-python -m pytest tests
+`python -m pytest tests`
 
 ## To download the project and install all the requirements
-# git clone with ssh:
-git@gitlab.stud.idi.ntnu.no:mattiaae/idatt2900-072.git
-cd idatt2900-072
+### 1. git clone project:
 
-# git clone with https:
-git clone https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072.git
-cd idatt2900-072
+**With SSH:**
 
-# Install the virtual environement inside the project folder
-python -m venv ./venv
-source ./venv/bin/activate
+`git clone git@gitlab.stud.idi.ntnu.no:mattiaae/idatt2900-072.git`
 
-# Install all the requirements
-python -m pip install -r requirements.txt
+`cd idatt2900-072`
 
-# To chech that it is successfully installed, check the version 
-python -m bbcli --version
 
-# Run the tests
-python -m pytest test
+**With HTTPS:**
+
+`git clone https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072.git`
+
+`cd idatt2900-072`
+
+
+### 2. Install the virtual environement inside the project folder
+`python -m venv ./venv` **OR** `python3 -m venv ./venv`
+
+`source ./venv/bin/activate`
+
+
+### 3. Install all the requirements
+`python -m pip install -r requirements.txt`
+
+### 4. To chech that it is successfully installed, check the version 
+`python -m bbcli --version`
+
+### 5. Run the tests
+`python -m pytest test`
