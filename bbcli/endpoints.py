@@ -9,7 +9,7 @@ from typing import Optional
 
 app = typer.Typer()
 
-cookies = {'BbRouter' : 'expires:1645629198,id:B568F329FB52485B02F9D45307C27083,signature:e13c22f908162232cf18e5f4bbe698d5f7c904edca932f6a27263b374f5e7ac5,site:f4fe20be-98b0-4ecd-9039-d18ce2989292,timeout:10800,user:15bd75dd85af4f56b31283276eb8da7c,v:2,xsrf:03f9f512-620d-4f11-b84f-65f1daba0cfc'}
+cookies = {'BbRouter' :'expires:1645705759,id:CBD8467556E3976D9F7047190DC6F82D,signature:a80cb88001c675656aca564780763872482d35ca8715faab5bae0eb3393668fd,site:f4fe20be-98b0-4ecd-9039-d18ce2989292,timeout:10800,user:15bd75dd85af4f56b31283276eb8da7c,v:2,xsrf:fd102c30-042c-4135-a515-a293ed638ba5' }
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
 
@@ -96,7 +96,9 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     data = x.json()['results']
     #res = get_children(data[2], url, [])
     res = get_children(data[2], url)
-    print(pprint.pprint(res))
+    #print(pprint.pprint(res))
+    for o in res:
+        print(o['title'])
     #print(pprint.pprint(data))
     #for d in data:
         #print()
