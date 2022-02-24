@@ -1,7 +1,7 @@
 import requests
 #from requests.auth import HTTPBasicAuth
 import json
-import ptyper.echo
+import pprint 
 import typer
 #from string_builder import StringBuilder
 import click
