@@ -15,6 +15,7 @@ auth_method_id = ''
 hpg_request_id = ''
 flowtoken = ''
 login_username = ''
+otc = None
 
 
 def login():
@@ -38,12 +39,12 @@ def feide_login():
     scrape_microsoft_login_response(response, request_data)
 
     begin_auth(session, request_data)
-    response = process_auth(session, request_data)
+    response = process_auth(session, request_data, otc)
     scrape_process_auth(response, request_data)
-    response = post_auth_saml_SSO(session, request_data)
+    post_auth_saml_SSO(session, request_data)
 
-    write_to_session_data(session)
-
+    write_to_env_data(session)
+    print('Login successful!')
 
 def get_credentials():
     # TODO: Give user an option to save their username and password
@@ -72,8 +73,6 @@ def scrape_login_page(session, request_data):
 
 def post_login_request(session, request_data, credentials):
     request_data.data = {
-        'has_js': '0',
-        'inside_iframe': '0',
         'feidename': credentials['username'],
         'password': credentials['password']
     }
@@ -129,6 +128,9 @@ def scrape_microsoft_login_response(response, request_data):
     # Remove certaint parts of the script content to be able to use json.loads
     script_tag = script_tag.contents[0][20:len(script_tag.contents[0]) - 7]
     script_content = json.loads(script_tag)
+    f = open('file.html', 'w')
+    f.write(soup.prettify())
+    f.close()
 
     global ctx
     global session_id
@@ -140,19 +142,44 @@ def scrape_microsoft_login_response(response, request_data):
     flowtoken = script_content['sFT']
     session_id = script_content['sessionId']
     canary = script_content['canary']
-    auth_method_id = 'PhoneAppNotification'
+    auth_methods = script_content['arrUserProofs']
+    auth_method_id = find_default_auth_method(auth_methods)
+    print(auth_method_id)
+    if(auth_method_id == None):
+        auth_method_id = choose_auth_method(auth_methods)
     hpg_request_id = response.headers['x-ms-request-id']
 
-    request_data.data = '{"AuthMethodId":"PhoneAppNotification","Method":"BeginAuth","ctx":"' + \
-        ctx + '","flowToken":"' + flowtoken + '"}'
+    request_data.data = {
+        "AuthMethodId": auth_method_id,
+        "Method": "BeginAuth",
+        "ctx": ctx,
+        "flowToken": flowtoken
+    }
+    request_data.data = json.dumps(request_data.data)
 
+def find_default_auth_method(auth_methods):
+    for auth_method in auth_methods:
+        if auth_method['isDefault'] == True:
+            return auth_method['authMethodId']
+
+def choose_auth_method(auth_methods):
+    print('Choose auth method:\n')
+    choice = 1
+    for auth_method in auth_methods:
+        print(str(choice) +  ". " + auth_method['authMethodId'])
+        choice += 1
+    
+    user_input = input()
+    return auth_methods[int(user_input) - 1]['authMethodId']
+    
 
 def begin_auth(session, request_data):
+    global type
 
     if auth_method_id == 'PhoneAppNotification':
         begin_phone_app_auth(session, request_data)
-    # elif auth_method_id == 'OneWaySMS':
-    #     # begin_sms_auth(session, request_data)
+    elif auth_method_id == 'OneWaySMS':
+        begin_one_way_sms_auth(session, request_data)
     # else:
         # begin_security_key_auth(session, request_data)
 
@@ -164,42 +191,85 @@ def begin_phone_app_auth(session, request_data):
     j = json.loads(response.text)
     app_auth_wait(session, request_data, j['CorrelationId'], j['FlowToken'])
 
+def begin_one_way_sms_auth(session, request_data):
+    global otc
+    global flowtoken
+
+    response = session.post(
+        'https://login.microsoftonline.com/common/SAS/BeginAuth', data=request_data.data)
+
+    SMS_code = input('Enter SMS code: ')
+    otc = SMS_code
+    j = json.loads(response.text)
+
+
+    request_data.data = {
+        'AdditionalAuthData': SMS_code,
+        'AuthMethodId': auth_method_id,
+        'Ctx': j['Ctx'],
+        'FlowToken': j['FlowToken'],
+        'Method': 'EndAuth',
+        'PollCount': 1,
+        'SessionId': session_id
+    }
+    request_data.headers = {
+        'client-request-id': j['CorrelationId']
+    }
+
+    data = json.dumps(request_data.data)
+
+    response = session.post('https://login.microsoftonline.com/common/SAS/EndAuth', data=data, headers=request_data.headers)
+    j = json.loads(response.text)
+    flowtoken = j['FlowToken']
 
 def app_auth_wait(session, request_data, client_request_id, flow_token):
     global flowtoken
 
-    request_data.data = '{"Method":"EndAuth","SessionId":"' + session_id + '","FlowToken":"' + \
-        flow_token + '","Ctx":"' + ctx + \
-        '","AuthMethodId":"PhoneAppNotification","PollCount":1}'
+    request_data.data = {
+        "Method":"EndAuth",
+        "SessionId": session_id,
+        "FlowToken": flow_token,
+        "Ctx": ctx,
+        "AuthMethodId": auth_method_id,
+        "PollCount": 1
+    }
     request_data.headers = {
         'client-request-id': client_request_id,
     }
 
+    data = json.dumps(request_data.data)
+
     for tries in range(10):
         response = session.post(
-            'https://login.microsoftonline.com/common/SAS/EndAuth', data=request_data.data, headers=request_data.headers)
+            'https://login.microsoftonline.com/common/SAS/EndAuth', data=data, headers=request_data.headers)
         j = json.loads(response.text)
         if j['Success'] == True:
             print('User accepted')
             flowtoken = j['FlowToken']
             break
-        request_data.data = '{"Method":"EndAuth","SessionId":"' + session_id + '","FlowToken":"' + \
-            j['FlowToken'] + '","Ctx":"' + ctx + \
-            '","AuthMethodId":"PhoneAppNotification","PollCount":' + \
-            str(tries + 1) + '}'
+        request_data.data = {
+            "Method": "EndAuth",
+            "SessionId": session_id,
+            "FlowToken": j['FlowToken'],
+            "Ctx": ctx,
+            "AuthMethodId": auth_method_id,
+            "PollCount": str(tries + 1)
+        }
+        data = json.dumps(request_data.data)
         print('User still havent authorized')
         time.sleep(2)
 
 
-def process_auth(session, request_data):
+def process_auth(session, request_data, otc=None):
+
     request_data.data = {
-        'type': '22',
         'request': ctx,
-        'mfaAuthMethod': 'PhoneAppNotification',
+        'mfaAuthMethod': auth_method_id,
         'canary': canary,
         'login': login_username,
         'flowToken': flowtoken,
         'hpgrequestid': hpg_request_id,
+        'otc': otc
     }
 
     return session.post('https://login.microsoftonline.com/common/SAS/ProcessAuth', data=request_data.data)
@@ -220,13 +290,13 @@ def post_auth_saml_SSO(session, requets_data):
         'https://ntnu.blackboard.com/auth-saml/saml/SSO', data=requets_data.data)
 
 
-def write_to_session_data(session):
+def write_to_env_data(session):
     BB_ROUTER = session.cookies['BbRouter']
     bb_router_values = BB_ROUTER.split(',')
     xsrf = bb_router_values[len(bb_router_values) - 1].split(':')
     xsrf_value = xsrf[1]
 
-    f = open('.env', 'a')
+    f = open('.env', 'w')
     f.write("BB_ROUTER=" + BB_ROUTER + "\n")
     f.write("XSRF=" + xsrf_value + "\n")
     f.close()
