@@ -21,7 +21,7 @@ to run the tests:
 
 
 ### 2. Install the virtual environement inside the project folder
-`python -m venv ./venv`
+`python -m venv ./venv` **OR** `python3 -m venv ./venv`
 
 `source ./venv/bin/activate`
 
