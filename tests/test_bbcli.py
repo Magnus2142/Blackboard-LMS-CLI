@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from bbcli import __app_name__, __version__, cli, getuser, getcoursecontents
+from bbcli import __app_name__, __version__, cli, get_user
 
 runner = CliRunner()
 
@@ -10,12 +10,10 @@ def test_version():
 	assert result.exit_code == 0
 
 	assert result.output == f"{__app_name__} v{__version__}\n"
-	#assert f"{__app_name__} v{__version__}\n" in result.stdout
+	assert f"{__app_name__} v{__version__}\n" in result.stdout
+
 
 def test_endpoint_getuser():
-	result = runner.invoke(getuser, input='hanswf')
+	result = runner.invoke(get_user, input='hanswf')
 	assert not result.exception 
 
-def test_endpoint_getcoursecontents():
-	res = runner.invoke(getcoursecontents)
-	assert not res.exception

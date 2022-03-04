@@ -1,7 +1,7 @@
 import requests
 #from requests.auth import HTTPBasicAuth
 import json
-import pprint
+import pprint 
 import typer
 #from string_builder import StringBuilder
 import click
@@ -34,22 +34,39 @@ def get_user(user_name: str = typer.Argument('', help='Name of the user'))-> Non
         cookies=cookies
     )
 
-    data = x.json()
-    # print(data)
-    print(pprint.pprint(data))
+    data = x.json()['results'][0]
+    # typer.echo(data)
+    fn = data['name']['given']
+    sn = data['name']['family']
+    id = data['studentId']
+
+    typer.echo(f'Name of the student: {fn} {sn}')
+    typer.echo(f'The student id: {id}')
 
 
 @app.command(name='get-course')
-def get_course(course_id: str = 'IDATT2900'):
+def get_course(course_id: str = typer.Argument('', help='Id of the course')):
     '''
     Get the course
     '''
-    url = base_url + 'courses?courseId=%s' % course_id
+    if course_id == '':
+        course_id = typer.prompt("What is the course id?")
+    url = f'{base_url}courses?courseId={course_id}'
     x = requests.get(
         url,
         cookies=cookies)
-    data = x.json()
-    print(pprint.pprint(data))
+    data = x.json()['results'][0]
+    name = data['name']
+    course_url = data['externalAccessUrl']
+    typer.echo(name)
+    typer.echo(f'URL for the course: {course_url}')
+
+# def open_folder(data, map):
+#     key = 'hasChildren'
+#     acc = []
+#     if key in data and data[key] == True:
+#         acc.append
+
 
 
 @app.command(name='get-course-contents')
@@ -58,35 +75,45 @@ def get_course_contents(course_id: str = '_27251_1'):
     Get the course contents
     '''
     url = f'{base_url}courses/{course_id}/contents'
+    typer.echo(url)
     x = requests.get(url, cookies=cookies)
-    data = x.json()
-    print(pprint.pprint(data))
+    data = x.json()['results']
+    typer.echo('Mapper:')
+    map = dict()
+    for i in range(len(data)):
+        title = data[i]['title']
+        map[i+1] = data[i]['id']
+        typer.echo(f'{i+1} {title}')
+    # idx = typer.prompt("Open a folder by pressing a number: ")
+    typer.echo(map)
+    # for d in data:
+        # typer.echo(d['title'])
 
 def get_children(d, url,acc, count: int = 0):
     #count = count + 1
-    #print(f'kommer hit: {count}')
+    #typer.echo(f'kommer hit: {count}')
     key = 'hasChildren'
     if key not in d or d[key] == False:
-        print('nei')
+        typer.echo('nei')
         return acc
     else:
-        print('ja')
+        typer.echo('ja')
         id = d['id']
         url = f'{url}/{id}/children'
-        print(url)
+        typer.echo(url)
         response = requests.get(url, cookies = cookies)
         child = response.json()['results']
-        #get_children(child, url, acc+child, count)
-        return child
+        get_children(child, url, acc+child, count)
+        # return child
 
 def get_children(d, url):
     key = 'hasChildren'
     while key in d and d[key] == True:
         id = d['id']
         url = f'{url}/{id}/children'
-        print()
-        print(url)
-        print()
+        typer.echo()
+        typer.echo(url)
+        typer.echo()
         response = requests.get(url, cookies=cookies)
         child = response.json()['results']
         return child
@@ -103,8 +130,10 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     data = x.json()['results']
     #res = get_children(data[2], url, [])
     res = get_children(data[2], url)
-    print(pprint.pprint(res))
-    #print(pprint.pprint(data))
+    #typer.echo(ptyper.echo.ptyper.echo(res))
+    for o in res:
+        typer.echo(o['title'])
+    #typer.echo(ptyper.echo.ptyper.echo(data))
     #for d in data:
-        #print()
-        #print(get_children(d, url))
+        #typer.echo()
+        #typer.echo(get_children(d, url))
