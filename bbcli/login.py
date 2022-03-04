@@ -128,9 +128,6 @@ def scrape_microsoft_login_response(response, request_data):
     # Remove certaint parts of the script content to be able to use json.loads
     script_tag = script_tag.contents[0][20:len(script_tag.contents[0]) - 7]
     script_content = json.loads(script_tag)
-    f = open('file.html', 'w')
-    f.write(soup.prettify())
-    f.close()
 
     global ctx
     global session_id
@@ -178,10 +175,8 @@ def begin_auth(session, request_data):
 
     if auth_method_id == 'PhoneAppNotification':
         begin_phone_app_auth(session, request_data)
-    elif auth_method_id == 'OneWaySMS':
-        begin_one_way_sms_auth(session, request_data)
-    # else:
-        # begin_security_key_auth(session, request_data)
+    elif auth_method_id == 'OneWaySMS' or auth_method_id == 'PhoneAppOTP':
+        begin_one_time_code_auth(session, request_data)
 
 
 def begin_phone_app_auth(session, request_data):
@@ -191,14 +186,14 @@ def begin_phone_app_auth(session, request_data):
     j = json.loads(response.text)
     app_auth_wait(session, request_data, j['CorrelationId'], j['FlowToken'])
 
-def begin_one_way_sms_auth(session, request_data):
+def begin_one_time_code_auth(session, request_data):
     global otc
     global flowtoken
 
     response = session.post(
         'https://login.microsoftonline.com/common/SAS/BeginAuth', data=request_data.data)
 
-    SMS_code = input('Enter SMS code: ')
+    SMS_code = input('Enter code: ')
     otc = SMS_code
     j = json.loads(response.text)
 

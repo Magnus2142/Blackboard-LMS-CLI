@@ -6,10 +6,17 @@ import typer
 #from string_builder import StringBuilder
 import click
 from typing import Optional
+from dotenv import load_dotenv
+import os
+
+
 
 app = typer.Typer()
 
-cookies = {'BbRouter' : 'expires:1645629198,id:B568F329FB52485B02F9D45307C27083,signature:e13c22f908162232cf18e5f4bbe698d5f7c904edca932f6a27263b374f5e7ac5,site:f4fe20be-98b0-4ecd-9039-d18ce2989292,timeout:10800,user:15bd75dd85af4f56b31283276eb8da7c,v:2,xsrf:03f9f512-620d-4f11-b84f-65f1daba0cfc'}
+
+load_dotenv()
+cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
+headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
 
