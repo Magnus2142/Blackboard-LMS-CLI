@@ -1,7 +1,7 @@
 import requests
 #from requests.auth import HTTPBasicAuth
 import json
-import pprint 
+import pprint
 import typer
 #from string_builder import StringBuilder
 import click
@@ -23,7 +23,7 @@ base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 @app.command(name='get-user')
 def get_user(user_name: str = typer.Argument('', help='Name of the user'))-> None:
     '''
-    Get the user 
+    Get the user
     Specify the user_name as an option, or else it will use the default user_name
     '''
     if user_name == '':
@@ -89,24 +89,30 @@ def get_course_contents(course_id: str = '_27251_1'):
     # for d in data:
         # typer.echo(d['title'])
 
-def get_children(d, url,acc, count: int = 0):
-    #count = count + 1
-    #typer.echo(f'kommer hit: {count}')
+def get_children(data, url, acc, count: int = 0):
+    count = count + 1
+    typer.echo(f'kommer hit: {count}')
+    # print("The acc is: ", acc)
     key = 'hasChildren'
-    if key not in d or d[key] == False:
+    if key not in data or data[key] == False:
         typer.echo('nei')
         return acc
     else:
         typer.echo('ja')
-        id = d['id']
+        id = data['id']
         url = f'{url}/{id}/children'
         typer.echo(url)
         response = requests.get(url, cookies = cookies)
-        child = response.json()['results']
-        get_children(child, url, acc+child, count)
-        # return child
+        if response.status_code == 403 or response.status_code == 404:
+            typer.echo(response.json()['status'])
+            typer.echo(response.json()['message'])
+            return acc
+        else:
+            child = response.json()['results']
+            acc = acc + child
+            return get_children(child, url, acc, count)
 
-def get_children(d, url):
+def get_children2(d, url):
     key = 'hasChildren'
     while key in d and d[key] == True:
         id = d['id']
@@ -128,11 +134,17 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     url = f'{base_url}courses/{course_id}/contents'
     x = requests.get(url, cookies=cookies)
     data = x.json()['results']
-    #res = get_children(data[2], url, [])
-    res = get_children(data[2], url)
+    res = get_children(data[8], url, [])
+    # res = get_children2(data[2], url)
+
+    for i in res:
+        print(i['title'])
+
+
+
     #typer.echo(ptyper.echo.ptyper.echo(res))
-    for o in res:
-        typer.echo(o['title'])
+    # for data in res:
+    #     typer.echo(d['title'])
     #typer.echo(ptyper.echo.ptyper.echo(data))
     #for d in data:
         #typer.echo()
