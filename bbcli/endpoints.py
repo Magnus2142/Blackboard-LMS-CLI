@@ -7,6 +7,7 @@ import typer
 import click
 from typing import Optional
 from dotenv import load_dotenv
+from anytree import Node, RenderTree
 import os
 
 
@@ -100,9 +101,9 @@ def get_children(data, url, acc, count: int = 0):
     else:
         typer.echo('ja')
         id = data['id']
-        url = f'{url}/{id}/children'
+        old = f'{url}/{id}/children'
         typer.echo(url)
-        response = requests.get(url, cookies = cookies)
+        response = requests.get(old, cookies = cookies)
         if response.status_code == 403 or response.status_code == 404:
             typer.echo(response.json()['status'])
             typer.echo(response.json()['message'])
@@ -116,7 +117,7 @@ def get_children2(d, url):
     key = 'hasChildren'
     while key in d and d[key] == True:
         id = d['id']
-        url = f'{url}/{id}/children'
+        url = f'{url}{id}/children'
         typer.echo()
         typer.echo(url)
         typer.echo()
@@ -134,6 +135,10 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     url = f'{base_url}courses/{course_id}/contents'
     x = requests.get(url, cookies=cookies)
     data = x.json()['results']
+    # parent_id = data[8]['id']
+    # name = data[8]['title']
+    # parent = Node(parent_id+name)
+    # print(parent['id'])
     res = get_children(data[8], url, [])
     # res = get_children2(data[2], url)
 
