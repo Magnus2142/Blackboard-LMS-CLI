@@ -7,8 +7,9 @@ import typer
 import click
 from typing import Optional
 from dotenv import load_dotenv
-from anytree import Node, RenderTree
 import os
+
+from bbcli import Node
 
 
 
@@ -90,16 +91,14 @@ def get_course_contents(course_id: str = '_27251_1'):
     # for d in data:
         # typer.echo(d['title'])
 
-def get_children(data, url, acc, count: int = 0):
+def get_children(data, url, acc, count: int = 0, worklist=[]):
     count = count + 1
     typer.echo(f'kommer hit: {count}')
     # print("The acc is: ", acc)
     key = 'hasChildren'
-    if key not in data or data[key] == False:
-        typer.echo('nei')
+    if len(worklist) == 0:
         return acc
     else:
-        typer.echo('ja')
         id = data['id']
         old = f'{url}/{id}/children'
         typer.echo(url)
@@ -110,8 +109,10 @@ def get_children(data, url, acc, count: int = 0):
             return acc
         else:
             child = response.json()['results']
+            worklist.append(child)
             acc = acc + child
-            return get_children(child, url, acc, count)
+            parent = worklist.pop()
+            return get_children(parent, url, acc, count, worklist)
 
 def get_children2(d, url):
     key = 'hasChildren'
@@ -139,7 +140,8 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     # name = data[8]['title']
     # parent = Node(parent_id+name)
     # print(parent['id'])
-    res = get_children(data[8], url, [])
+    root = Node(data[8])
+    res = get_children(root, url, [])
     # res = get_children2(data[2], url)
 
     for i in res:
