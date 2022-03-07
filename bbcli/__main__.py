@@ -1,6 +1,7 @@
 """RP To-Do entry point script."""
 # rptodo/__main__.py
 
+from dotenv import load_dotenv
 from bbcli import cli, __app_name__
 
 def main():

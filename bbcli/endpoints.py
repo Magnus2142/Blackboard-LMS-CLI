@@ -7,9 +7,8 @@ import typer
 import click
 from typing import Optional
 from dotenv import load_dotenv
+from bbcli.Node import Node
 import os
-
-from bbcli import Node
 
 
 
@@ -91,7 +90,7 @@ def get_course_contents(course_id: str = '_27251_1'):
     # for d in data:
         # typer.echo(d['title'])
 
-def get_children(data, url, acc, count: int = 0, worklist=[]):
+def get_children(worklist, url, acc, count: int = 0):
     count = count + 1
     typer.echo(f'kommer hit: {count}')
     # print("The acc is: ", acc)
@@ -99,9 +98,10 @@ def get_children(data, url, acc, count: int = 0, worklist=[]):
     if len(worklist) == 0:
         return acc
     else:
+        data = worklist.pop()
         id = data['id']
         old = f'{url}/{id}/children'
-        typer.echo(url)
+        # typer.echo(url)
         response = requests.get(old, cookies = cookies)
         if response.status_code == 403 or response.status_code == 404:
             typer.echo(response.json()['status'])
@@ -109,22 +109,13 @@ def get_children(data, url, acc, count: int = 0, worklist=[]):
             return acc
         else:
             child = response.json()['results']
-            worklist.append(child)
-            acc = acc + child
-            parent = worklist.pop()
-            return get_children(parent, url, acc, count, worklist)
-
-def get_children2(d, url):
-    key = 'hasChildren'
-    while key in d and d[key] == True:
-        id = d['id']
-        url = f'{url}{id}/children'
-        typer.echo()
-        typer.echo(url)
-        typer.echo()
-        response = requests.get(url, cookies=cookies)
-        child = response.json()['results']
-        return child
+            for i in range(len(child)):
+                if key in child[i] and child[i][key] == True:
+                    worklist.append(child[i])
+                else:
+                    acc.append(child[i])
+            # parent = worklist.pop()
+            return get_children(worklist, url, acc, count)
 
 
 
@@ -136,23 +127,14 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     url = f'{base_url}courses/{course_id}/contents'
     x = requests.get(url, cookies=cookies)
     data = x.json()['results']
-    # parent_id = data[8]['id']
-    # name = data[8]['title']
-    # parent = Node(parent_id+name)
-    # print(parent['id'])
-    root = Node(data[8])
-    res = get_children(root, url, [])
-    # res = get_children2(data[2], url)
+    root = data[8]
+    # root = Node(data[8])
+    worklist = [root]
+    res = get_children(worklist, url, [])
 
     for i in res:
         print(i['title'])
 
 
 
-    #typer.echo(ptyper.echo.ptyper.echo(res))
-    # for data in res:
-    #     typer.echo(d['title'])
-    #typer.echo(ptyper.echo.ptyper.echo(data))
-    #for d in data:
-        #typer.echo()
-        #typer.echo(get_children(d, url))
+    
