@@ -3,7 +3,9 @@
 
 __app_name__ = "bbcli"
 __version__ = "0.1.0"
-from .endpoints import *
+# from .endpoints import *
+from .Node import *  
+from .login import * 
 
 (
     SUCCESS,

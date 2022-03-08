@@ -1,7 +1,8 @@
 from urllib import request
 import os
 from dotenv import load_dotenv
-from RequestData import RequestData
+# from RequestData import RequestData
+from .RequestData import RequestData
 import requests
 import json
 from bs4 import BeautifulSoup
