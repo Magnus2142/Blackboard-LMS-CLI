@@ -1,3 +1,4 @@
+from venv import create
 import requests
 #from requests.auth import HTTPBasicAuth
 import json
@@ -10,19 +11,20 @@ from dotenv import load_dotenv
 from bbcli.Node import Node
 import os
 
+from anytree import Node as Nd, RenderTree
 
 
 app = typer.Typer()
 
 
 load_dotenv()
-cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
+cookies = {'BbRouter': os.getenv("BB_ROUTER")}
 headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
 
 @app.command(name='get-user')
-def get_user(user_name: str = typer.Argument('', help='Name of the user'))-> None:
+def get_user(user_name: str = typer.Argument('', help='Name of the user')) -> None:
     '''
     Get the user
     Specify the user_name as an option, or else it will use the default user_name
@@ -69,7 +71,6 @@ def get_course(course_id: str = typer.Argument('', help='Id of the course')):
 #         acc.append
 
 
-
 @app.command(name='get-course-contents')
 def get_course_contents(course_id: str = '_27251_1'):
     '''
@@ -88,35 +89,65 @@ def get_course_contents(course_id: str = '_27251_1'):
     # idx = typer.prompt("Open a folder by pressing a number: ")
     typer.echo(map)
     # for d in data:
-        # typer.echo(d['title'])
+    # typer.echo(d['title'])
 
-def get_children(worklist, url, acc, count: int = 0):
-    count = count + 1
-    typer.echo(f'kommer hit: {count}')
-    # print("The acc is: ", acc)
+
+def get_children(worklist, url, acc):
     key = 'hasChildren'
     if len(worklist) == 0:
         return acc
     else:
-        data = worklist.pop()
-        id = data['id']
+        node = worklist.pop()
+        id = node.data['id']
         old = f'{url}/{id}/children'
-        # typer.echo(url)
-        response = requests.get(old, cookies = cookies)
+        response = requests.get(old, cookies=cookies)
         if response.status_code == 403 or response.status_code == 404:
             typer.echo(response.json()['status'])
             typer.echo(response.json()['message'])
             return acc
         else:
-            child = response.json()['results']
-            for i in range(len(child)):
-                if key in child[i] and child[i][key] == True:
-                    worklist.append(child[i])
+            children = response.json()['results']
+            for i in range(len(children)):
+                # TODO: Add list of children instead of bool
+                if key in children[i] and children[i][key] == True:
+                    child = Node(children[i], True, node)
+                    worklist.append(child)
+                    acc.append(child)
                 else:
-                    acc.append(child[i])
-            # parent = worklist.pop()
-            return get_children(worklist, url, acc, count)
+                    child = Node(children[i], False, node)
+                    acc.append(child)
+            return get_children(worklist, url, acc)
 
+
+def create_tree(nodes):
+    parents = []
+    root = nodes.pop(0)
+    root_node = Nd(root.data['title'])
+    parent = root_node
+    parents.append(parent)
+
+    for i in range(len(nodes)):
+        if (nodes[i].children and nodes[i] not in parents):
+            for parent in parents:
+                if (parent == nodes[i].parent.data['title']):
+                    node = Nd(nodes[i].data['title'], parent)
+                    parents.append(node)
+                    continue
+
+            node = Nd(nodes[i].data['title'], root_node)
+            parents.append(node)
+
+        elif (nodes[i].children):
+            for parent in parents:
+                if (nodes[i].parent.data['title'] == parent):
+                    node = Nd(node.data['title'], parent)
+        if (nodes[i].children is False):
+            for parent in parents:
+                if (parent.name == nodes[i].parent.data['title']):
+                    node = Nd(nodes[i].data['title'], parent)
+
+    for pre, fill, node in RenderTree(root_node):
+        print("%s%s" % (pre, node.name))
 
 
 @app.command(name='get-assignments')
@@ -127,14 +158,9 @@ def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course
     url = f'{base_url}courses/{course_id}/contents'
     x = requests.get(url, cookies=cookies)
     data = x.json()['results']
-    root = data[8]
-    # root = Node(data[8])
-    worklist = [root]
-    res = get_children(worklist, url, [])
-
-    for i in res:
-        print(i['title'])
-
-
-
-    
+    # root = data[8]
+    for root in data:
+        root = Node(root, True)
+        worklist = [root]
+        res = get_children(worklist, url, [])
+        create_tree(res)
