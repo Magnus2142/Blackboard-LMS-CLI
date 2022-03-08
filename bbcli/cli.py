@@ -8,8 +8,7 @@ import typer
 from bbcli import __app_name__, __version__, endpoints
 import os
 from dotenv import load_dotenv
-from datetime import datetime
-from bbcli import login
+from bbcli import login, check_valid_date
 
 
 app = typer.Typer()
@@ -18,19 +17,6 @@ app.add_typer(endpoints.app, name='endpoints', help='Call the endpoints')
 load_dotenv()
 cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
 headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
-
-def check_valid_date() -> bool:
-    tmp = cookies['BbRouter']
-    start = int(tmp.find('expires')) + len('expires') + 1
-    end = int(tmp.find(','))
-    timestmp = int(tmp[start : end])
-    print(timestmp)
-    expires = datetime.fromtimestamp(timestmp)
-    now = datetime.now()
-    if expires >= now:
-        return True
-    else: 
-        return False
 
 def _version_callback(value: bool) -> None:
     if value:
@@ -48,7 +34,7 @@ def main(
         is_eager=True,
     )
 ) -> None:
-    if check_valid_date() == False:
+    if check_valid_date(cookies) == False:
         login()
         # load_dotenv()
         # cookies['BbRouter'] = os.getenv("BB_ROUTER")

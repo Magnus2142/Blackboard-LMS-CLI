@@ -6,6 +6,7 @@ __version__ = "0.1.0"
 # from .endpoints import *
 from .Node import *  
 from .login import * 
+from .utils import *
 
 (
     SUCCESS,
