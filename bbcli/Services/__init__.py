@@ -1,1 +1,1 @@
-from .AnnouncementService import *
+from .AuthorizationService import *
