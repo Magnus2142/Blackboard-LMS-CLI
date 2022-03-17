@@ -44,7 +44,7 @@ def get_user(user_name: str):
 
 
 @click.command(name='get-course')
-@click.argument('course_id', default='_27251_1')
+@click.argument('course_id', default='IDATT2900')
 def get_course(course_id: str):
     '''
     Get the course
