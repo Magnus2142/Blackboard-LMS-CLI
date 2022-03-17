@@ -119,9 +119,8 @@ def get_children(worklist, url, acc):
             return get_children(worklist, url, acc)
 
 
-def create_tree(nodes):
+def create_tree(root, nodes):
     parents = []
-    root = nodes.pop(0)
     root_node = Nd(root.data['title'])
     parent = root_node
     parents.append(parent)
@@ -151,16 +150,18 @@ def create_tree(nodes):
 
 
 @app.command(name='get-assignments')
-def get_assignments(course_id: str = typer.Argument('_27251_1', help='The course id')):
+def get_assignments(course_id: str = typer.Argument('_32909_1', help='The course id')):
     '''
     Get the assignments
     '''
     url = f'{base_url}courses/{course_id}/contents'
     x = requests.get(url, cookies=cookies)
     data = x.json()['results']
-    # root = data[8]
+
+    
+
     for root in data:
         root = Node(root, True)
         worklist = [root]
         res = get_children(worklist, url, [])
-        create_tree(res)
+        create_tree(root, res)
