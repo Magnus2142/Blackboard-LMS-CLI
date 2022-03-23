@@ -5,6 +5,9 @@ __app_name__ = "bbcli"
 __version__ = "0.1.0"
 # from .endpoints import *
 from .Node import *  
+from .Utils.utils import *
+from .Services import login
+# from endpoints import get_user, get_course, get_assignments, get_course_contents
 
 (
     SUCCESS,

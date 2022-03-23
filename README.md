@@ -34,3 +34,7 @@ to run the tests:
 
 ### 5. Run the tests
 `python -m pytest test`
+
+### 6. Setup the bbcli script inside the root of the project
+`pip install --editable .` **OR** `pip3 install --editable .`
+
