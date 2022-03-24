@@ -10,20 +10,14 @@ from bbcli import check_valid_date, check_response
 import click
 
 from bbcli.services import authorization_service
-from bbcli.services import announcement_service
 
 @click.group()
 def entry_point():
     authorize_user()
     pass
 
-@click.command(name='announcements')
-def get_announcements():
-    response = announcement_service.update_announcement(cookies, headers, '_33050_1', '_385022_1')
-    click.echo(response)
 
 
-entry_point.add_command(get_announcements)
 entry_point.add_command(get_user)
 entry_point.add_command(get_course_contents)
 entry_point.add_command(get_assignments)
