@@ -1,18 +1,14 @@
+from venv import create
 import requests
-#from requests.auth import HTTPBasicAuth
-# import json
-# import pprint
 import bbcli.cli as cli
-#from string_builder import StringBuilder
 import click
-# from typing import Optional
-# from dotenv import load_dotenv
-# from anytree import Node, RenderTree
 import os
 
+from anytree import Node as Nd, RenderTree
 
 
 from bbcli import check_response
+from bbcli.Node import Node
 
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
@@ -39,8 +35,8 @@ def get_user(user_name: str):
         sn = data['name']['family']
         id = data['studentId']
 
-        click.echo(f'Name of the student: {fn} {sn}')
-        click.echo(f'The student id: {id}')
+        click.echo(f'Student name: {fn} {sn}')
+        click.echo(f'Student ID: {id}')
 
 
 @click.command(name='get-course')
@@ -64,6 +60,7 @@ def get_course(course_id: str):
         click.echo(name)
         click.echo(f'URL for the course: {course_url}')
 
+
 @click.command(name='get-course-contents')
 @click.argument('course_id', default='_27251_1')
 def get_course_contents(course_id: str):
@@ -85,28 +82,61 @@ def get_course_contents(course_id: str):
             click.echo(f'{i+1} {title}')
         click.echo(map)
 
+
 def get_children(worklist, url, acc, count: int = 0):
     count = count + 1
-    click.echo(f'kommer hit: {count}')
     key = 'hasChildren'
     if len(worklist) == 0:
         return acc
     else:
-        data = worklist.pop()
-        id = data['id']
+        node = worklist.pop()
+        id = node.data['id']
         old = f'{url}/{id}/children'
-        response = requests.get(old, cookies = cli.cookies)
+        response = requests.get(old, cookies=cli.cookies)
         if check_response(response) == False:
             return acc
         else:
-            child = response.json()['results']
-            for i in range(len(child)):
-                if key in child[i] and child[i][key] == True:
-                    worklist.append(child[i])
+            children = response.json()['results']
+            for i in range(len(children)):
+                # TODO: Add list of children instead of bool
+                if key in children[i] and children[i][key] == True:
+                    child = Node(children[i], True, node)
+                    worklist.append(child)
+                    acc.append(child)
                 else:
-                    acc.append(child[i])
-            return get_children(worklist, url, acc, count)
+                    child = Node(children[i], False, node)
+                    acc.append(child)
+            return get_children(worklist, url, acc)
 
+
+def create_tree(root, nodes):
+    parents = []
+    root_node = Nd(root.data['title'])
+    parent = root_node
+    parents.append(parent)
+
+    for i in range(len(nodes)):
+        if (nodes[i].children and nodes[i] not in parents):
+            for parent in parents:
+                if (parent == nodes[i].parent.data['title']):
+                    node = Nd(nodes[i].data['title'], parent)
+                    parents.append(node)
+                    continue
+
+            node = Nd(nodes[i].data['title'], root_node)
+            parents.append(node)
+
+        elif (nodes[i].children):
+            for parent in parents:
+                if (nodes[i].parent.data['title'] == parent):
+                    node = Nd(node.data['title'], parent)
+        if (nodes[i].children is False):
+            for parent in parents:
+                if (parent.name == nodes[i].parent.data['title']):
+                    node = Nd(nodes[i].data['title'], parent)
+
+    for pre, fill, node in RenderTree(root_node):
+        print("%s%s" % (pre, node.name))
 
 
 @click.command(name='get-assignments')
@@ -121,14 +151,8 @@ def get_assignments(course_id: str):
         return
     else:
         data = response.json()['results']
-        root = data[8]
-        # root = Node(data[8])
-        worklist = [root]
-        res = get_children(worklist, url, [])
-
-        for i in res:
-            print(i['title'])
-
-
-
-    
+        for root in data:
+            root = Node(root, True)
+            worklist = [root]
+            res = get_children(worklist, url, [])
+            create_tree(root, res)
