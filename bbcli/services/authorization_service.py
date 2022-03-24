@@ -1,7 +1,7 @@
 from urllib import request
 import os
 from dotenv import load_dotenv
-from bbcli.Entities.RequestData import RequestData
+from bbcli.entities.RequestData import RequestData
 import requests
 import json
 from bs4 import BeautifulSoup
