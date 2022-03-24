@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+import time
 from venv import create
 import requests
 import bbcli.cli as cli
@@ -83,7 +85,7 @@ def get_course_contents(course_id: str):
         click.echo(map)
 
 
-def get_children(worklist, url, acc, count: int = 0):
+def get_children(session, worklist, url, acc, count: int = 0):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
@@ -92,7 +94,7 @@ def get_children(worklist, url, acc, count: int = 0):
         node = worklist.pop()
         id = node.data['id']
         old = f'{url}/{id}/children'
-        response = requests.get(old, cookies=cli.cookies)
+        response = session.get(old, cookies=cli.cookies)
         if check_response(response) == False:
             return acc
         else:
@@ -106,7 +108,7 @@ def get_children(worklist, url, acc, count: int = 0):
                 else:
                     child = Node(children[i], False, node)
                     acc.append(child)
-            return get_children(worklist, url, acc)
+            return get_children(session, worklist, url, acc)
 
 
 def create_tree(root, nodes):
@@ -145,8 +147,10 @@ def get_assignments(course_id: str):
     '''
     Get the assignments
     '''
+    session = requests.Session()
     url = f'{base_url}courses/{course_id}/contents'
-    response = requests.get(url, cookies=cli.cookies)
+    start = time.time()
+    response = session.get(url, cookies=cli.cookies)
     if check_response(response) == False:
         return
     else:
@@ -154,5 +158,8 @@ def get_assignments(course_id: str):
         for root in data:
             root = Node(root, True)
             worklist = [root]
-            res = get_children(worklist, url, [])
+            res = get_children(session, worklist, url, [])
             create_tree(root, res)
+    end = time.time()
+
+    print(f'\ndownload time: {end - start} seconds')
