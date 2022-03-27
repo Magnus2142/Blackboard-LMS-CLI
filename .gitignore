@@ -51,3 +51,4 @@ docs/_build/
 
 # enviroment variables
 .env
+venv/
