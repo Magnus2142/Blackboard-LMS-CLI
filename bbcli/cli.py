@@ -11,6 +11,8 @@ import click
 
 from bbcli.services import authorization_service
 from bbcli.services import announcement_service
+from bbcli.services import course_service
+from bbcli.utils.URL_builder import URLBuilder, URL
 
 @click.group()
 def entry_point():
@@ -19,8 +21,10 @@ def entry_point():
 
 @click.command(name='announcements')
 def get_announcements():
-    response = announcement_service.update_announcement(cookies, headers, '_33050_1', '_385022_1')
+    response = course_service.list_course(cookies, '_33050_1')
     click.echo(response)
+    
+    
 
 
 entry_point.add_command(get_announcements)

@@ -5,6 +5,10 @@ import requests
 from bbcli.services.course_service import list_courses
 import click
 
+from bbcli.utils.URL_builder import URLBuilder
+
+url_builder = URLBuilder()
+
 def list_announcements(cookies: Dict, user_name: str):
     courses = list_courses(cookies=cookies, user_name=user_name)
 
@@ -12,7 +16,8 @@ def list_announcements(cookies: Dict, user_name: str):
     announcements = []
 
     for course in courses:
-        course_announcements = session.get('https://ntnu.blackboard.com/learn/api/public/v1/courses/{}/announcements'.format(course['id']), cookies=cookies)
+        url = url_builder.base_v1().add_courses().add_id(course['id']).add_announcements().create()
+        course_announcements = session.get(url, cookies=cookies)
         course_announcements = json.loads(course_announcements.text)
         
         # Adds the course name to each course announcement list to make it easier to display which course the announcement comes from
@@ -25,12 +30,14 @@ def list_announcements(cookies: Dict, user_name: str):
     return announcements
 
 def list_course_announcements(cookies: Dict, course_id: str):
-    course_announcements = requests.get('https://ntnu.blackboard.com/learn/api/public/v1/courses/{}/announcements'.format(course_id), cookies=cookies)
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().create()
+    course_announcements = requests.get(url, cookies=cookies)
     course_announcements = json.loads(course_announcements.text)['results']
     return course_announcements
 
 def list_announcement(cookies: Dict, course_id: str, announcement_id: str):
-    announcement = requests.get('https://ntnu.blackboard.com/learn/api/public/v1/courses/{}/announcements/{}'.format(course_id, announcement_id), cookies=cookies)
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().add_id(announcement_id).create()
+    announcement = requests.get(url, cookies=cookies)
     announcement = json.loads(announcement.text)
     return announcement
 
@@ -49,13 +56,15 @@ def create_announcement(cookies: Dict, headers: Dict, course_id: str, title: str
 
     data = json.dumps(data)
     headers['Content-Type'] = 'application/json'
-
-    response = requests.post('https://ntnu.blackboard.com/learn/api/public/v1/courses/{}/announcements'.format(course_id), cookies=cookies, headers=headers, data=data)
+    
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().create()
+    response = requests.post(url, cookies=cookies, headers=headers, data=data)
 
     return response.text
 
 def delete_announcement(cookies: Dict, headers: Dict, course_id: str, announcement_id: str):
-    response = requests.delete('https://ntnu.blackboard.com/learn/api/public/v1/courses/{}/announcements/{}'.format(course_id, announcement_id), cookies=cookies, headers=headers)
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().add_id(announcement_id).create()
+    response = requests.delete(url, cookies=cookies, headers=headers)
     if response.text == '':
         return 'Sucessfully deleted announcement!'
     else:
@@ -76,6 +85,8 @@ def update_announcement(cookies: Dict, headers: Dict, course_id: str, announceme
     new_data = click.edit(announcement + '\n\n' + MARKER)
 
     headers['Content-Type'] = 'application/json'
-    response = requests.patch('https://ntnu.blackboard.com/learn/api/public/v1/courses/{}/announcements/{}'.format(course_id, announcement_id), cookies=cookies, headers=headers, data=new_data)
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().add_id(announcement_id).create()
+    response = requests.patch(url, cookies=cookies, headers=headers, data=new_data)
+    response.raise_for_status()
 
     return response.text
