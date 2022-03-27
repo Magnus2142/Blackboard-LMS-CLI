@@ -27,7 +27,7 @@ def list_courses(cookies: Dict, user_name: str) -> Any:
     term_1 = terms[len(terms) - 1]
     term_2 = terms[len(terms) - 2]
 
-    url = url_builder.base_v1().add_users().add_id(id=user_name, id_type='userName').create()
+    url = url_builder.base_v1().add_users().add_id(id=user_name, id_type='userName').add_courses().create()
     course_memberships = session.get(url, cookies=cookies)
     course_memberships = json.loads(course_memberships.text)['results']
 

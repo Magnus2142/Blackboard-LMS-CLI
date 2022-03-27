@@ -21,11 +21,9 @@ def entry_point():
 
 @click.command(name='announcements')
 def get_announcements():
-    response = course_service.list_course(cookies, '_33050_1')
+    response = course_service.list_courses(cookies=cookies, user_name='magnbred')
     click.echo(response)
     
-    
-
 
 entry_point.add_command(get_announcements)
 entry_point.add_command(get_user)
