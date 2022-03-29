@@ -48,8 +48,16 @@ class Builder(ABC):
         pass
 
     @abstractmethod
-    def add_terms(slef) -> Builder:
+    def add_terms(self) -> Builder:
         pass
+
+    @abstractmethod
+    def add_children(self) -> Builder:
+        pass
+
+    @abstractmethod
+    def add_attachments(self) -> Builder:
+        pass 
 
     @abstractmethod
     def add_id(self, id: str, id_type: str = None) -> Builder:
@@ -103,6 +111,14 @@ class URLBuilder(Builder):
 
     def add_terms(self) -> URLBuilder:
         self._product.add('/terms')
+        return self
+
+    def add_children(self) -> Builder:
+        self._product.add('/children')
+        return self
+
+    def add_attachments(self) -> Builder:
+        self._product.add('/attachments')
         return self
 
     def add_id(self, id:str, id_type:str=None) -> URLBuilder:
