@@ -2,7 +2,7 @@ import json
 from subprocess import call
 from typing import Dict, Any
 import requests
-from bbcli.services.course_service import list_courses
+from bbcli.services.courses_service import list_courses
 from bbcli.utils.utils import set_cookies
 import click
 

@@ -1,5 +1,5 @@
 from bbcli import __app_name__
-from .cli import entry_point
+from bbcli.cli import entry_point
 
 def main():
     entry_point()

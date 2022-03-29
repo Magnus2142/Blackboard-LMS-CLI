@@ -4,11 +4,12 @@ from bbcli.utils.utils import html_to_text
 
 
 def print_announcements(announcements: List):
+    announcements.reverse()
     for course in announcements:
         print_course_announcements(course['course_announcements'], course['course_name'])
 
 def print_course_announcements(course_announcements: List, course_name: str = None):
-    
+    course_announcements.reverse()
     for announcement in course_announcements:
         if 'body' in announcement:
             announcement_id = announcement['id']
