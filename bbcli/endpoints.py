@@ -86,7 +86,7 @@ def get_course_contents(course_id: str):
         click.echo(map)
 
 
-def get_children(session, worklist, url, acc, count: int = 0):
+def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
@@ -94,14 +94,10 @@ def get_children(session, worklist, url, acc, count: int = 0):
     else:
         node = worklist.pop()
         id = node.data['id']
-        if 'parentId' in node.data:
+        if is_root is False:
             old = f'{url}/children'
         else:
             old = f'{url}/{id}/children'
-        # if is_root is False:
-        #     old = f'{url}/children'
-        # else:
-        #     old = f'{url}/{id}/children'
         response = session.get(old, cookies=cli.cookies)
         if check_response(response) == False:
             return acc
@@ -185,20 +181,17 @@ def get_assignments(course_id: str, folder_id=None):
     else:
         if folder_id is not None:
             data = response.json()
-            # print(len(data))
             root = Node(data, True)
             worklist = [root]
-            res = get_children(session, worklist, url, [])
+            res = get_children(session, worklist, url, [], is_root = False)
             create_tree(root, res)
         else:
             data = response.json()['results']
             for root in data:
+                data = response.json()['results']
                 root = Node(root, True)
                 worklist = [root]
                 res = get_children(session, worklist, url, [])
-                # for r in res:
-                #     print()
-                #     print(r.data['title'])
                 create_tree(root, res)
     end = time.time()
 
