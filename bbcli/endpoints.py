@@ -5,12 +5,13 @@ import requests
 import bbcli.cli as cli
 import click
 import os
+from colorama import Fore, Style
 
 from anytree import Node as Nd, RenderTree
 
 
 from bbcli import check_response
-from bbcli.Node import Node
+from bbcli.entities.Node import Node
 
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
@@ -85,7 +86,7 @@ def get_course_contents(course_id: str):
         click.echo(map)
 
 
-def get_children(session, worklist, url, acc, count: int = 0):
+def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
@@ -93,7 +94,10 @@ def get_children(session, worklist, url, acc, count: int = 0):
     else:
         node = worklist.pop()
         id = node.data['id']
-        old = f'{url}/{id}/children'
+        if is_root is False:
+            old = f'{url}/children'
+        else:
+            old = f'{url}/{id}/children'
         response = session.get(old, cookies=cli.cookies)
         if check_response(response) == False:
             return acc
@@ -116,50 +120,79 @@ def create_tree(root, nodes):
     root_node = Nd(root.data['title'])
     parent = root_node
     parents.append(parent)
+    colors = dict()
+    folders = dict()
+    colors[root.data['title']] = True
+    folders[root.data['title']] = root.data['id']
 
     for i in range(len(nodes)):
-        if (nodes[i].children and nodes[i] not in parents):
+        # if (nodes[i].has_children and nodes[i] not in parents):
+        id = nodes[i].data['id']
+        title = nodes[i].data['title']
+        if (nodes[i].has_children):
             for parent in parents:
-                if (parent == nodes[i].parent.data['title']):
-                    node = Nd(nodes[i].data['title'], parent)
+                if (parent.name == nodes[i].parent.data['title']):
+                    node = Nd(title, parent)
+                    folders[title] = id
                     parents.append(node)
                     continue
 
-            node = Nd(nodes[i].data['title'], root_node)
+            node = Nd(title, root_node)
+            folders[title] = id
             parents.append(node)
 
-        elif (nodes[i].children):
-            for parent in parents:
-                if (nodes[i].parent.data['title'] == parent):
-                    node = Nd(node.data['title'], parent)
-        if (nodes[i].children is False):
+        # elif (nodes[i].has_children):
+        #     for parent in parents:
+        #         if (nodes[i].parent.data['title'] == parent):
+        #             node = Nd(node.data['title'], parent)
+        #             folders[title] == id 
+        # if (nodes[i].has_children is False):
+        else:
             for parent in parents:
                 if (parent.name == nodes[i].parent.data['title']):
-                    node = Nd(nodes[i].data['title'], parent)
+                    node = Nd(title, parent)
+                    folders[title] = ''
 
     for pre, fill, node in RenderTree(root_node):
-        print("%s%s" % (pre, node.name))
-
+        folder_id = folders[node.name]
+        if folder_id == '':
+            print("%s%s" % (pre, node.name))
+        else:
+            print(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
 
 @click.command(name='get-assignments')
 @click.argument('course_id', default='_27251_1')
-def get_assignments(course_id: str):
+@click.option('--folder-id')
+def get_assignments(course_id: str, folder_id=None):
     '''
-    Get the assignments
+    Get the assignments \n
+    Folders are blue and have an id \n
+    Files are white
     '''
     session = requests.Session()
-    url = f'{base_url}courses/{course_id}/contents'
+    if folder_id is not None:
+        url = f'{base_url}courses/{course_id}/contents/{folder_id}'
+    else:
+        url = f'{base_url}courses/{course_id}/contents'
     start = time.time()
     response = session.get(url, cookies=cli.cookies)
     if check_response(response) == False:
         return
     else:
-        data = response.json()['results']
-        for root in data:
-            root = Node(root, True)
+        if folder_id is not None:
+            data = response.json()
+            # print(len(data))
+            root = Node(data, True)
             worklist = [root]
-            res = get_children(session, worklist, url, [])
+            res = get_children(session, worklist, url, [], is_root = False)
             create_tree(root, res)
+        else:
+            data = response.json()['results']
+            for root in data:
+                root = Node(root, True)
+                worklist = [root]
+                res = get_children(session, worklist, url, [])
+                create_tree(root, res)
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')

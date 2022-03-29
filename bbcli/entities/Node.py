@@ -1,9 +1,8 @@
 class Node(object):
-	def __init__(self, data, children, parent=None):
+	def __init__(self, data, has_children, parent=None):
 		self.data = data
-		self.children = children
+		self.has_children = has_children #bool
 		self.parent = parent
-		self.children = children #bool
 		# if children is not None:
 		# 	for child in children:
 		# 		self.add_child(child)
