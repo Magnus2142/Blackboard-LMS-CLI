@@ -17,7 +17,6 @@ def entry_point():
     pass
 
 
-
 entry_point.add_command(get_user)
 entry_point.add_command(get_course_contents)
 entry_point.add_command(get_assignments)

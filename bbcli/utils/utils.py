@@ -1,4 +1,8 @@
 from datetime import datetime 
+from typing import Dict, List
+from requests import Session
+import html2text
+
 
 def check_valid_key(obj, key) -> bool:
 	# print("the keys are", obj.keys())
@@ -31,3 +35,16 @@ def check_valid_date(cookies) -> bool:
         return False
 
 
+def set_cookies(session: Session, cookies: List):
+	for cookie in cookies:
+    	 session.cookies.set(cookie['name'], cookie['value'])
+
+
+def set_headers(session: Session, headers: List):
+	for header in headers:
+		session.headers.update(header)
+
+
+def html_to_text(html_data: str):
+	to_text = html2text.HTML2Text()
+	return to_text.handle(html_data)
