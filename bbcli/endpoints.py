@@ -86,7 +86,13 @@ def get_course_contents(course_id: str):
         click.echo(map)
 
 
-def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
+content_types = dict()
+content_types['assignments'] = 'resource/x-bb-assignment'
+content_types['blankpage'] = 'resource/x-bb-blankpage'
+content_types['folder'] = 'resource/x-bb-folder' 
+
+
+def get_children(session, worklist, url, acc, count: int = 0):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
@@ -94,10 +100,8 @@ def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
     else:
         node = worklist.pop()
         id = node.data['id']
-        if is_root is False:
-            old = f'{url}/children'
-        else:
-            old = f'{url}/{id}/children'
+        tmp = url[:url.index('contents') + len('contents')]
+        old = f'{tmp}/{id}/children'
         response = session.get(old, cookies=cli.cookies)
         if check_response(response) == False:
             return acc
@@ -105,7 +109,8 @@ def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
             children = response.json()['results']
             for i in range(len(children)):
                 # TODO: Add list of children instead of bool
-                if key in children[i] and children[i][key] == True:
+                # if key in children[i] and children[i][key] == True:
+                if children[i]['contentHandler'] == content_types['folder']:
                     child = Node(children[i], True, node)
                     worklist.append(child)
                     acc.append(child)
@@ -113,6 +118,27 @@ def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
                     child = Node(children[i], False, node)
                     acc.append(child)
             return get_children(session, worklist, url, acc)
+
+def traverse_assignments(session, worklist, url, acc, count: int = 0):
+    if len(worklist) == 0:
+        return acc
+    else:
+        node = worklist.pop()
+        id = node.data['id']
+        tmp = url[:url.index('contents') + len('contents')]
+        old = f'{tmp}/{id}/children'
+        response = session.get(old, cookies=cli.cookies)
+        if check_response(response) == False:
+            return acc
+        else:
+            children = response.json()['results']
+            for i in range(len(children)):
+                if children[i]['contentHandler'] == content_types['assignments']:
+                    acc.append(children[i])
+                elif children[i]['contentHandler'] == content_types['folder']:
+                    worklist.append(children[i])
+            return get_children(session, worklist, url, acc)
+
 
 
 def create_tree(root, nodes):
@@ -160,12 +186,12 @@ def create_tree(root, nodes):
         else:
             print(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
 
-@click.command(name='get-assignments')
+@click.command(name='get-contents')
 @click.argument('course_id', default='_27251_1')
 @click.option('--folder-id')
-def get_assignments(course_id: str, folder_id=None):
+def get_contents(course_id: str, folder_id=None):
     '''
-    Get the assignments \n
+    Get the contents\n
     Folders are blue and have an id \n
     Files are white
     '''
@@ -183,7 +209,7 @@ def get_assignments(course_id: str, folder_id=None):
             data = response.json()
             root = Node(data, True)
             worklist = [root]
-            res = get_children(session, worklist, url, [], is_root = False)
+            res = get_children(session, worklist, url, [])
             create_tree(root, res)
         else:
             data = response.json()['results']
@@ -196,3 +222,25 @@ def get_assignments(course_id: str, folder_id=None):
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
+
+@click.command(name='get-assignments')
+@click.argument('course-id', default='_27251_1')
+def get_assignments(course_id):
+    '''
+    Get the assignments
+    '''
+    session = requests.Session()
+    url = f'{base_url}courses/{course_id}/contents'
+    response = session.get(url, cookies = cli.cookies)
+    if check_response(response) == False:
+        print(url)
+        return
+    else:
+        data = response.json()['results']
+        res = []
+        for root in data:
+            root = Node(root, True)
+            worklist = [root]
+            res.append(traverse_assignments(session, worklist, url, []))
+        print(res)
+
