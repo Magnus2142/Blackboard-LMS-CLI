@@ -12,6 +12,9 @@ from anytree import Node as Nd, RenderTree
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
+from bbcli.utils.URL_builder import URLBuilder
+
+url_builder = URLBuilder()
 
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
@@ -109,8 +112,8 @@ def get_children(session, worklist, url, acc, count: int = 0):
             children = response.json()['results']
             for i in range(len(children)):
                 # TODO: Add list of children instead of bool
-                # if key in children[i] and children[i][key] == True:
-                if children[i]['contentHandler'] == content_types['folder']:
+                if key in children[i] and children[i][key] == True:
+                # if children[i]['contentHandler'] == content_types['folder']:
                     child = Node(children[i], True, node)
                     worklist.append(child)
                     acc.append(child)
