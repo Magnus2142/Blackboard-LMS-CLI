@@ -13,8 +13,18 @@ import click
 
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
-from bbcli.commands.contents import list_contents, create_content
+from bbcli.commands.contents import list_contents, create_content, create_document, create_file
 from bbcli.services.authorization_service import login
+
+load_dotenv()
+cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
+headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
+
+#----- AUTHORIZATION MODULE -----#
+# @app.command(name='login', help='Authorize the user.')
+def authorize_user():
+    if cookies['BbRouter'] == None or check_valid_date(cookies) == False:
+        login()
 
 def initiate_session():
     bb_cookie = {
@@ -26,6 +36,7 @@ def initiate_session():
     session = requests.Session()
     set_cookies(session, [bb_cookie])
     set_headers(session, [xsrf])
+    session.headers.update({'Content-Type': 'application/json'})
     return session
     
 
@@ -83,14 +94,20 @@ def contents(ctx):
     pass
 
 contents.add_command(list_contents)
-contents.add_command(create_content)
+# contents.add_command(upload_file)
 
-load_dotenv()
-cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
-headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
+"""
+CONTENTS CREATE COMMANDS ENTRY POINT
+"""
 
-#----- AUTHORIZATION MODULE -----#
-# @app.command(name='login', help='Authorize the user.')
-def authorize_user():
-    if check_valid_date(cookies) == False:
-        login()
+@contents.group()
+@click.pass_context
+def create(ctx):
+    """
+    Commands for creating different types of content types in blackboard
+    """
+    pass
+
+# create.add_command(create_content)
+create.add_command(create_document)
+create.add_command(create_file)

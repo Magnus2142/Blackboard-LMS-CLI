@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict, List
 from requests import Session
 import html2text
+import click
 
 
 def check_valid_key(obj, key) -> bool:
@@ -48,3 +49,10 @@ def set_headers(session: Session, headers: List):
 def html_to_text(html_data: str):
 	to_text = html2text.HTML2Text()
 	return to_text.handle(html_data)
+
+def input_body():
+	MARKER = '# Everything below is ignored\n'
+	body = click.edit('\n\n' + MARKER)
+	if body is not None:
+		body = body.split(MARKER, 1)[0].rstrip('\n')
+	return body

@@ -3,7 +3,7 @@ from subprocess import call
 from typing import Dict, Any
 import requests
 from bbcli.services.courses_service import list_courses
-from bbcli.utils.utils import set_cookies
+from bbcli.utils.utils import input_body, set_cookies
 import click
 
 from bbcli.utils.URL_builder import URLBuilder
@@ -43,10 +43,7 @@ def list_announcement(session: requests.Session, course_id: str, announcement_id
 
 # TODO: Add compatibility for flags and options to make a more detailed announcement
 def create_announcement(session: requests.Session, course_id: str, title: str):
-    MARKER = '# Everything below is ignored\n'
-    body = click.edit('\n\n' + MARKER)
-    if body is not None:
-        body = body.split(MARKER, 1)[0].rstrip('\n')
+    body = input_body()
     
     data = {
         'title': title,
@@ -54,7 +51,6 @@ def create_announcement(session: requests.Session, course_id: str, title: str):
     }
 
     data = json.dumps(data)
-    session.headers.update({'Content-Type': 'application/json'})
 
     url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().create()
     response = session.post(url, data=data)
@@ -82,8 +78,6 @@ def update_announcement(session: requests.Session, course_id: str, announcement_
     }
     announcement = json.dumps(editable_data, indent=2)
     new_data = click.edit(announcement + '\n\n' + MARKER)
-
-    session.headers.update({'Content-Type': 'application/json'})
 
     url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().add_id(announcement_id).create()
     response = session.patch(url, data=new_data)

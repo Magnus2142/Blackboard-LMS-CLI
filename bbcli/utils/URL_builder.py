@@ -60,6 +60,10 @@ class Builder(ABC):
         pass 
 
     @abstractmethod
+    def add_uploads(self) -> Builder:
+        pass
+
+    @abstractmethod
     def add_id(self, id: str, id_type: str = None) -> Builder:
         pass
 
@@ -74,7 +78,6 @@ class URLBuilder(Builder):
 
     @property
     def product(self) -> URL:
-
         product = self._product
         self.reset()
         return product
@@ -119,6 +122,10 @@ class URLBuilder(Builder):
 
     def add_attachments(self) -> Builder:
         self._product.add('/attachments')
+        return self
+    
+    def add_uploads(self) -> Builder:
+        self._product.add('/uploads')
         return self
 
     def add_id(self, id:str, id_type:str=None) -> URLBuilder:
