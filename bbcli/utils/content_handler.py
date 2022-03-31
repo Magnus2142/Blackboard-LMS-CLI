@@ -1,0 +1,10 @@
+content_handler = dict()
+content_handler['document'] = 'resource/x-bb-document'
+content_handler['externallink'] = 'resource/x-bb-externallink'
+content_handler['folder'] = 'resource/x-bb-folder'
+content_handler['courselinnk'] = 'resource/x-bb-courselink' 
+content_handler['forumlink'] = 'resource/x-bb-forumlink'
+content_handler['blti-link'] = 'resource/x-bb-blti-link'
+content_handler['file'] = 'resource/x-bb-file'
+content_handler['asmt-test-link'] = 'resource/x-bb-asmt-test-link'
+content_handler['assignment']  = 'resource/x-bb-assignment'

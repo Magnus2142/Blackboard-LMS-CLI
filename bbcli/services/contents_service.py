@@ -8,20 +8,62 @@ import requests
 from bbcli.services.courses_service import list_courses
 from bbcli.utils.URL_builder import URLBuilder
 
+from bbcli.utils.utils import check_response
+
 url_builder = URLBuilder()
 
 # User gets a tree structure view of the courses content
 # where each content is listed something like this: _030303_1 Lectures Folder
-def list_course_content(cookies: Dict, course_id: str):
-    print('Getting course content!')
+def list_contents(session: requests.Session, course_id, folder_id):
+    if folder_id is not None:
+        url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(folder_id).create()
+    else:
+        url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
+    response = session.get(url)
+    if check_response(response) is False:
+        return
+    else:
+        return response
 
+# get the children of a specific folder
+def get_children(session: requests.Session, course_id: str, node_id: str):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).add_children().create()
+    return session.get(url)
 
 # If it is a folder, list it like a tree structure view like mentioned above.
 # If it is a document, download and open the document maybe?
 # Find all types of content and have an appropriate response for them. This
 # should maybe be handled in the view...
-def get_content(cookies: Dict, course_id: str, content_id: str):
-    print('Getting content by its ID.')
+def get_content(session: requests.Session, course_id: str, node_id: str):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).create()
+    print(url)
+    return session.get(url)
+
+def get_file(session: requests.Session, course_id: str, node_id: str):
+    # https://ntnu.blackboard.com/learn/api/public/v1/courses/_27251_1/contents/_1685326_1
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).add_attachments()
+    current = url.create()
+    response = session.get(current)
+    data = response.json()
+    if check_response(response) == False:
+        return
+    else:
+        print("kommer her")
+        id = data['results'][0]['id']
+        # url = url.add_id(id).add_download().create()
+        url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).add_attachments().add_id(id).add_download().create()
+        print(url)
+        response = session.get(url)
+        print(response.headers)
+
+        import urllib.request
+        with urllib.request.urlopen(url) as f:
+            html = f.read().decode('utf-8')
+            print(html)
+
+    return response
+
+
 
 
 # List all contents of type assignment, should be executed if a flag for example like --content-type assignment or smth is used

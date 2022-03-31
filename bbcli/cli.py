@@ -5,8 +5,6 @@ import requests
 from bbcli.utils.utils import set_cookies, set_headers
 # import typer
 from bbcli import __app_name__, __version__ 
-from bbcli.endpoints import get_user, get_course_contents, get_contents
-# from bbcli.endpoints import get_user, get_course_contents, get_assignments
 import os
 from dotenv import load_dotenv
 from bbcli import check_valid_date, check_response
@@ -14,7 +12,7 @@ import click
 
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
-from bbcli.commands.contents import list_contents, create_content
+from bbcli.commands.contents import list_contents, get_content
 from bbcli.services.authorization_service import login
 
 def initiate_session():
@@ -83,12 +81,8 @@ def contents(ctx):
     """
     pass
 
-entry_point.add_command(get_user)
-entry_point.add_command(get_course_contents)
-entry_point.add_command(get_contents)
-
 contents.add_command(list_contents)
-contents.add_command(create_content)
+contents.add_command(get_content)
 
 load_dotenv()
 cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
