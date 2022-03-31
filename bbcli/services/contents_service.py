@@ -56,14 +56,7 @@ def get_file(session: requests.Session, course_id: str, node_id: str):
         response = session.get(url)
         print(response.headers)
 
-        import urllib.request
-        with urllib.request.urlopen(url) as f:
-            html = f.read().decode('utf-8')
-            print(html)
-
     return response
-
-
 
 
 # List all contents of type assignment, should be executed if a flag for example like --content-type assignment or smth is used
