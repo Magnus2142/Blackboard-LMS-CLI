@@ -3,7 +3,7 @@ from typing import Optional
 from pkg_resources import EntryPoint
 # import typer
 from bbcli import __app_name__, __version__ 
-from bbcli.endpoints import get_user, get_course_contents, get_assignments, get_contents
+from bbcli.endpoints import get_user, get_course_contents, get_contents
 import os
 from dotenv import load_dotenv
 from bbcli import check_valid_date, check_response
@@ -19,7 +19,6 @@ def entry_point():
 
 entry_point.add_command(get_user)
 entry_point.add_command(get_course_contents)
-entry_point.add_command(get_assignments)
 entry_point.add_command(get_contents)
 
 load_dotenv()
