@@ -51,7 +51,7 @@ def list_assignments(cookies: Dict, course_id: str):
 # NB: Alle options sende som values i enkle fields i bodyen
 
 # Alle disse blir sendt til post content endpoint. title, body er samme. Options varirerer. Største ulikheten
-# er i content-handler. None kan også ha attachments.
+# er i content-handler. Noen kan også ha attachments.
 
 # Tror svaret er en ContentBuilder
 
@@ -105,23 +105,66 @@ def create_file(session: requests.Session, course_id: str, parent_id: str, title
 # Title, URL, body, eventuelt attachments?, Weblink options: open in new window?, Standard options: as above
 
 
-def create_externallink():
-    pass
+def create_externallink(session: requests.Session, course_id: str, parent_id: str, title: str, url: str, web_link_options: WeblinkOptions, standard_options: StandardOptions):
+
+    data = content_builder\
+        .add_parent_id(parent_id)\
+        .add_title(title)\
+        .add_standard_options(standard_options)\
+        .add_weblink_options(web_link_options)\
+        .add_content_handler_externallink(url)\
+        .create()
+    
+    data = json.dumps(data)
+    url = generate_create_content_url(course_id, parent_id)
+    response = session.post(url, data=data)
+    return response.text
 
 # Title, body, Standard options: as above
 
+def create_folder(session: requests.Session, course_id: str, parent_id: str, title: str, is_bb_page:bool, standard_options: StandardOptions):
 
-def create_folder():
-    pass
+    data_body = input_body()
+    
+    data = content_builder\
+        .add_title(title)\
+        .add_body(data_body)\
+        .add_standard_options(standard_options)\
+        .add_content_handler_folder(is_bb_page=is_bb_page)
+    
+    if parent_id:
+        url = generate_create_content_url(course_id, parent_id)
+        data.add_parent_id(parent_id)
+    else:
+        url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
+    data = data.create()
+
+    data = json.dumps(data)
+    response = session.post(url, data=data)
+    return response.text
+
 
 # Title, body, location(?), targetId content, Standard Options: as above
 
+# FUNKER IKKE PGA targetType
+def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, target_id: str, standard_options: StandardOptions):
 
-def create_courselink():
-    pass
+    data_body = input_body()
+
+    data = content_builder\
+        .add_title(title)\
+        .add_body(data_body)\
+        .add_standard_options(standard_options)\
+        .add_content_handler_courselink(target_id=target_id)\
+        .create()
+    
+    data = json.dumps(data)
+    url = generate_create_content_url(course_id, parent_id)
+
+    response = session.post(url, data=data)
+    return response.text
 
 # Se egen metode i BBL REST API
-
 
 def create_assignment():
     pass

@@ -51,7 +51,7 @@ def html_to_text(html_data: str):
 	return to_text.handle(html_data)
 
 def input_body():
-	MARKER = '# Everything below is ignored\n'
+	MARKER = '# Everything below is ignored. Leave blank if you want empty body.\n'
 	body = click.edit('\n\n' + MARKER)
 	if body is not None:
 		body = body.split(MARKER, 1)[0].rstrip('\n')

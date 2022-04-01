@@ -68,7 +68,7 @@ def delete_announcement(session: requests.Session, course_id: str, announcement_
 def update_announcement(session: requests.Session, course_id: str, announcement_id: str):
 
     announcement = list_announcement(session=session, course_id=course_id, announcement_id=announcement_id)
-    MARKER = '# Everything below is ignored\n'
+    MARKER = '# Everything below is ignored.\n'
     editable_data = {
         'title': announcement['title'],
         'body': announcement['body'],

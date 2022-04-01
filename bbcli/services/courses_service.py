@@ -51,11 +51,14 @@ def list_all_courses(session: requests.Session, user_name: str) -> Any:
 def list_course(session: requests.Session, course_id:str) -> Any:
     url = url_builder.base_v3().add_courses().add_id(course_id).create()
     response = session.get(url)
+    response.raise_for_status()
+        
+
     return json.loads(response.text)
 
-def list_favorite_courses(session: requests.Session, user_name: str) -> Any:
-    return "Blackboard rest api do not have an option for this yet"
-    # response = requests.get('https://ntnu.blackboard.com/learn/api/public/v1/users/userName:{}/courses'.format(user_name), cookies=cookies)
+# def list_favorite_courses(session: requests.Session, user_name: str) -> Any:
+#     return "Blackboard rest api do not have an option for this yet"
+#     # response = requests.get('https://ntnu.blackboard.com/learn/api/public/v1/users/userName:{}/courses'.format(user_name), cookies=cookies)
 
 
 """

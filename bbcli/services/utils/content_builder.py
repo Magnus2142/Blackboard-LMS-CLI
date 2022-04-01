@@ -176,9 +176,9 @@ class ContentBuilder(Builder):
     def add_content_handler_courselink(self, target_id: str, target_type: str = 'Unset') -> Builder:
         self._product.add({
             'contentHandler' : {
-                'id': 'resource/x-bb-folder',
+                'id': 'resource/x-bb-courselink',
                 'targetId': target_id,
-                'targeType': target_type
+                'targetType': target_type
             }
         })
         return self
