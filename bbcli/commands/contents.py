@@ -36,12 +36,8 @@ def list_contents(ctx, course_id: str, folder_id=None):
         # root = Node(folder, True)
         root = Node2(folder)
         worklist = [root]
-        res = get_children2(ctx, course_id, worklist, [])
-        # for r in res:
-        #     if r.parent is not None:
-        #         print(r.parent['title'])
+        get_children2(ctx, course_id, worklist)
         roots.append(root)
-        # contents_view.create_tree(root, res)
     
     for r in roots:
         print(r)
@@ -109,14 +105,12 @@ def get_children(ctx, course_id, worklist, acc, count: int = 0):
             return get_children(ctx, course_id, worklist, acc)
 
 
-def get_children2(ctx, course_id, worklist, acc, count: int = 0):
-    count = count + 1
+def get_children2(ctx, course_id, worklist):
     key = 'hasChildren'
     if len(worklist) == 0:
-        return acc
+        return
     else:
         node = worklist.pop(0)
-        # print(node.data['title'])
         node_id = node.data['id']
         response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
@@ -126,17 +120,11 @@ def get_children2(ctx, course_id, worklist, acc, count: int = 0):
             children = response.json()['results']
             for child in children:
                 if key in child and child[key] == True:
-                    # child = Node(children[i], True, node)
                     child_node = Node2(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    acc.append(child_node)
                 else:
-                    # child = Node(children[i], False, node)
                     child_node = Node2(child)
                     node.add_child(child_node)
-                    acc.append(child_node)
             
-            # for w in worklist:
-                # print(w.data['title'])
-            return get_children2(ctx, course_id, worklist, acc)
+            return get_children2(ctx, course_id, worklist)
