@@ -5,6 +5,8 @@ from bbcli.views import contents_view
 import time
 import click
 
+from anytree import Node as Nd, RenderTree
+
 from bbcli import check_response
 from bbcli.entities.Node import Node
 from bbcli.entities.Node2 import Node2
@@ -17,7 +19,7 @@ base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
 @click.command(name='list')
 @click.argument('course_id', default='_27251_1')
-@click.option('--folder-id')
+# @click.option('--folder-id')
 @click.pass_context
 def list_contents(ctx, course_id: str, folder_id=None):
     '''
@@ -26,23 +28,33 @@ def list_contents(ctx, course_id: str, folder_id=None):
     Files are white
     '''
     start = time.time()
+
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id, folder_id)
-    print(response)
-    if folder_id is not None:
-        data = response.json()
-        root = Node(data, True)
+    folders = response.json()['results']
+    roots = []
+    for folder in folders:
+        # root = Node(folder, True)
+        root = Node2(folder)
         worklist = [root]
-        res = get_children(ctx, course_id, worklist, [])
-        contents_view.create_tree(root, res)
-    else:
-        folders = response.json()['results']
-        root = None
-        for folder in folders:
-            root = Node(folder, True)
-            worklist = [root]
-            res = get_children(ctx, course_id, worklist, [])
-            contents_view.create_tree(root, res)
+        res = get_children2(ctx, course_id, worklist, [])
+        # for r in res:
+        #     if r.parent is not None:
+        #         print(r.parent['title'])
+        roots.append(root)
+        # contents_view.create_tree(root, res)
+    
+    for r in roots:
+        print(r)
+        # for pre, fill, node in RenderTree(r):
+        #     click.echo("%s%s" % (pre, node.name))
+
        
+    # for pre, fill, node in RenderTree(root_node):
+    #     folder_id = folders[node.name]
+    #     if folder_id == '':
+    #         click.echo("%s%s" % (pre, node.name))
+    #     else:
+    #         click.echo(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
@@ -59,6 +71,11 @@ def get_content(ctx, course_id: str, node_id: str):
     elif data['contentHandler']['id'] == content_handler['file'] or data['contentHandler']['id'] == content_handler['document'] or data['contentHandler']['id'] == content_handler['assignment']:
         click.confirm("This is a .docx file, do you want to download it?", abort=True)
         response = contents_service.get_file(ctx.obj['SESSION'], course_id, node_id)
+    elif data['contentHandler']['id'] == content_handler['folder']:
+        root = Node(data, True)
+        worklist = [root]
+        res = get_children(ctx, course_id, worklist, [])
+        contents_view.create_tree(root, res)
    
 
 @click.command(name='create')
@@ -90,3 +107,36 @@ def get_children(ctx, course_id, worklist, acc, count: int = 0):
                     child = Node(children[i], False, node)
                     acc.append(child)
             return get_children(ctx, course_id, worklist, acc)
+
+
+def get_children2(ctx, course_id, worklist, acc, count: int = 0):
+    count = count + 1
+    key = 'hasChildren'
+    if len(worklist) == 0:
+        return acc
+    else:
+        node = worklist.pop(0)
+        # print(node.data['title'])
+        node_id = node.data['id']
+        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
+        if check_response(response) == False:
+            # return get_children(ctx, course_id, worklist, acc)
+            pass
+        else:
+            children = response.json()['results']
+            for child in children:
+                if key in child and child[key] == True:
+                    # child = Node(children[i], True, node)
+                    child_node = Node2(child)
+                    node.add_child(child_node)
+                    worklist.append(child_node)
+                    acc.append(child_node)
+                else:
+                    # child = Node(children[i], False, node)
+                    child_node = Node2(child)
+                    node.add_child(child_node)
+                    acc.append(child_node)
+            
+            # for w in worklist:
+                # print(w.data['title'])
+            return get_children2(ctx, course_id, worklist, acc)

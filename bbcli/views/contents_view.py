@@ -2,6 +2,10 @@ from anytree import Node as Nd, RenderTree
 from colorama import Fore, Style
 from bbcli.utils.utils import html_to_text
 import click
+import sys, tempfile, os
+from subprocess import call
+
+
 
 def list_tree(root, contents):
     for content in contents:
@@ -46,9 +50,6 @@ def create_tree(root, nodes):
             click.echo("%s%s" % (pre, node.name))
         else:
             click.echo(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
-
-import sys, tempfile, os
-from subprocess import call
 
 def open_vim(data):
     str += data['title'] + '\n'
