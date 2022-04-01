@@ -40,17 +40,12 @@ def list_contents(ctx, course_id: str, folder_id=None):
         roots.append(root)
     
     for r in roots:
-        print(r)
-        # for pre, fill, node in RenderTree(r):
+        # print(r)
+        # root = Nd(r.data['title'])
+        root = r.level_order(r)
+        # for pre, fill, node in RenderTree(root):
         #     click.echo("%s%s" % (pre, node.name))
 
-       
-    # for pre, fill, node in RenderTree(root_node):
-    #     folder_id = folders[node.name]
-    #     if folder_id == '':
-    #         click.echo("%s%s" % (pre, node.name))
-    #     else:
-    #         click.echo(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
