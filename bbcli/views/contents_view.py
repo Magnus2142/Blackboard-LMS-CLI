@@ -7,13 +7,13 @@ from subprocess import call
 
 
 
-def list_tree(root, contents):
-    for content in contents:
-        parent = Nd(content.parent.data['title'])
-        this = Nd(content.data['title'], parent)
-    
-    for pre, fill, node in RenderTree(root_node):
-        print("%s%s" % (pre, node.name))
+def list_tree(colors, root):
+    for pre, fill, node in RenderTree(root):
+        folder_id = colors[node.name]
+        if folder_id == '':
+            click.echo("%s%s" % (pre, node.name))
+        else:
+            click.echo(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
 
 def create_tree(root, nodes):
     parents = []

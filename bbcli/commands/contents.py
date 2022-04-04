@@ -1,15 +1,11 @@
 import click
 from bbcli.services import contents_service
-# from bbcli.views.contents_view import list_tree, create_tree, get_content
 from bbcli.views import contents_view
 import time
 import click
 
-from anytree import Node as Nd, RenderTree, find_by_attr
-
 from bbcli import check_response
 from bbcli.entities.Node import Node
-from bbcli.entities.Node2 import Node2
 from bbcli.utils.URL_builder import URLBuilder
 from bbcli.utils.content_handler import content_handler
 
@@ -33,36 +29,15 @@ def list_contents(ctx, course_id: str, folder_id=None):
     folders = response.json()['results']
     roots = []
     for folder in folders:
-        # root = Node(folder, True)
-        root = Node2(folder)
+        root = Node(folder)
         worklist = [root]
-        get_children2(ctx, course_id, worklist)
+        get_children(ctx, course_id, worklist)
         roots.append(root)
     
 
     for r in roots:
-        # print(r)
-
-        # nodes = r.preorder(r)
-        # root= Nd(nodes[0].data['title'])
-        # curr = root
-        # prev = root 
-        # for i in range(1, len(nodes)):
-        #     node = nodes[i]
-        #     if len(node.children) > 0:
-        #         # prev = curr
-        #         nd = Nd(node.data['title'], prev)
-        #         curr = nd
-        #     else:
-        #         nd = Nd(node.data['title'], curr)
-
-        # for node in nodes:
-            # print(node.data['title'])
-
-        root = r.preorder(r)
-
-        for pre, fill, node in RenderTree(root):
-            click.echo("%s%s" % (pre, node.name))
+        colors, root = r.preorder(r)
+        contents_view.list_tree(colors, root)
 
     end = time.time()
 
@@ -94,31 +69,7 @@ def get_content(ctx, course_id: str, node_id: str):
 def create_content(ctx, course_id: str, content_id: str):
     contents_service.test_create_assignment(ctx.obj['SESSION'], course_id, content_id)
 
-def get_children(ctx, course_id, worklist, acc, count: int = 0):
-    count = count + 1
-    key = 'hasChildren'
-    if len(worklist) == 0:
-        return acc 
-    else:
-        node = worklist.pop()
-        node_id = node.data['id']
-        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
-        if check_response(response) == False:
-            return acc
-        else:
-            children = response.json()['results']
-            for i in range(len(children)):
-                if key in children[i] and children[i][key] == True:
-                    child = Node(children[i], True, node)
-                    worklist.append(child)
-                    acc.append(child)
-                else:
-                    child = Node(children[i], False, node)
-                    acc.append(child)
-            return get_children(ctx, course_id, worklist, acc)
-
-
-def get_children2(ctx, course_id, worklist):
+def get_children(ctx, course_id, worklist):
     key = 'hasChildren'
     if len(worklist) == 0:
         return
@@ -133,11 +84,11 @@ def get_children2(ctx, course_id, worklist):
             children = response.json()['results']
             for child in children:
                 if key in child and child[key] == True:
-                    child_node = Node2(child)
+                    child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
                 else:
-                    child_node = Node2(child)
+                    child_node = Node(child)
                     node.add_child(child_node)
             
-            return get_children2(ctx, course_id, worklist)
+            return get_children(ctx, course_id, worklist)

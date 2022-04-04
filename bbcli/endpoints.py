@@ -12,7 +12,7 @@ from anytree import Node as Nd, RenderTree
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
-from bbcli.entities.Node2 import Node2
+from bbcli.entities.Node import Node2
 from bbcli.utils.URL_builder import URLBuilder
 
 url_builder = URLBuilder()
