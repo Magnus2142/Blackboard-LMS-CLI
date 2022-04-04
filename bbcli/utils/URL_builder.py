@@ -63,6 +63,14 @@ class Builder(ABC):
     def add_id(self, id: str, id_type: str = None) -> Builder:
         pass
 
+    @abstractmethod
+    def add_gradebook(self) -> Builder:
+        pass
+
+    @abstractmethod
+    def add_columns(self) -> Builder:
+        pass
+
 
 class URL_builder(Builder):
 
@@ -126,6 +134,14 @@ class URL_builder(Builder):
             self._product.add(f'/{id_type}:{id}')
         else:
             self._product.add(f'/{id}')
+        return self
+
+    def add_gradebook(self) -> Builder:
+        self._product.add('/gradebook')
+        return self
+        
+    def add_columns(self) -> Builder:
+        self._product.add('/columns')
         return self
 
     def create(self) -> str:
