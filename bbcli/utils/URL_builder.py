@@ -64,7 +64,7 @@ class Builder(ABC):
         pass
 
 
-class URLBuilder(Builder):
+class URL_builder(Builder):
 
     def __init__(self) -> None:
         self.reset()
@@ -81,35 +81,35 @@ class URLBuilder(Builder):
 
 
 
-    def base_v1(self) -> URLBuilder:
+    def base_v1(self) -> URL_builder:
         self._product.add(f'{DOMAIN}{API_BASE}/v1')
         return self
     
-    def base_v2(self) -> URLBuilder:
+    def base_v2(self) -> URL_builder:
         self._product.add(f'{DOMAIN}{API_BASE}/v2')
         return self
 
-    def base_v3(self) -> URLBuilder:
+    def base_v3(self) -> URL_builder:
         self._product.add(f'{DOMAIN}{API_BASE}/v3')
         return self
 
-    def add_courses(self) -> URLBuilder:
+    def add_courses(self) -> URL_builder:
         self._product.add('/courses')
         return self
 
-    def add_users(self) -> URLBuilder:
+    def add_users(self) -> URL_builder:
         self._product.add('/users')
         return self
     
-    def add_announcements(self) -> URLBuilder:
+    def add_announcements(self) -> URL_builder:
         self._product.add('/announcements')
         return self
 
-    def add_contents(self) -> URLBuilder:
+    def add_contents(self) -> URL_builder:
         self._product.add('/contents')
         return self
 
-    def add_terms(self) -> URLBuilder:
+    def add_terms(self) -> URL_builder:
         self._product.add('/terms')
         return self
 
@@ -121,7 +121,7 @@ class URLBuilder(Builder):
         self._product.add('/attachments')
         return self
 
-    def add_id(self, id:str, id_type:str=None) -> URLBuilder:
+    def add_id(self, id:str, id_type:str=None) -> URL_builder:
         if id_type:
             self._product.add(f'/{id_type}:{id}')
         else:

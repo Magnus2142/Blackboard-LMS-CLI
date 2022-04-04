@@ -3,6 +3,7 @@ import click
 
 # ERROR HANDLER SHOULD BE USED IN VIEW??
 
+
 def HTTP_exception_handler(func):
     def inner_function(*args, **kwargs):
         try:
@@ -10,4 +11,4 @@ def HTTP_exception_handler(func):
         except requests.exceptions.HTTPError as err:
             click.echo(err)
             click.Abort()
-    return inner_function     
+    return inner_function

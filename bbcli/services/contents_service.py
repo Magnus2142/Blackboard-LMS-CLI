@@ -6,9 +6,9 @@ from tarfile import ENCODING
 from typing import Dict, Any
 import requests
 from bbcli.services.courses_service import list_courses
-from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.URL_builder import URL_builder
 
-url_builder = URLBuilder()
+url_builder = URL_builder()
 
 # User gets a tree structure view of the courses content
 # where each content is listed something like this: _030303_1 Lectures Folder

@@ -3,9 +3,9 @@ from typing import Dict, Any, List
 import requests
 from datetime import date
 
-from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.URL_builder import URL_builder
 
-url_builder = URLBuilder()
+url_builder = URL_builder()
 
 
 def list_courses(session: requests.Session, user_name: str) -> Any:
