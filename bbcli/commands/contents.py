@@ -2,10 +2,21 @@ from datetime import datetime
 import click
 from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services import contents_service
+from bbcli.views import contents_view
+import time
+import click
+
+from bbcli import check_response
+from bbcli.entities.Node import Node
+from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.content_handler import content_handler
+
+url_builder = URLBuilder()
+
+base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
+
 from bbcli.utils.error_handler import exception_handler
 from bbcli.utils.utils import format_date
-from bbcli.views import content_view
-import os
 
 def standard_options(function):
     function = click.option('-h', '--hide-content', is_flag=True, help='Hide contents for students')(function)
@@ -31,24 +42,55 @@ def web_link_options(function):
     return function
 
 
-#, help='List a spesific course with the corresponding id'
 @click.command(name='list')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=False, type=str)
-# @click.option('-a', '--all/--no-all', 'show_all', default=False, help='Lists all courses you have ever been signed up for')
+@click.argument('course_id', default='_27251_1')
+# @click.option('--folder-id')
 @click.pass_context
 @exception_handler
-def list_contents(ctx, course_id: str=None, content_id: str=None):
-    """
-    This command lists contents of a course.
-    """
-    response = None
+def list_contents(ctx, course_id: str, folder_id=None):
+    '''
+    Get the contents\n
+    Folders are blue and have an id \n
+    Files are white
+    '''
+    start = time.time()
 
-    if content_id:
-        print('GEtting spesific content from a course')
-    else:
-        print('Printing content tree from a course, course', course_id)
+    response = contents_service.list_contents(ctx.obj['SESSION'], course_id, folder_id)
+    folders = response.json()['results']
+    roots = []
+    for folder in folders:
+        root = Node(folder)
+        worklist = [root]
+        get_children(ctx, course_id, worklist)
+        roots.append(root)
+    
 
+    for r in roots:
+        colors, root = r.preorder(r)
+        contents_view.list_tree(colors, root)
+
+    end = time.time()
+
+    print(f'\ndownload time: {end - start} seconds')
+
+@click.command(name='get')
+@click.argument('course_id', required=True, type=str)
+@click.argument('node_id', required=True, type=str)
+@click.pass_context
+def get_content(ctx, course_id: str, node_id: str):
+    response = contents_service.get_content(ctx.obj['SESSION'], course_id, node_id)
+    data = response.json()
+    if data['contentHandler']['id'] == content_handler['document']:
+        contents_view.open_vim()
+    elif data['contentHandler']['id'] == content_handler['file'] or data['contentHandler']['id'] == content_handler['document'] or data['contentHandler']['id'] == content_handler['assignment']:
+        click.confirm("This is a .docx file, do you want to download it?", abort=True)
+        response = contents_service.get_file(ctx.obj['SESSION'], course_id, node_id)
+    elif data['contentHandler']['id'] == content_handler['folder']:
+        root = Node(data, True)
+        worklist = [root]
+        res = get_children(ctx, course_id, worklist, [])
+        contents_view.create_tree(root, res)
+   
 
 @click.command(name='attachment')
 @click.argument('course_id', required=True, type=str)
@@ -104,8 +146,6 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
     response = contents_service.create_file(ctx.obj['SESSION'], course_id, parent_id, title, file_path, file_options, standard_options)
     click.echo(response)
     
-
-
 @click.command(name='web-link')
 @click.argument('course_id', required=True, type=str)
 @click.argument('parent_id', required=True, type=str)
@@ -114,6 +154,34 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 @standard_options
 @web_link_options
 @click.pass_context
+def create_content(ctx, course_id: str, content_id: str):
+    contents_service.test_create_assignment(ctx.obj['SESSION'], course_id, content_id)
+
+def get_children(ctx, course_id, worklist):
+    key = 'hasChildren'
+    if len(worklist) == 0:
+        return
+    else:
+        node = worklist.pop(0)
+        node_id = node.data['id']
+        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
+        if check_response(response) == False:
+            # return get_children(ctx, course_id, worklist, acc)
+            pass
+        else:
+            children = response.json()['results']
+            for child in children:
+                if key in child and child[key] == True:
+                    child_node = Node(child)
+                    node.add_child(child_node)
+                    worklist.append(child_node)
+                else:
+                    child_node = Node(child)
+                    node.add_child(child_node)
+            
+            return get_children(ctx, course_id, worklist)
+
+
 @exception_handler
 def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str, 
                         launch_in_new_window:bool, hide_content: bool, reviewable: bool,

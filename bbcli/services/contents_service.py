@@ -10,8 +10,53 @@ from bbcli.entities.content_builder_entitites import DateInterval, FileContent, 
 from bbcli.utils.utils import input_body
 import click
 
+from bbcli.utils.utils import check_response
+
 url_builder = URLBuilder()
 content_builder = ContentBuilder()
+
+# User gets a tree structure view of the courses content
+# where each content is listed something like this: _030303_1 Lectures Folder
+def list_contents(session: requests.Session, course_id, folder_id):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
+    response = session.get(url)
+    if check_response(response) is False:
+        return
+    else:
+        return response
+
+# get the children of a specific folder
+def get_children(session: requests.Session, course_id: str, node_id: str):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).add_children().create()
+    return session.get(url)
+
+# If it is a folder, list it like a tree structure view like mentioned above.
+# If it is a document, download and open the document maybe?
+# Find all types of content and have an appropriate response for them. This
+# should maybe be handled in the view...
+def get_content(session: requests.Session, course_id: str, node_id: str):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).create()
+    print(url)
+    return session.get(url)
+
+def get_file(session: requests.Session, course_id: str, node_id: str):
+    # https://ntnu.blackboard.com/learn/api/public/v1/courses/_27251_1/contents/_1685326_1
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).add_attachments()
+    current = url.create()
+    response = session.get(current)
+    data = response.json()
+    if check_response(response) == False:
+        return
+    else:
+        print("kommer her")
+        id = data['results'][0]['id']
+        # url = url.add_id(id).add_download().create()
+        url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(node_id).add_attachments().add_id(id).add_download().create()
+        print(url)
+        response = session.get(url)
+        print(response.headers)
+
+    return response
 
 def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
     uploaded_file = upload_file(session, file_dst)

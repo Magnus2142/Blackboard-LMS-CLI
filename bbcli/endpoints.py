@@ -12,6 +12,10 @@ from anytree import Node as Nd, RenderTree
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
+from bbcli.entities.Node import Node2
+from bbcli.utils.URL_builder import URLBuilder
+
+url_builder = URLBuilder()
 
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
@@ -86,18 +90,22 @@ def get_course_contents(course_id: str):
         click.echo(map)
 
 
-def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
+content_types = dict()
+content_types['assignments'] = 'resource/x-bb-assignment'
+content_types['blankpage'] = 'resource/x-bb-blankpage'
+content_types['folder'] = 'resource/x-bb-folder' 
+
+
+def get_children(session, worklist, url, acc, count: int = 0):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
-        return acc
+        return acc 
     else:
         node = worklist.pop()
         id = node.data['id']
-        if is_root is False:
-            old = f'{url}/children'
-        else:
-            old = f'{url}/{id}/children'
+        tmp = url[:url.index('contents') + len('contents')]
+        old = f'{tmp}/{id}/children'
         response = session.get(old, cookies=cli.cookies)
         if check_response(response) == False:
             return acc
@@ -106,6 +114,7 @@ def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
             for i in range(len(children)):
                 # TODO: Add list of children instead of bool
                 if key in children[i] and children[i][key] == True:
+                # if children[i]['contentHandler'] == content_types['folder']:
                     child = Node(children[i], True, node)
                     worklist.append(child)
                     acc.append(child)
@@ -114,19 +123,47 @@ def get_children(session, worklist, url, acc, count: int = 0, is_root = True):
                     acc.append(child)
             return get_children(session, worklist, url, acc)
 
+def get_children2(session, worklist, url, acc, count: int = 0):
+    count = count + 1
+    key = 'hasChildren'
+    if len(worklist) == 0:
+        return 
+    else:
+        node = worklist.pop()
+        id = node.data['id']
+        tmp = url[:url.index('contents') + len('contents')]
+        old = f'{tmp}/{id}/children'
+        response = session.get(old, cookies=cli.cookies)
+        if check_response(response) == False:
+            return acc
+        else:
+            children = response.json()['results']
+            parent = Node2(node)
+            for i in range(len(children)):
+                # TODO: Add list of children instead of bool
+                if key in children[i] and children[i][key] == True:
+                # if children[i]['contentHandler'] == content_types['folder']:
+                    # child = Node(children[i], True, parent)
+                    child = Node2(children[i])
+                    parent.children.append(child)
+                    worklist.append(child)
+                    # acc.append(child)
+                else:
+                    child = Node2(children[i])
+                    parent.children.append(child)
+                    # child = Node(children[i], False, parent)
+                    # acc.append(child)
+            return get_children(session, worklist, url, acc)
 
 def create_tree(root, nodes):
     parents = []
     root_node = Nd(root.data['title'])
     parent = root_node
     parents.append(parent)
-    colors = dict()
     folders = dict()
-    colors[root.data['title']] = True
     folders[root.data['title']] = root.data['id']
 
     for i in range(len(nodes)):
-        # if (nodes[i].has_children and nodes[i] not in parents):
         id = nodes[i].data['id']
         title = nodes[i].data['title']
         if (nodes[i].has_children):
@@ -141,12 +178,6 @@ def create_tree(root, nodes):
             folders[title] = id
             parents.append(node)
 
-        # elif (nodes[i].has_children):
-        #     for parent in parents:
-        #         if (nodes[i].parent.data['title'] == parent):
-        #             node = Nd(node.data['title'], parent)
-        #             folders[title] == id 
-        # if (nodes[i].has_children is False):
         else:
             for parent in parents:
                 if (parent.name == nodes[i].parent.data['title']):
@@ -160,12 +191,12 @@ def create_tree(root, nodes):
         else:
             print(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
 
-@click.command(name='get-assignments')
+@click.command(name='get-contents')
 @click.argument('course_id', default='_27251_1')
 @click.option('--folder-id')
-def get_assignments(course_id: str, folder_id=None):
+def get_contents(course_id: str, folder_id=None):
     '''
-    Get the assignments \n
+    Get the contents\n
     Folders are blue and have an id \n
     Files are white
     '''
@@ -181,18 +212,32 @@ def get_assignments(course_id: str, folder_id=None):
     else:
         if folder_id is not None:
             data = response.json()
-            # print(len(data))
             root = Node(data, True)
             worklist = [root]
-            res = get_children(session, worklist, url, [], is_root = False)
+            res = get_children(session, worklist, url, [])
             create_tree(root, res)
         else:
-            data = response.json()['results']
-            for root in data:
-                root = Node(root, True)
+            folders = response.json()['results']
+            root = None
+            for folder in folders:
+                # root = Node(folder, True)
+                root = Node2(folder)
                 worklist = [root]
-                res = get_children(session, worklist, url, [])
-                create_tree(root, res)
+                get_children2(session, worklist, url, [])
+                print(root.data['title'])
+                # create_tree(root, res)
+            for child in root.children:
+                print(child.data['title'])
+            
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
+
+
+def list_tree(root, contents):
+    for content in contents:
+        parent = Nd(content.parent.data['title'])
+        this = Nd(content.data['title'], parent)
+    
+    for pre, fill, node in RenderTree(root_node):
+        print("%s%s" % (pre, node.name))

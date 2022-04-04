@@ -9,7 +9,7 @@ import click
 
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
-from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment
+from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment, get_content
 from bbcli.services.authorization_service import login
 
 load_dotenv()
@@ -90,6 +90,7 @@ def contents(ctx):
     pass
 
 contents.add_command(list_contents)
+contents.add_command(get_content)
 contents.add_command(delete_content)
 contents.add_command(update_content)
 
@@ -107,7 +108,7 @@ def create(ctx):
 
 create.add_command(create_document)
 create.add_command(create_file)
-create.add_command(create_web_link)
+# create.add_command(create_web_link)
 create.add_command(create_folder)
 create.add_command(create_courselink)
 create.add_command(upload_attachment)
