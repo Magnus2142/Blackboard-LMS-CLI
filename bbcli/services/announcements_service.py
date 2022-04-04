@@ -8,9 +8,9 @@ from bbcli.services.courses_service import list_courses
 from bbcli.utils.utils import input_body, set_cookies
 import click
 
-from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.URL_builder import URL_builder
 
-url_builder = URLBuilder()
+url_builder = URL_builder()
 
 def list_announcements(session: requests.Session, user_name: str):
     courses = list_courses(session, user_name=user_name)

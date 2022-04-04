@@ -4,7 +4,7 @@ import os
 from typing import Dict, Any, List
 import requests
 import magic
-from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.URL_builder import URL_builder
 from bbcli.services.utils.content_builder import ContentBuilder
 from bbcli.entities.content_builder_entitites import DateInterval, FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
@@ -12,7 +12,7 @@ import click
 
 from bbcli.utils.utils import check_response
 
-url_builder = URLBuilder()
+url_builder = URL_builder()
 content_builder = ContentBuilder()
 
 # User gets a tree structure view of the courses content

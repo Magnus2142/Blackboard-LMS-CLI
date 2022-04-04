@@ -10,6 +10,7 @@ import click
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
 from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment, get_content
+from bbcli.commands.assignments import get_assignments
 from bbcli.services.authorization_service import login
 
 load_dotenv()
@@ -76,6 +77,17 @@ announcements.add_command(list_announcements)
 announcements.add_command(create_announcement)
 announcements.add_command(delete_announcement)
 announcements.add_command(update_announcement)
+
+
+@entry_point.group()
+@click.pass_context
+def assignments(ctx):
+    """
+    Commands for creating, listing and submitting assignments.
+    """
+    pass
+
+assignments.add_command(get_assignments)
 
 """
 CONTENT COMMANDS ENTRY POINT

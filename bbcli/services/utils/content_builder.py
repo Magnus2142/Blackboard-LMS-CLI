@@ -99,6 +99,12 @@ class ContentBuilder(Builder):
             'title': title
         })
         return self
+   
+    def add_name(self, name: str) -> Builder:
+        self._product.add({
+            'name': name
+        })
+        return self
 
     def add_body(self, body: str) -> Builder:
         self._product.add({
