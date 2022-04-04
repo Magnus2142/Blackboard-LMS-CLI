@@ -8,6 +8,7 @@ from bbcli.utils.URL_builder import URLBuilder
 from bbcli.services.utils.content_builder import ContentBuilder
 from bbcli.entities.content_builder_entitites import DateInterval, FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
+import click
 
 url_builder = URLBuilder()
 content_builder = ContentBuilder()
@@ -182,6 +183,27 @@ def delete_content(session: requests.Session, course_id: str, content_id: str, d
     
     return response.text
 
+def update_content(session: requests.Session, course_id: str, content_id: str):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(content_id).create()
+    content = session.get(url)
+    content = json.loads(content.text)
+    if not is_editable_content_type(content['contentHandler']['id']):
+        click.echo('This content type is not editable')
+        raise click.Abort()
+    if 'links' in content:
+        del content['links']
+    if 'contentHandler' in content:
+        del content['contentHandler']
+
+    MARKER = '# Everything below is ignored.\n'
+    editable_data = json.dumps(content, indent=2)
+    print(editable_data)
+    new_data = click.edit(editable_data + '\n\n' + MARKER)
+
+    response = session.patch(url, data=new_data)
+    return response.text
+    
+
 """
 
 HELPER FUNCTIONS
@@ -217,3 +239,11 @@ def handle_attachments(session: requests.Session, course_id: str, content_id: st
     if attachments:
         for attachment in attachments:
             upload_attachment(session, course_id, content_id, attachment)
+
+
+def is_editable_content_type(content_type: str):
+    valid_content_types = ['resource/x-bb-assignment', 'resource/x-bb-externallink', 'resource/x-bb-courselink', 'resource/x-bb-file', 'resource/x-bb-document']
+    for type in valid_content_types:
+        if content_type == type:
+            return True
+    return False

@@ -9,7 +9,7 @@ import click
 
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
-from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, upload_attachment
+from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment
 from bbcli.services.authorization_service import login
 
 load_dotenv()
@@ -91,6 +91,7 @@ def contents(ctx):
 
 contents.add_command(list_contents)
 contents.add_command(delete_content)
+contents.add_command(update_content)
 
 """
 CONTENTS CREATE COMMANDS ENTRY POINT

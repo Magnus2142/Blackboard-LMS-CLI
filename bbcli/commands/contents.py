@@ -196,6 +196,18 @@ def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
     response = contents_service.delete_content(ctx.obj['SESSION'], course_id, content_id, delete_grades)
     click.echo(response)
 
+@click.command(name='update')
+@click.argument('course_id', required=True, type=str)
+@click.argument('content_id', required=True, type=str)
+@click.pass_context
+def update_content(ctx, course_id: str, content_id: str):
+    """
+    Updates a given content
+    Editable content types: document, files, assignments, externallinks, courselinks
+    """
+    response = contents_service.update_content(ctx.obj['SESSION'], course_id, content_id)
+    click.echo(response)
+
 """
 HELPER FUNCTIONS
 """
