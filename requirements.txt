@@ -7,3 +7,5 @@ python-dotenv==0.19.2
 beautifulsoup4==4.10.0
 lxml==4.8.0
 anytree==2.8.0
+html2text==2020.1.16
+python-magic==0.4.25

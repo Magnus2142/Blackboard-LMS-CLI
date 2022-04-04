@@ -15,7 +15,7 @@ def list_courses(session: requests.Session, user_name: str) -> Any:
 
     term_1 = terms[len(terms) - 1]
     term_2 = terms[len(terms) - 2]
-
+    
     course_memberships = get_course_memberships(session, user_name)
 
     course_list = []
@@ -24,6 +24,7 @@ def list_courses(session: requests.Session, user_name: str) -> Any:
     for course in course_memberships:
         url = url_builder.base_v3().add_courses().add_id(course['courseId']).create()
         response = session.get(url, params={'fields': 'id, name, termId'})
+        response.raise_for_status()
         response = json.loads(response.text)
         if response['termId'] == term_1['id'] or response['termId'] == term_2['id']:
             course_list.append({
@@ -43,6 +44,7 @@ def list_all_courses(session: requests.Session, user_name: str) -> Any:
     for course in course_memberships:
         url = url_builder.base_v3().add_courses().add_id(course['courseId']).create()
         response = session.get(url, params={'fields': 'id, name'})
+        response.raise_for_status()
         response = json.loads(response.text)
         course_list.append(response)
     
@@ -51,11 +53,9 @@ def list_all_courses(session: requests.Session, user_name: str) -> Any:
 def list_course(session: requests.Session, course_id:str) -> Any:
     url = url_builder.base_v3().add_courses().add_id(course_id).create()
     response = session.get(url)
+    response.raise_for_status()
+        
     return json.loads(response.text)
-
-def list_favorite_courses(session: requests.Session, user_name: str) -> Any:
-    return "Blackboard rest api do not have an option for this yet"
-    # response = requests.get('https://ntnu.blackboard.com/learn/api/public/v1/users/userName:{}/courses'.format(user_name), cookies=cookies)
 
 
 """
@@ -70,6 +70,7 @@ def take_start_date(elem):
 def get_terms(session: requests.Session):
     url = url_builder.base_v1().add_terms().create()
     terms = session.get(url)
+    terms.raise_for_status()
     terms = json.loads(terms.text)['results']
     return terms
 
@@ -83,5 +84,6 @@ def sort_terms(terms):
 def get_course_memberships(session: requests.Session, user_name: str):
     url = url_builder.base_v1().add_users().add_id(id=user_name, id_type='userName').add_courses().create()
     course_memberships = session.get(url)
+    course_memberships.raise_for_status()
     course_memberships = json.loads(course_memberships.text)['results']
     return course_memberships

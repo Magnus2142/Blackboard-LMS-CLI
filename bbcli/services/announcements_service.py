@@ -1,9 +1,11 @@
+from datetime import datetime
 import json
 from subprocess import call
 from typing import Dict, Any
 import requests
+from bbcli.entities.content_builder_entitites import DateInterval
 from bbcli.services.courses_service import list_courses
-from bbcli.utils.utils import set_cookies
+from bbcli.utils.utils import input_body, set_cookies
 import click
 
 from bbcli.utils.URL_builder import URL_builder
@@ -41,20 +43,28 @@ def list_announcement(session: requests.Session, course_id: str, announcement_id
     announcement = json.loads(announcement.text)
     return announcement
 
-# TODO: Add compatibility for flags and options to make a more detailed announcement
-def create_announcement(session: requests.Session, course_id: str, title: str):
-    MARKER = '# Everything below is ignored\n'
-    body = click.edit('\n\n' + MARKER)
-    if body is not None:
-        body = body.split(MARKER, 1)[0].rstrip('\n')
+# TODO: Test if the duration actually makes it unavailable/available when it should
+def create_announcement(session: requests.Session, course_id: str, title: str, date_interval: DateInterval):
+    body = input_body()
     
     data = {
         'title': title,
         'body': body
     }
+    if date_interval:
+        start_date_str = datetime.strftime(date_interval.start_date,'%Y-%m-%dT%H:%m:%S.%fZ') if date_interval.start_date else None
+        end_date_str = datetime.strftime(date_interval.end_date, '%Y-%m-%dT%H:%m:%S.%fZ') if date_interval.end_date else None
+
+        data.update({
+            'availability': {
+                'duration': {
+                    'start': start_date_str,
+                    'end': end_date_str
+                }
+            }
+        })
 
     data = json.dumps(data)
-    session.headers.update({'Content-Type': 'application/json'})
 
     url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().create()
     response = session.post(url, data=data)
@@ -72,7 +82,7 @@ def delete_announcement(session: requests.Session, course_id: str, announcement_
 def update_announcement(session: requests.Session, course_id: str, announcement_id: str):
 
     announcement = list_announcement(session=session, course_id=course_id, announcement_id=announcement_id)
-    MARKER = '# Everything below is ignored\n'
+    MARKER = '# Everything below is ignored.\n'
     editable_data = {
         'title': announcement['title'],
         'body': announcement['body'],
@@ -82,8 +92,6 @@ def update_announcement(session: requests.Session, course_id: str, announcement_
     }
     announcement = json.dumps(editable_data, indent=2)
     new_data = click.edit(announcement + '\n\n' + MARKER)
-
-    session.headers.update({'Content-Type': 'application/json'})
 
     url = url_builder.base_v1().add_courses().add_id(course_id).add_announcements().add_id(announcement_id).create()
     response = session.patch(url, data=new_data)
