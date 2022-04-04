@@ -57,18 +57,13 @@ def list_contents(ctx, course_id: str, folder_id=None):
 
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id, folder_id)
     folders = response.json()['results']
-    roots = []
     for folder in folders:
-        root = Node(folder)
-        worklist = [root]
+        r = Node(folder)
+        worklist = [r]
         get_children(ctx, course_id, worklist)
-        roots.append(root)
-    
-
-    for r in roots:
         colors, root = r.preorder(r)
         contents_view.list_tree(colors, root)
-
+    
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
