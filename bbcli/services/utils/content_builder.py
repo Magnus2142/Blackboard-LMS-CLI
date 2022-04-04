@@ -3,7 +3,7 @@ from datetime import date, datetime
 from typing import Any, Dict
 from abc import ABC, abstractmethod
 
-from bbcli.entities.content_builder_entitites import FileContent, FileOptions, StandardOptions, WeblinkOptions
+from bbcli.entities.content_builder_entitites import FileContent, FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 
 class Builder(ABC):
 
@@ -35,6 +35,10 @@ class Builder(ABC):
 
     @abstractmethod
     def add_weblink_options(self, web_link_options: WeblinkOptions) -> Builder:
+        pass
+
+    @abstractmethod
+    def add_grading_options(self, grading_options: GradingOptions) -> Builder:
         pass
 
     @abstractmethod
@@ -106,17 +110,20 @@ class ContentBuilder(Builder):
         start_date_str = datetime.strftime(standard_options.date_interval.start_date,'%Y-%m-%dT%H:%m:%S.%fZ') if standard_options.date_interval.start_date else None
         end_date_str = datetime.strftime(standard_options.date_interval.end_date, '%Y-%m-%dT%H:%m:%S.%fZ') if standard_options.date_interval.end_date else None
         self._product.add({
-            'reviewable': standard_options.reviewable,
             'availability': {
                 'available': 'No' if standard_options.hide_content else 'Yes',
                 'allowGuests': True,
                 'allowObservers': True,
                 'adaptiveRelease': {
-                    "start": start_date_str,
-                    "end": end_date_str
+                    'start': start_date_str,
+                    'end': end_date_str
                 }
             }
         })
+        if standard_options.reviewable:
+            self._product.add({
+                'reviewable': standard_options.reviewable,
+            })
         return self
     
     # Missing an extra option, but don't know what it is called
@@ -131,6 +138,21 @@ class ContentBuilder(Builder):
             'launchInNewWindow': web_link_options.launch_in_new_window
         })
         return self
+
+    def add_grading_options(self, grading_options: GradingOptions) -> Builder:
+        due_date_str = datetime.strftime(grading_options.due, '%Y-%m-%dT%H:%m:%S.%fZ') if grading_options.due else None
+        self._product.add({
+            'grading': {
+                'due': due_date_str,
+                'attemptsAllowed': grading_options.attempts_allowed,
+                'isUnlimitedAttemptsAllowed': grading_options.is_unlimited_attemps_allowed
+            },
+            'score': {
+                'possible': grading_options.score_possible
+            }
+        })
+        return self
+
 
     def add_content_handler_document(self) -> Builder:
         self._product.add({

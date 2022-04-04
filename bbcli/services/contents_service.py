@@ -1,16 +1,12 @@
-import base64
 from datetime import date
 import json
 import os
-from subprocess import call
-from tarfile import ENCODING
 from typing import Dict, Any, List
 import requests
 import magic
-from bbcli.services.courses_service import list_courses
 from bbcli.utils.URL_builder import URLBuilder
 from bbcli.services.utils.content_builder import ContentBuilder
-from bbcli.entities.content_builder_entitites import DateInterval, FileContent, StandardOptions, FileOptions, WeblinkOptions
+from bbcli.entities.content_builder_entitites import DateInterval, FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
 
 url_builder = URLBuilder()
@@ -36,30 +32,16 @@ def get_content(cookies: Dict, course_id: str, content_id: str):
 def list_assignments(cookies: Dict, course_id: str):
     print('Getting all assignments')
 
-# TODO: add methods for all content types like the one above
 
+def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
+    uploaded_file = upload_file(session, file_dst)
+    data = json.dumps(uploaded_file)
 
-# Create content. This should have a flag which says what kind of content type it is
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(content_id).add_attachments().create()
+    response = session.post(url, data=data)
+    response.raise_for_status()
 
-
-# Create assignment. Creates an assignment
-
-# Delete spesific content
-
-# Update spesific content
-
-# NB: Alle options sende som values i enkle fields i bodyen
-
-# Alle disse blir sendt til post content endpoint. title, body er samme. Options varirerer. Største ulikheten
-# er i content-handler. Noen kan også ha attachments.
-
-# Tror svaret er en ContentBuilder
-
-# Hvis dato er inkludert for visning av content etter en spesifikk tid osv. oppdater ny regel ellr hva det nå er
-# Kilde: https://docs.blackboard.com/rest-apis/learn/getting-started/adaptive-release. KANSKJE IKKE NØDVENDIG
-
-# Title, body, eventuelt attachements?, Standard Options: permit users to view, track number of views, date (start, end)
-def create_document(session:requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions=None, attachments: List[str]=None):
+def create_document(session:requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions=None, attachments: tuple=None):
     
     data_body = input_body()
     data = content_builder\
@@ -73,11 +55,15 @@ def create_document(session:requests.Session, course_id: str, parent_id: str, ti
     data = json.dumps(data)
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
+    response.raise_for_status()
+
+    created_content_id = json.loads(response.text)['id']
+    handle_attachments(session, course_id, created_content_id, attachments)
+
     return response.text
 
-
-# Title, file itself, FIle Options: open in new window, add alignment to content, Standard Options: as above
-
+# TODO: Bug that if a file is created with an attachment, the attachment takes the place of the actual file for the content. In addition,
+#       if two attachments is added, only the last one is added/overwrite the first one
 def create_file(session: requests.Session, course_id: str, parent_id: str, title: str, file_dst: str, file_options: FileOptions, standard_options: StandardOptions):
 
     uploaded_file = upload_file(session, file_dst)
@@ -100,10 +86,8 @@ def create_file(session: requests.Session, course_id: str, parent_id: str, title
     data = json.dumps(data)
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
+    
     return response.text
-
-# Title, URL, body, eventuelt attachments?, Weblink options: open in new window?, Standard options: as above
-
 
 def create_externallink(session: requests.Session, course_id: str, parent_id: str, title: str, url: str, web_link_options: WeblinkOptions, standard_options: StandardOptions):
 
@@ -119,8 +103,6 @@ def create_externallink(session: requests.Session, course_id: str, parent_id: st
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
     return response.text
-
-# Title, body, Standard options: as above
 
 def create_folder(session: requests.Session, course_id: str, parent_id: str, title: str, is_bb_page:bool, standard_options: StandardOptions):
 
@@ -144,9 +126,7 @@ def create_folder(session: requests.Session, course_id: str, parent_id: str, tit
     return response.text
 
 
-# Title, body, location(?), targetId content, Standard Options: as above
-
-# FUNKER IKKE PGA targetType
+# TODO:FUNKER IKKE PGA targetType
 def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, target_id: str, standard_options: StandardOptions):
 
     data_body = input_body()
@@ -164,42 +144,32 @@ def create_courselink(session: requests.Session, course_id: str, parent_id: str,
     response = session.post(url, data=data)
     return response.text
 
-# Se egen metode i BBL REST API
+# TODO: Figure out how a lecturer can get/edit submission-, grading-, and display of grades options.
+def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions, grading_options: GradingOptions, attachments: tuple=None):
 
-def create_assignment():
-    pass
+    instructions = input_body()
+    
+    data = content_builder\
+        .add_parent_id(parent_id)\
+        .add_title(title)\
+        .add_standard_options(standard_options)\
+        .add_grading_options(grading_options)\
+        .create()
 
-# Vet ikke enda
+    data.update({'instructions': instructions})
+    
+    if attachments:
+        files = []
+        for attachment in attachments:
+            files.append(upload_file(session, attachment)['id'])
+        data.update({'fileUploadIds' : files})
+    
+    data = json.dumps(data)
 
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_create_assignment().create()
+    response = session.post(url, data=data)
 
-def create_forumlink():
-    pass
-
-# Vet ikke enda
-
-
-def create_blti_link():
-    pass
-
-
-# TODO: Check how to publish audio and image, it doesn't have a content handler
-# SOLUTION: See the upload files section. There it says something about uploading images and audio and videoetc,
-# SOLUTION 2: THIS IS EMBEDDED IN THE BODY I BELIEVE
-
-# TODO: Module page has it own 'resource/x-bb-module-page' content typ, but is not mentioned in the documentation
-# Do reserach on this later
-
-# TODO: Same as the one above, just with blank page 'resource/x-bb-blankpage', Both are under new page option in the
-# bb web interface
-
-
-# TODO: 'x-bb-lesson'
-
-
-# TODO: CReat an own method for attachments posting for either being
-# called straight after a content of type file, document, or assignment is created.
-# OR afterwards
-
+    return response.text
 
 
 """
@@ -232,3 +202,8 @@ def generate_create_content_url(course_id: str, content_id: str):
         .add_id(content_id)\
         .add_children()\
         .create()
+
+def handle_attachments(session: requests.Session, course_id: str, content_id: str, attachments: tuple or None):
+    if attachments:
+        for attachment in attachments:
+            upload_attachment(session, course_id, content_id, attachment)

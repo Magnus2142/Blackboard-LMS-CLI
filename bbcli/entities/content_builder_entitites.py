@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 
 """
@@ -24,6 +24,14 @@ class FileOptions:
 @dataclass
 class WeblinkOptions:
     launch_in_new_window: bool = False
+
+@dataclass
+class GradingOptions:
+    due: datetime = None
+    attempts_allowed: int = 0
+    grade_schema_id: str = ''
+    is_unlimited_attemps_allowed: bool = True
+    score_possible: int = 0
 
 
 """

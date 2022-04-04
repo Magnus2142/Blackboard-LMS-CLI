@@ -1,7 +1,8 @@
 from datetime import datetime
 import click
-from bbcli.entities.content_builder_entitites import FileOptions, StandardOptions, WeblinkOptions
+from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services import contents_service
+from bbcli.utils.utils import format_date
 from bbcli.views import content_view
 import os
 
@@ -11,6 +12,14 @@ def standard_options(function):
     function = click.option('--start-date', type=str, help='When to make content available. Format: DD/MM/YY HH:MM:SS')(function)
     function = click.option('--end-date', type=str, help='When to make content unavailable. Format: DD/MM/YY HH:MM:SS')(function)
     return function
+
+def grading_options(function):
+    function = click.option('-d', '--due-date', type=str, help='Set a sumbission deadline for assignment. Format: DD/MM/YY HH:MM:SS')(function)
+    function = click.option('-a', '--max-attempts', type=int, help='Set a maximum amount of attempts.')(function)
+    function = click.option('-u', '--unlimited-attempts', is_flag=True, help='Enable unlimited attempts.')(function)
+    function = click.option('-s', '--score', required=True, type=int, help='Set assignment score reward.')(function)
+    return function
+
 
 def file_options(function):
     function = click.option('-n', '--new-window', 'launch_in_new_window', is_flag=True)(function)
@@ -39,36 +48,35 @@ def list_contents(ctx, course_id: str=None, content_id: str=None):
         print('Printing content tree from a course, course', course_id)
 
 
-@click.command(name='create')
+@click.command(name='attachment')
 @click.argument('course_id', required=True, type=str)
 @click.argument('content_id', required=True, type=str)
+@click.argument('file_path', required=True, type=click.Path(exists=True))
 @click.pass_context
-def create_content(ctx, course_id: str, content_id: str):
-    contents_service.test_create_assignment(ctx.obj['SESSION'], course_id, content_id)
-
-@click.command(name='upload')
-@click.pass_context
-def upload_file(ctx):
-    contents_service.test_upload_file(ctx.obj['SESSION'], '/home/magnus/Downloads/3_meeting_notes.pdf')
+def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
+    """
+    Adds an attachment to a content. Only supports contents of type document and assignment
+    """
+    contents_service.upload_attachment(ctx.obj['SESSION'], course_id, content_id, file_path)
 
 
 @click.command(name='document')
 @click.argument('course_id', required=True, type=str)
 @click.argument('parent_id', required=True, type=str)
 @click.argument('title', required=True, type=str)
+@click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
 @click.pass_context
-def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str=None, end_date: str=None):
+def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str=None, end_date: str=None, attachments: tuple=None):
     """
-    Creates a document content
+    Creates a document content, optionally with file attachments
     """
-
     standard_options = StandardOptions(hide_content=hide_content, reviewable=reviewable)
-    validate_dates(standard_options, start_date, end_date)
+    set_dates(standard_options, start_date, end_date)
 
-    response = contents_service.create_document(ctx.obj['SESSION'], course_id, parent_id, title, standard_options)
-    print(response)
-
+    response = contents_service.create_document(ctx.obj['SESSION'], course_id, parent_id, title, standard_options, attachments)
+    click.echo(response)
+    
 
 @click.command(name='file')
 @click.argument('course_id', required=True, type=str)
@@ -87,26 +95,10 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 
     file_options = FileOptions(launch_in_new_window)
     standard_options = StandardOptions(hide_content=hide_content, reviewable=reviewable)
-    validate_dates(standard_options, start_date, end_date)
+    set_dates(standard_options, start_date, end_date)
     response = contents_service.create_file(ctx.obj['SESSION'], course_id, parent_id, title, file_path, file_options, standard_options)
-    print(response)
-
-
-def validate_dates(standard_options: StandardOptions, start_date: str, end_date: str):
-    if start_date:
-        try:
-            standard_options.date_interval.start_date = datetime.strptime(start_date, '%d/%m/%y %H:%M:%S')
-        except ValueError:
-            click.echo('Value format is not valid, please see --help for more info')
-            raise click.Abort()
-            
-    if end_date:
-        try:
-            standard_options.date_interval.end_date = datetime.strptime(end_date, '%d/%m/%y %H:%M:%S')
-        except ValueError:
-            click.echo('Value format is not valid, please see --help for more info')
-            raise click.Abort()
-
+    click.echo(response)
+    
 
 
 @click.command(name='web-link')
@@ -125,10 +117,10 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
     """
     web_link_options = WeblinkOptions(launch_in_new_window)
     standard_options = StandardOptions(hide_content, reviewable)
-    validate_dates(standard_options, start_date, end_date)
+    set_dates(standard_options, start_date, end_date)
     response = contents_service.create_externallink(ctx.obj['SESSION'], course_id, parent_id, title, url, web_link_options, standard_options)
-    print(response)
-
+    click.echo(response)
+    
 
 @click.command(name='folder')
 @click.argument('course_id', required=True, type=str)
@@ -144,10 +136,10 @@ def create_folder(ctx, course_id: str, parent_id: str, title: str,
     Create a folder either in top level or inside another content
     """
     standard_options = StandardOptions(hide_content, reviewable)
-    validate_dates(standard_options, start_date, end_date)
+    set_dates(standard_options, start_date, end_date)
     response = contents_service.create_folder(ctx.obj['SESSION'], course_id, parent_id, title, is_bb_page, standard_options)
-    print(response)
-
+    click.echo(response)
+    
 @click.command(name='course-link')
 @click.argument('course_id', required=True, type=str)
 @click.argument('parent_id', required=True, type=str)
@@ -162,8 +154,37 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
     Create a course link content which redirects user to the target content
     """
     standard_options = StandardOptions(hide_content, reviewable)
-    validate_dates(standard_options, start_date, end_date)
+    set_dates(standard_options, start_date, end_date)
     response = contents_service.create_courselink(ctx.obj['SESSION'], course_id, parent_id, title, target_id, standard_options)
-    print(response)
+    click.echo(response)
+    
+@click.command(name='assignment')
+@click.argument('course_id', required=True, type=str)
+@click.argument('parent_id', required=True, type=str)
+@click.argument('title', required=True, type=str)
+@click.argument('attachments', required=False, nargs=-1, type=click.Path())
+@standard_options
+@grading_options
+@click.pass_context
+def create_assignment(ctx, course_id: str, parent_id: str, title: str,
+                        hide_content: bool, reviewable: bool, 
+                        start_date: str, end_date: str,
+                        due_date: str, max_attempts:int, unlimited_attempts: bool, score: int,
+                        attachments: tuple):
+    """
+    Creates an assignment.
+    """
+    standard_options = StandardOptions(hide_content, reviewable)
+    grading_options = GradingOptions(attempts_allowed=max_attempts, is_unlimited_attemps_allowed=unlimited_attempts, score_possible=score)
+    
+    set_dates(standard_options, start_date, end_date)
+    grading_options.due = format_date(due_date)
 
-
+    response = contents_service.create_assignment(ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments)
+    click.echo(response)
+        
+def set_dates(standard_options: StandardOptions, start_date: str, end_date: str):
+    if start_date:
+        standard_options.date_interval.start_date = format_date(start_date)    
+    if end_date:
+        standard_options.date_interval.end_date = format_date(end_date)

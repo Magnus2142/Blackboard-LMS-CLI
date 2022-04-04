@@ -56,3 +56,9 @@ def input_body():
 	if body is not None:
 		body = body.split(MARKER, 1)[0].rstrip('\n')
 	return body
+
+def format_date(date: str):
+	try:
+		return datetime.strptime(date, '%d/%m/%y %H:%M:%S')
+	except ValueError:
+		click.echo('Value format is not valid, please see --help for more info.')

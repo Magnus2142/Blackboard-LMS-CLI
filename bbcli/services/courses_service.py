@@ -56,11 +56,6 @@ def list_course(session: requests.Session, course_id:str) -> Any:
 
     return json.loads(response.text)
 
-# def list_favorite_courses(session: requests.Session, user_name: str) -> Any:
-#     return "Blackboard rest api do not have an option for this yet"
-#     # response = requests.get('https://ntnu.blackboard.com/learn/api/public/v1/users/userName:{}/courses'.format(user_name), cookies=cookies)
-
-
 """
 
 HELPER FUNCTIONS

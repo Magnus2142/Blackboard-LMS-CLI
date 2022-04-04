@@ -1,19 +1,15 @@
 
-from typing import Optional
-from pkg_resources import EntryPoint
 import requests
 from bbcli.utils.utils import set_cookies, set_headers
-# import typer
 from bbcli import __app_name__, __version__ 
-# from bbcli.endpoints import get_user, get_course_contents, get_assignments
 import os
 from dotenv import load_dotenv
-from bbcli import check_valid_date, check_response
+from bbcli import check_valid_date
 import click
 
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
-from bbcli.commands.contents import create_courselink, create_folder, list_contents, create_content, create_document, create_file, create_web_link
+from bbcli.commands.contents import create_assignment, create_courselink, create_folder, list_contents, create_document, create_file, create_web_link, upload_attachment
 from bbcli.services.authorization_service import login
 
 load_dotenv()
@@ -94,7 +90,6 @@ def contents(ctx):
     pass
 
 contents.add_command(list_contents)
-# contents.add_command(upload_file)
 
 """
 CONTENTS CREATE COMMANDS ENTRY POINT
@@ -108,9 +103,10 @@ def create(ctx):
     """
     pass
 
-# create.add_command(create_content)
 create.add_command(create_document)
 create.add_command(create_file)
 create.add_command(create_web_link)
 create.add_command(create_folder)
 create.add_command(create_courselink)
+create.add_command(upload_attachment)
+create.add_command(create_assignment)
