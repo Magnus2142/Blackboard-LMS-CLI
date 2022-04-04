@@ -7,18 +7,12 @@ import requests
 
 
 #, help='List a spesific course with the corresponding id'
-@click.command(name='list')
+@click.command(name='list', help='This command lists your courses, by default only the courses from two last semesters.')
 @click.argument('course_id', required=False)
 @click.option('-a', '--all/--no-all', 'show_all', default=False, help='Lists all courses you have ever been signed up for')
 @click.pass_context
 @exception_handler
 def list_courses(ctx, course_id=None, show_all=False):
-
-    """
-    This command lists your courses, by default only the courses from
-    two last semesters
-    """
-
     response = None
     
     if course_id:

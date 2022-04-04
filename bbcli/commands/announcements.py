@@ -7,17 +7,12 @@ from bbcli.utils.utils import format_date
 from bbcli.views import announcement_view
 import os
 
-@click.command(name='list')
+@click.command(name='list', help='This command lists your announcements.\nEither all announcements, all announcements from a spesific course, or one announcement.')
 @click.argument('course_id', required=False)
 @click.argument('announcement_id', required=False)
 @click.pass_context
 @exception_handler
 def list_announcements(ctx,course_id=None, announcement_id=None):
-
-    """
-    This command lists your announcements.
-    Either all announcements, all announcements from a spesific course, or one announcement.
-    """
     response = None
     
     if announcement_id:
@@ -32,7 +27,7 @@ def list_announcements(ctx,course_id=None, announcement_id=None):
         announcement_view.print_announcements(response)
 
 
-@click.command(name='create')
+@click.command(name='create', help='Creates an announcement. Add --help for all options available.')
 @click.argument('course_id', required=True, type=str)
 @click.argument('title', required=True, type=str)
 @click.option('--start-date', type=str, help='When to make announcement available. Format: DD/MM/YY HH:MM:SS')
@@ -40,10 +35,6 @@ def list_announcements(ctx,course_id=None, announcement_id=None):
 @click.pass_context
 @exception_handler
 def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str):
-    """
-    Creates an announcement. Add --help
-    for all options available
-    """
     if start_date or end_date:
         date_interval = DateInterval()
         if start_date:
@@ -55,29 +46,21 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
     click.echo(response)
 
 
-@click.command(name='delete')
+@click.command(name='delete', help='Deletes an announcement. Add --help for all options available')
 @click.argument('course_id', required=True, type=str)
 @click.argument('announcement_id', required=True, type=str)
 @click.pass_context
 @exception_handler
 def delete_announcement(ctx, course_id: str, announcement_id: str):
-    """
-    Deletes an announcement. Add --help
-    for all options available
-    """
     response = announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
     click.echo(response)
 
 
-@click.command(name='update')
+@click.command(name='update', help='Updates an announcement. Add --help for all options available.')
 @click.argument('course_id', required=True, type=str)
 @click.argument('announcement_id', required=True, type=str)
 @click.pass_context
 @exception_handler
 def update_announcement(ctx, course_id: str, announcement_id: str):
-    """
-    Updates an announcement. Add --help
-    for all options available
-    """
     response = announcements_service.update_announcement(ctx.obj['SESSION'], course_id, announcement_id)
     click.echo(response)
