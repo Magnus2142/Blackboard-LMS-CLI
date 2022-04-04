@@ -1,19 +1,26 @@
 
-from typing import Optional
-from pkg_resources import EntryPoint
 import requests
 from bbcli.utils.utils import set_cookies, set_headers
-# import typer
 from bbcli import __app_name__, __version__ 
 import os
 from dotenv import load_dotenv
-from bbcli import check_valid_date, check_response
+from bbcli import check_valid_date
 import click
 
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
-from bbcli.commands.contents import list_contents, get_content
+from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment, get_content
 from bbcli.services.authorization_service import login
+
+load_dotenv()
+cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
+headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
+
+#----- AUTHORIZATION MODULE -----#
+# @app.command(name='login', help='Authorize the user.')
+def authorize_user():
+    if cookies['BbRouter'] == None or check_valid_date(cookies) == False:
+        login()
 
 def initiate_session():
     bb_cookie = {
@@ -25,6 +32,7 @@ def initiate_session():
     session = requests.Session()
     set_cookies(session, [bb_cookie])
     set_headers(session, [xsrf])
+    session.headers.update({'Content-Type': 'application/json'})
     return session
     
 
@@ -83,13 +91,25 @@ def contents(ctx):
 
 contents.add_command(list_contents)
 contents.add_command(get_content)
+contents.add_command(delete_content)
+contents.add_command(update_content)
 
-load_dotenv()
-cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
-headers = {'X-Blackboard-XSRF': os.getenv('XSRF')}
+"""
+CONTENTS CREATE COMMANDS ENTRY POINT
+"""
 
-#----- AUTHORIZATION MODULE -----#
-# @app.command(name='login', help='Authorize the user.')
-def authorize_user():
-    if check_valid_date(cookies) == False:
-        login()
+@contents.group()
+@click.pass_context
+def create(ctx):
+    """
+    Commands for creating different types of content types in blackboard
+    """
+    pass
+
+create.add_command(create_document)
+create.add_command(create_file)
+# create.add_command(create_web_link)
+create.add_command(create_folder)
+create.add_command(create_courselink)
+create.add_command(upload_attachment)
+create.add_command(create_assignment)

@@ -1,5 +1,9 @@
+from datetime import datetime
 import click
+from bbcli.entities.content_builder_entitites import DateInterval
 from bbcli.services import announcements_service
+from bbcli.utils.error_handler import exception_handler
+from bbcli.utils.utils import format_date
 from bbcli.views import announcement_view
 import os
 
@@ -7,6 +11,7 @@ import os
 @click.argument('course_id', required=False)
 @click.argument('announcement_id', required=False)
 @click.pass_context
+@exception_handler
 def list_announcements(ctx,course_id=None, announcement_id=None):
 
     """
@@ -30,13 +35,23 @@ def list_announcements(ctx,course_id=None, announcement_id=None):
 @click.command(name='create')
 @click.argument('course_id', required=True, type=str)
 @click.argument('title', required=True, type=str)
+@click.option('--start-date', type=str, help='When to make announcement available. Format: DD/MM/YY HH:MM:SS')
+@click.option('--end-date', type=str, help='When to make announcement unavailable. Format: DD/MM/YY HH:MM:SS')
 @click.pass_context
-def create_announcement(ctx, course_id: str, title: str):
+@exception_handler
+def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str):
     """
-    This command creates an announcement. Add --help
+    Creates an announcement. Add --help
     for all options available
     """
-    response = announcements_service.create_announcement(ctx.obj['SESSION'], course_id, title)
+    if start_date or end_date:
+        date_interval = DateInterval()
+        if start_date:
+            date_interval.start_date = format_date(start_date)
+        if end_date:
+            date_interval.end_date = format_date(end_date)
+
+    response = announcements_service.create_announcement(ctx.obj['SESSION'], course_id, title, date_interval)
     click.echo(response)
 
 
@@ -44,9 +59,10 @@ def create_announcement(ctx, course_id: str, title: str):
 @click.argument('course_id', required=True, type=str)
 @click.argument('announcement_id', required=True, type=str)
 @click.pass_context
+@exception_handler
 def delete_announcement(ctx, course_id: str, announcement_id: str):
     """
-    This command deletes an announcement. Add --help
+    Deletes an announcement. Add --help
     for all options available
     """
     response = announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
@@ -57,9 +73,10 @@ def delete_announcement(ctx, course_id: str, announcement_id: str):
 @click.argument('course_id', required=True, type=str)
 @click.argument('announcement_id', required=True, type=str)
 @click.pass_context
+@exception_handler
 def update_announcement(ctx, course_id: str, announcement_id: str):
     """
-    This command updates an announcement. Add --help
+    Updates an announcement. Add --help
     for all options available
     """
     response = announcements_service.update_announcement(ctx.obj['SESSION'], course_id, announcement_id)
