@@ -2,6 +2,7 @@ from datetime import datetime
 import click
 from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services import contents_service
+from bbcli.utils.error_handler import exception_handler
 from bbcli.utils.utils import format_date
 from bbcli.views import content_view
 import os
@@ -36,6 +37,7 @@ def web_link_options(function):
 @click.argument('content_id', required=False, type=str)
 # @click.option('-a', '--all/--no-all', 'show_all', default=False, help='Lists all courses you have ever been signed up for')
 @click.pass_context
+@exception_handler
 def list_contents(ctx, course_id: str=None, content_id: str=None):
     """
     This command lists contents of a course.
@@ -53,6 +55,7 @@ def list_contents(ctx, course_id: str=None, content_id: str=None):
 @click.argument('content_id', required=True, type=str)
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @click.pass_context
+@exception_handler
 def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
     """
     Adds an attachment to a content. Only supports contents of type document and assignment
@@ -67,6 +70,7 @@ def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
 @click.pass_context
+@exception_handler
 def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str=None, end_date: str=None, attachments: tuple=None):
     """
     Creates a document content, optionally with file attachments
@@ -86,6 +90,7 @@ def create_document(ctx, course_id: str, parent_id: str, title: str, hide_conten
 @file_options
 @standard_options
 @click.pass_context
+@exception_handler
 def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str, 
                         launch_in_new_window:bool, hide_content: bool, reviewable: bool,
                         start_date: str=None, end_date: str=None):
@@ -109,6 +114,7 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 @standard_options
 @web_link_options
 @click.pass_context
+@exception_handler
 def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str, 
                         launch_in_new_window:bool, hide_content: bool, reviewable: bool,
                         start_date: str=None, end_date: str=None):
@@ -129,6 +135,7 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
 @click.option('--is-bb-page', is_flag=True, help='Make folder a blackboard page')
 @standard_options
 @click.pass_context
+@exception_handler
 def create_folder(ctx, course_id: str, parent_id: str, title: str,
                         hide_content: bool, reviewable: bool, is_bb_page: bool = False,
                         start_date: str=None, end_date: str=None):
@@ -147,6 +154,7 @@ def create_folder(ctx, course_id: str, parent_id: str, title: str,
 @click.argument('target_id', required=True, type=str)
 @standard_options
 @click.pass_context
+@exception_handler
 def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id: str,
                         hide_content: bool, reviewable: bool, 
                         start_date: str=None, end_date: str=None):
@@ -166,6 +174,7 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
 @standard_options
 @grading_options
 @click.pass_context
+@exception_handler
 def create_assignment(ctx, course_id: str, parent_id: str, title: str,
                         hide_content: bool, reviewable: bool, 
                         start_date: str, end_date: str,
@@ -189,6 +198,7 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
 @click.argument('content_id', required=True, type=str)
 @click.option('--delete-grades', is_flag=True, help='Deletes grades if a grade column is assosciated with the content.')
 @click.pass_context
+@exception_handler
 def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
     """
     Deletes a content
@@ -200,6 +210,7 @@ def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
 @click.argument('course_id', required=True, type=str)
 @click.argument('content_id', required=True, type=str)
 @click.pass_context
+@exception_handler
 def update_content(ctx, course_id: str, content_id: str):
     """
     Updates a given content

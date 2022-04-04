@@ -13,27 +13,6 @@ import click
 url_builder = URLBuilder()
 content_builder = ContentBuilder()
 
-# User gets a tree structure view of the courses content
-# where each content is listed something like this: _030303_1 Lectures Folder
-
-
-def list_course_content(cookies: Dict, course_id: str):
-    print('Getting course content!')
-
-
-# If it is a folder, list it like a tree structure view like mentioned above.
-# If it is a document, download and open the document maybe?
-# Find all types of content and have an appropriate response for them. This
-# should maybe be handled in the view...
-def get_content(cookies: Dict, course_id: str, content_id: str):
-    print('Getting content by its ID.')
-
-
-# List all contents of type assignment, should be executed if a flag for example like --content-type assignment or smth is used
-def list_assignments(cookies: Dict, course_id: str):
-    print('Getting all assignments')
-
-
 def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
     uploaded_file = upload_file(session, file_dst)
     data = json.dumps(uploaded_file)
@@ -87,6 +66,7 @@ def create_file(session: requests.Session, course_id: str, parent_id: str, title
     data = json.dumps(data)
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
+    response.raise_for_status()
     
     return response.text
 
@@ -103,6 +83,7 @@ def create_externallink(session: requests.Session, course_id: str, parent_id: st
     data = json.dumps(data)
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
+    response.raise_for_status()
     return response.text
 
 def create_folder(session: requests.Session, course_id: str, parent_id: str, title: str, is_bb_page:bool, standard_options: StandardOptions):
@@ -124,6 +105,7 @@ def create_folder(session: requests.Session, course_id: str, parent_id: str, tit
 
     data = json.dumps(data)
     response = session.post(url, data=data)
+    response.raise_for_status()
     return response.text
 
 
@@ -143,6 +125,7 @@ def create_courselink(session: requests.Session, course_id: str, parent_id: str,
     url = generate_create_content_url(course_id, parent_id)
 
     response = session.post(url, data=data)
+    response.raise_for_status()
     return response.text
 
 # TODO: Figure out how a lecturer can get/edit submission-, grading-, and display of grades options.
@@ -169,7 +152,7 @@ def create_assignment(session: requests.Session, course_id: str, parent_id: str,
 
     url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_create_assignment().create()
     response = session.post(url, data=data)
-
+    response.raise_for_status()
     return response.text
 
 
@@ -179,8 +162,8 @@ def delete_content(session: requests.Session, course_id: str, content_id: str, d
         'deleteGrades': delete_grades
     }
     url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(content_id).create()
-    response = session.delete(url, params=parameters)
-    
+    response = session.delete(url, params=parameters)    
+    response.raise_for_status()
     return response.text
 
 def update_content(session: requests.Session, course_id: str, content_id: str):
@@ -189,18 +172,17 @@ def update_content(session: requests.Session, course_id: str, content_id: str):
     content = json.loads(content.text)
     if not is_editable_content_type(content['contentHandler']['id']):
         click.echo('This content type is not editable')
-        raise click.Abort()
-    if 'links' in content:
-        del content['links']
+        raise click.Abort() 
     if 'contentHandler' in content:
         del content['contentHandler']
-
+    if 'links' in content:
+        del content['links']
     MARKER = '# Everything below is ignored.\n'
     editable_data = json.dumps(content, indent=2)
-    print(editable_data)
     new_data = click.edit(editable_data + '\n\n' + MARKER)
 
     response = session.patch(url, data=new_data)
+    response.raise_for_status()
     return response.text
     
 
@@ -219,6 +201,7 @@ def upload_file(session: requests.Session, dst: str):
 
     url = url_builder.base_v1().add_uploads().create()
     response = session.post(url, files=files)
+    response.raise_for_status()
     session.headers.update({
         'Content-Type': 'application/json'
     })
