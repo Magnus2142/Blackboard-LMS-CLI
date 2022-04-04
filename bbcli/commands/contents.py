@@ -182,6 +182,23 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
 
     response = contents_service.create_assignment(ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments)
     click.echo(response)
+
+
+@click.command(name='delete')
+@click.argument('course_id', required=True, type=str)
+@click.argument('content_id', required=True, type=str)
+@click.option('--delete-grades', is_flag=True, help='Deletes grades if a grade column is assosciated with the content.')
+@click.pass_context
+def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
+    """
+    Deletes a content
+    """
+    response = contents_service.delete_content(ctx.obj['SESSION'], course_id, content_id, delete_grades)
+    click.echo(response)
+
+"""
+HELPER FUNCTIONS
+"""
         
 def set_dates(standard_options: StandardOptions, start_date: str, end_date: str):
     if start_date:

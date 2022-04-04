@@ -172,6 +172,16 @@ def create_assignment(session: requests.Session, course_id: str, parent_id: str,
     return response.text
 
 
+def delete_content(session: requests.Session, course_id: str, content_id: str, delete_grades: bool):
+
+    parameters = {
+        'deleteGrades': delete_grades
+    }
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().add_id(content_id).create()
+    response = session.delete(url, params=parameters)
+    
+    return response.text
+
 """
 
 HELPER FUNCTIONS
