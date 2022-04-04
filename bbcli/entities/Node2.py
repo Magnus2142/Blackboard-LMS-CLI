@@ -24,6 +24,19 @@ class Node2:
 	# 	else:
 	# 		return repr(self.data['title'])
 
+ 
+	def levelorder(self, root):
+		if not root: return []
+		res, queue = [], [root]
+		while queue:
+			# res.extend([node.data['title'] for node in queue])
+			res.extend([node for node in queue])
+			level = []
+			for node in queue:
+				level.extend(node.children)
+			queue = level
+		return res
+
 	def preorder(self, root):
 		q = deque([root])
 		out = []
@@ -38,31 +51,67 @@ class Node2:
 	
 				
 
-	def level_order(self, root):
-		l = defaultdict(list) 
+	def preorder(self, root):
+		out = []
+		# l = defaultdict(list) # it is level order when you use dict
 
-		# root_node = Nd(root.data['title'], None, None)
-		# children = [Nd(child.data['title'], root_node, None) for child in root.children]
+		root_node = Nd(root.data['title'])
+		def dfs(node, root_node, parent):
+			if not node: 
+				parent = Nd(node.parent.parent['title']) 
+				return
+			elif parent is None:
+				parent = root_node
+			else:
+				nd = Nd(node.data['title'], parent)
+				parent = nd
+			for c in node.children:
+				dfs(c, root_node, parent)
 
+		dfs(root, root_node, None)
+		return root_node 
+		
+
+	def inorder(self, root):
 		out = []
 		def dfs(node):
 			if not node: return
-			out.append(node)
-			for c in node.children:
-				dfs(c)
-
+			sz = len(node.children)
+			for i in range(sz-1): # loop through everything except the last child
+				dfs(node.children[i])
+			out.append(node.data['title'])
+			dfs(node.children[-1]) # loop through the last node
 
 		dfs(root)
-			
-		for o in out:
-			print(o.data['title'])
-		
-		return root 
+		return out
+	
+	def postorder1(self, root):
+		out = []
+		def dfs(node):
+			if not node: return
+			for child in node.children:
+				dfs(child)
+			out.append(node.data['title'])
+		dfs(root)
+		return out
+
+	def postorder2(self, root):
+		if not root:
+			return []
+		result, stack = [], [root]
+		while stack:
+			node = stack.pop()
+			result.append(node.data['title'])
+			for child in node.children:
+				if child:
+					stack.append(child)
+		return result[::-1]
 
 
+
 		
-	# def __str__(self, level=0):
-	# 	ret = '\t'*level+self.data['title']+'\n'
-	# 	for child in self.children:
-	# 		ret += child.__str__(level+1)
-	# 	return ret
+	def __str__(self, level=0):
+		ret = '\t'*level+self.data['title']+'\n'
+		for child in self.children:
+			ret += child.__str__(level+1)
+		return ret

@@ -5,7 +5,7 @@ from bbcli.views import contents_view
 import time
 import click
 
-from anytree import Node as Nd, RenderTree
+from anytree import Node as Nd, RenderTree, find_by_attr
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
@@ -39,12 +39,30 @@ def list_contents(ctx, course_id: str, folder_id=None):
         get_children2(ctx, course_id, worklist)
         roots.append(root)
     
+
     for r in roots:
         # print(r)
-        # root = Nd(r.data['title'])
-        root = r.level_order(r)
-        # for pre, fill, node in RenderTree(root):
-        #     click.echo("%s%s" % (pre, node.name))
+
+        # nodes = r.preorder(r)
+        # root= Nd(nodes[0].data['title'])
+        # curr = root
+        # prev = root 
+        # for i in range(1, len(nodes)):
+        #     node = nodes[i]
+        #     if len(node.children) > 0:
+        #         # prev = curr
+        #         nd = Nd(node.data['title'], prev)
+        #         curr = nd
+        #     else:
+        #         nd = Nd(node.data['title'], curr)
+
+        # for node in nodes:
+            # print(node.data['title'])
+
+        root = r.preorder(r)
+
+        for pre, fill, node in RenderTree(root):
+            click.echo("%s%s" % (pre, node.name))
 
     end = time.time()
 
