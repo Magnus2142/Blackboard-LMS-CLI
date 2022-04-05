@@ -54,7 +54,7 @@ class Node:
 	# It's working bby
 	def preorder(self, root):
 		# l = defaultdict(list) # it is level order when you use dict
-		colors = dict()
+		# folder_ids = dict()
 
 		root_node = Nd(root.data['title'])
 		def dfs(node, root_node, parent):
@@ -66,15 +66,13 @@ class Node:
 			else:
 				nd = Nd(node.data['title'], parent)
 				parent = nd
-			if len(node.children) > 0: 
-				colors[node.data['title']] = node.data['id'] 
-			else: 
-				colors[node.data['title']] = ''
+			# if len(node.children) > 0: 
+				# folder_ids[node.data['title']] = node.data['id'] 
 			for c in node.children:
 				dfs(c, root_node, parent)
 
 		dfs(root, root_node, None)
-		return colors, root_node 
+		return root_node 
 		
 
 	def inorder(self, root):

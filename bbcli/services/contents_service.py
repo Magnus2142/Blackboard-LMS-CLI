@@ -17,7 +17,7 @@ content_builder = ContentBuilder()
 
 # User gets a tree structure view of the courses content
 # where each content is listed something like this: _030303_1 Lectures Folder
-def list_contents(session: requests.Session, course_id, folder_id):
+def list_contents(session: requests.Session, course_id):
     url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
     response = session.get(url)
     if check_response(response) is False:
