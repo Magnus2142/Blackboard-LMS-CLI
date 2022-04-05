@@ -93,14 +93,14 @@ def get_course_contents(course_id: str):
 content_types = dict()
 content_types['assignments'] = 'resource/x-bb-assignment'
 content_types['blankpage'] = 'resource/x-bb-blankpage'
-content_types['folder'] = 'resource/x-bb-folder' 
+content_types['folder'] = 'resource/x-bb-folder'
 
 
 def get_children(session, worklist, url, acc, count: int = 0):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
-        return acc 
+        return acc
     else:
         node = worklist.pop()
         id = node.data['id']
@@ -114,7 +114,7 @@ def get_children(session, worklist, url, acc, count: int = 0):
             for i in range(len(children)):
                 # TODO: Add list of children instead of bool
                 if key in children[i] and children[i][key] == True:
-                # if children[i]['contentHandler'] == content_types['folder']:
+                    # if children[i]['contentHandler'] == content_types['folder']:
                     child = Node(children[i], True, node)
                     worklist.append(child)
                     acc.append(child)
@@ -123,11 +123,12 @@ def get_children(session, worklist, url, acc, count: int = 0):
                     acc.append(child)
             return get_children(session, worklist, url, acc)
 
+
 def get_children2(session, worklist, url, acc, count: int = 0):
     count = count + 1
     key = 'hasChildren'
     if len(worklist) == 0:
-        return 
+        return
     else:
         node = worklist.pop()
         id = node.data['id']
@@ -142,7 +143,7 @@ def get_children2(session, worklist, url, acc, count: int = 0):
             for i in range(len(children)):
                 # TODO: Add list of children instead of bool
                 if key in children[i] and children[i][key] == True:
-                # if children[i]['contentHandler'] == content_types['folder']:
+                    # if children[i]['contentHandler'] == content_types['folder']:
                     # child = Node(children[i], True, parent)
                     child = Node2(children[i])
                     parent.children.append(child)
@@ -154,6 +155,7 @@ def get_children2(session, worklist, url, acc, count: int = 0):
                     # child = Node(children[i], False, parent)
                     # acc.append(child)
             return get_children(session, worklist, url, acc)
+
 
 def create_tree(root, nodes):
     parents = []
@@ -190,6 +192,7 @@ def create_tree(root, nodes):
             print("%s%s" % (pre, node.name))
         else:
             print(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
+
 
 @click.command(name='get-contents')
 @click.argument('course_id', default='_27251_1')
@@ -228,7 +231,7 @@ def get_contents(course_id: str, folder_id=None):
                 # create_tree(root, res)
             for child in root.children:
                 print(child.data['title'])
-            
+
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
@@ -238,6 +241,6 @@ def list_tree(root, contents):
     for content in contents:
         parent = Nd(content.parent.data['title'])
         this = Nd(content.data['title'], parent)
-    
+
     for pre, fill, node in RenderTree(root_node):
         print("%s%s" % (pre, node.name))

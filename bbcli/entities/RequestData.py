@@ -4,4 +4,3 @@ class RequestData:
         self.params = params
         self.headers = headers
         self.cookies = cookies
-

@@ -7,28 +7,31 @@ from bbcli.utils.utils import format_date
 from bbcli.views import announcement_view
 import os
 
+
 @click.command(name='list')
 @click.argument('course_id', required=False)
 @click.argument('announcement_id', required=False)
 @click.pass_context
 @exception_handler
-def list_announcements(ctx,course_id=None, announcement_id=None):
-
+def list_announcements(ctx, course_id=None, announcement_id=None):
     """
     This command lists your announcements.
     Either all announcements, all announcements from a spesific course, or one announcement.
     """
     response = None
-    
+
     if announcement_id:
-        response = announcements_service.list_announcement(ctx.obj['SESSION'], course_id, announcement_id)
+        response = announcements_service.list_announcement(
+            ctx.obj['SESSION'], course_id, announcement_id)
         announcement_view.print_course_announcements([response])
     elif course_id:
-        response = announcements_service.list_course_announcements(ctx.obj['SESSION'], course_id)
+        response = announcements_service.list_course_announcements(
+            ctx.obj['SESSION'], course_id)
         announcement_view.print_course_announcements(response)
     else:
         user_name = os.getenv('BB_USERNAME')
-        response = announcements_service.list_announcements(ctx.obj['SESSION'], user_name)
+        response = announcements_service.list_announcements(
+            ctx.obj['SESSION'], user_name)
         announcement_view.print_announcements(response)
 
 
@@ -51,7 +54,8 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
         if end_date:
             date_interval.end_date = format_date(end_date)
 
-    response = announcements_service.create_announcement(ctx.obj['SESSION'], course_id, title, date_interval)
+    response = announcements_service.create_announcement(
+        ctx.obj['SESSION'], course_id, title, date_interval)
     click.echo(response)
 
 
@@ -65,7 +69,8 @@ def delete_announcement(ctx, course_id: str, announcement_id: str):
     Deletes an announcement. Add --help
     for all options available
     """
-    response = announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
+    response = announcements_service.delete_announcement(
+        ctx.obj['SESSION'], course_id, announcement_id)
     click.echo(response)
 
 
@@ -79,5 +84,6 @@ def update_announcement(ctx, course_id: str, announcement_id: str):
     Updates an announcement. Add --help
     for all options available
     """
-    response = announcements_service.update_announcement(ctx.obj['SESSION'], course_id, announcement_id)
+    response = announcements_service.update_announcement(
+        ctx.obj['SESSION'], course_id, announcement_id)
     click.echo(response)

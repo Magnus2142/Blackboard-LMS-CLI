@@ -3,6 +3,7 @@ import click
 
 from bbcli.services import assignment_service
 
+
 @click.command(name='get')
 @click.argument('course_id', required=True)
 @click.pass_context

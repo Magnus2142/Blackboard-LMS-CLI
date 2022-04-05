@@ -46,6 +46,7 @@ def feide_login():
     write_to_env_data(session)
     print('Login successful!')
 
+
 def get_credentials():
     # TODO: Give user an option to save their username and password
     # so they don't have to write their login everytime they want to login
@@ -90,12 +91,13 @@ def scrape_login_response(response, request_data):
         relayState = soup.find(
             'input', {'name': 'RelayState'})['value']
     except TypeError:
-          raise TypeError("Username or password is wrong...") 
+        raise TypeError("Username or password is wrong...")
     else:
         request_data.data = {
             'SAMLResponse': samlResponse,
             'RelayState': relayState
         }
+
 
 def post_adfs_request(session, request_data):
     return session.post('https://adfs.ntnu.no/adfs/ls/', data=request_data.data)
@@ -154,21 +156,23 @@ def scrape_microsoft_login_response(response, request_data):
     }
     request_data.data = json.dumps(request_data.data)
 
+
 def find_default_auth_method(auth_methods):
     for auth_method in auth_methods:
         if auth_method['isDefault'] == True:
             return auth_method['authMethodId']
 
+
 def choose_auth_method(auth_methods):
     print('Choose auth method:\n')
     choice = 1
     for auth_method in auth_methods:
-        print(str(choice) +  ". " + auth_method['authMethodId'])
+        print(str(choice) + ". " + auth_method['authMethodId'])
         choice += 1
-    
+
     user_input = input()
     return auth_methods[int(user_input) - 1]['authMethodId']
-    
+
 
 def begin_auth(session, request_data):
     global type
@@ -186,6 +190,7 @@ def begin_phone_app_auth(session, request_data):
     j = json.loads(response.text)
     app_auth_wait(session, request_data, j['CorrelationId'], j['FlowToken'])
 
+
 def begin_one_time_code_auth(session, request_data):
     global otc
     global flowtoken
@@ -196,7 +201,6 @@ def begin_one_time_code_auth(session, request_data):
     SMS_code = input('Enter code: ')
     otc = SMS_code
     j = json.loads(response.text)
-
 
     request_data.data = {
         'AdditionalAuthData': SMS_code,
@@ -213,15 +217,17 @@ def begin_one_time_code_auth(session, request_data):
 
     data = json.dumps(request_data.data)
 
-    response = session.post('https://login.microsoftonline.com/common/SAS/EndAuth', data=data, headers=request_data.headers)
+    response = session.post(
+        'https://login.microsoftonline.com/common/SAS/EndAuth', data=data, headers=request_data.headers)
     j = json.loads(response.text)
     flowtoken = j['FlowToken']
+
 
 def app_auth_wait(session, request_data, client_request_id, flow_token):
     global flowtoken
 
     request_data.data = {
-        "Method":"EndAuth",
+        "Method": "EndAuth",
         "SessionId": session_id,
         "FlowToken": flow_token,
         "Ctx": ctx,
