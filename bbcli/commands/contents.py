@@ -56,10 +56,10 @@ def web_link_options(function):
 
 @click.command(name='list')
 @click.argument('course_id', default='_27251_1')
-# @click.option('--folder-id')
+@click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
 @click.pass_context
 @exception_handler
-def list_contents(ctx, course_id: str, folder_id=None):
+def list_contents(ctx, course_id: str, folders: bool = False):
     '''
     Get the contents\n
     Folders are blue and have an id \n
@@ -67,16 +67,26 @@ def list_contents(ctx, course_id: str, folder_id=None):
     '''
     start = time.time()
 
-    response = contents_service.list_contents(
-        ctx.obj['SESSION'], course_id, folder_id)
-    folders = response.json()['results']
-    for folder in folders:
-        r = Node(folder)
-        worklist = [r]
-        get_children(ctx, course_id, worklist)
-        colors, root = r.preorder(r)
-        contents_view.list_tree(colors, root)
-
+    response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
+    data = response.json()['results']
+    folder_ids = dict()
+    if folders == True:
+        for node in data:
+            root = Node(node)
+            worklist = [root]
+            folder_ids[node['title']] = node['id']
+            get_folders(ctx, course_id, worklist, folder_ids)
+            root_node = root.preorder(root)
+            contents_view.list_tree(folder_ids, root_node, only_folders=True)
+    else:
+        for node in data:
+            root = Node(node)
+            worklist = [root]
+            folder_ids[node['title']] = node['id']
+            get_children(ctx, course_id, worklist, folder_ids)
+            root_node = root.preorder(root)
+            contents_view.list_tree(folder_ids, root_node)
+    
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
@@ -100,8 +110,55 @@ def get_content(ctx, course_id: str, node_id: str):
     elif data['contentHandler']['id'] == content_handler['folder']:
         root = Node(data, True)
         worklist = [root]
-        res = get_children(ctx, course_id, worklist, [])
-        contents_view.create_tree(root, res)
+        # res = get_children(ctx, course_id, worklist, [])
+        # contents_view.create_tree(root, res)
+
+def get_children(ctx, course_id, worklist, folder_ids):
+    key = 'hasChildren'
+    if len(worklist) == 0:
+        return
+    else:
+        node = worklist.pop(0)
+        node_id = node.data['id']
+        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
+        if check_response(response) == False:
+            # return get_children(ctx, course_id, worklist, acc)
+            pass
+        else:
+            children = response.json()['results']
+            for child in children:
+                if key in child and child[key] == True:
+                    child_node = Node(child)
+                    node.add_child(child_node)
+                    worklist.append(child_node)
+                    folder_ids[child['title']] = child['id']
+                else:
+                    child_node = Node(child)
+                    node.add_child(child_node)
+            
+            return get_children(ctx, course_id, worklist, folder_ids)
+
+def get_folders(ctx, course_id, worklist, folder_ids):
+    key = 'hasChildren'
+    if len(worklist) == 0:
+        return
+    else:
+        node = worklist.pop(0)
+        node_id = node.data['id']
+        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
+        if check_response(response) == False:
+            # return get_children(ctx, course_id, worklist, acc)
+            pass
+        else:
+            children = response.json()['results']
+            for child in children:
+                if key in child and child[key] == True:
+                    child_node = Node(child)
+                    node.add_child(child_node)
+                    worklist.append(child_node)
+                    folder_ids[child['title']] = child['id']
+            
+            return get_folders(ctx, course_id, worklist, folder_ids)
 
 
 @click.command(name='attachment')
@@ -175,32 +232,6 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 def create_content(ctx, course_id: str, content_id: str):
     contents_service.test_create_assignment(
         ctx.obj['SESSION'], course_id, content_id)
-
-
-def get_children(ctx, course_id, worklist):
-    key = 'hasChildren'
-    if len(worklist) == 0:
-        return
-    else:
-        node = worklist.pop(0)
-        node_id = node.data['id']
-        response = contents_service.get_children(
-            ctx.obj['SESSION'], course_id, node_id)
-        if check_response(response) == False:
-            # return get_children(ctx, course_id, worklist, acc)
-            pass
-        else:
-            children = response.json()['results']
-            for child in children:
-                if key in child and child[key] == True:
-                    child_node = Node(child)
-                    node.add_child(child_node)
-                    worklist.append(child_node)
-                else:
-                    child_node = Node(child)
-                    node.add_child(child_node)
-
-            return get_children(ctx, course_id, worklist)
 
 
 @exception_handler

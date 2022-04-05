@@ -1,12 +1,10 @@
-from datetime import date
 import json
 import os
-from typing import Dict, Any, List
 import requests
 import magic
 from bbcli.utils.URL_builder import URL_builder
 from bbcli.services.utils.content_builder import ContentBuilder
-from bbcli.entities.content_builder_entitites import DateInterval, FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
+from bbcli.entities.content_builder_entitites import FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
 import click
 
@@ -17,11 +15,8 @@ content_builder = ContentBuilder()
 
 # User gets a tree structure view of the courses content
 # where each content is listed something like this: _030303_1 Lectures Folder
-
-
-def list_contents(session: requests.Session, course_id, folder_id):
-    url = url_builder.base_v1().add_courses().add_id(
-        course_id).add_contents().create()
+def list_contents(session: requests.Session, course_id):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
     response = session.get(url)
     if check_response(response) is False:
         return

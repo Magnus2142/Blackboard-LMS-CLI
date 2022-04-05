@@ -7,13 +7,15 @@ from subprocess import call
 
 
 
-def list_tree(colors, root):
+def list_tree(colors, root, only_folders = False):
+    color = Fore.RESET if only_folders else Fore.BLUE
     for pre, fill, node in RenderTree(root):
-        folder_id = colors[node.name]
-        if folder_id == '':
+        if not node.children and only_folders == False:
             click.echo("%s%s" % (pre, node.name))
         else:
-            click.echo(f'{pre}{Fore.BLUE}{folder_id} {node.name} {Style.RESET_ALL}')
+            folder_id = colors[node.name]
+            click.echo(f'{pre}{color}{folder_id} {node.name} {Style.RESET_ALL}')
+
 
 def create_tree(root, nodes):
     parents = []
