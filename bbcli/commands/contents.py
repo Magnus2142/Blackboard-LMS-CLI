@@ -8,6 +8,7 @@ from bbcli.views import contents_view
 import time
 import click
 import webbrowser
+import threading
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
@@ -54,13 +55,22 @@ def web_link_options(function):
                             'launch_in_new_window', is_flag=True)(function)
     return function
 
+def list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders):
+    if folders == True:
+        get_folders(ctx, course_id, worklist, folder_ids)
+    else:
+        get_children(ctx, course_id, worklist, folder_ids)
+    root_node = root.preorder(root)
+    contents_view.list_tree(folder_ids, root_node, only_folders=folders)
+
 
 @click.command(name='list')
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
+@click.option('-t', '--threads', required=False, is_flag=True, help='Specify this if you want to run with threads')
 @click.pass_context
 @exception_handler
-def list_contents(ctx, course_id: str, folders: bool = False):
+def list_contents(ctx, course_id: str, folders: bool = False, threads: bool = True):
     '''
     Get the contents\n
     Folders are blue and have an id \n
@@ -71,23 +81,25 @@ def list_contents(ctx, course_id: str, folders: bool = False):
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
     data = response.json()['results']
     folder_ids = dict()
-    if folders == True:
+
+    if threads == False:
         for node in data:
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            get_folders(ctx, course_id, worklist, folder_ids)
-            root_node = root.preorder(root)
-            contents_view.list_tree(folder_ids, root_node, only_folders=True)
+            list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders)
     else:
+        threads = []
         for node in data:
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            get_children(ctx, course_id, worklist, folder_ids)
-            root_node = root.preorder(root)
-            contents_view.list_tree(folder_ids, root_node)
-    
+            args = [ctx, course_id, worklist, folder_ids, root, folders]
+            t = threading.Thread(target=list_contents_thread, args=args)
+            t.start()
+            threads.append(t)
+        [t.join() for t in threads]
+
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
