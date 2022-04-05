@@ -13,9 +13,9 @@ from anytree import Node as Nd, RenderTree
 from bbcli import check_response
 from bbcli.entities.Node import Node
 from bbcli.entities.Node import Node2
-from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.URL_builder import URL_builder
 
-url_builder = URLBuilder()
+url_builder = URL_builder()
 
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 

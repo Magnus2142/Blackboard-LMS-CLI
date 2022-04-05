@@ -8,10 +8,10 @@ import click
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
-from bbcli.utils.URL_builder import URLBuilder
+from bbcli.utils.URL_builder import URL_builder
 from bbcli.utils.content_handler import content_handler
 
-url_builder = URLBuilder()
+url_builder = URL_builder()
 
 base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
