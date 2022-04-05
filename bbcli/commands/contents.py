@@ -7,6 +7,7 @@ from bbcli.services import contents_service
 from bbcli.views import contents_view
 import time
 import click
+import webbrowser
 
 from bbcli import check_response
 from bbcli.entities.Node import Node
@@ -91,7 +92,6 @@ def list_contents(ctx, course_id: str, folders: bool = False):
 
     print(f'\ndownload time: {end - start} seconds')
 
-
 @click.command(name='get')
 @click.argument('course_id', required=True, type=str)
 @click.argument('node_id', required=True, type=str)
@@ -101,17 +101,26 @@ def get_content(ctx, course_id: str, node_id: str):
         ctx.obj['SESSION'], course_id, node_id)
     data = response.json()
     if data['contentHandler']['id'] == content_handler['document']:
-        contents_view.open_vim()
-    elif data['contentHandler']['id'] == content_handler['file'] or data['contentHandler']['id'] == content_handler['document'] or data['contentHandler']['id'] == content_handler['assignment']:
+        contents_view.open_vim(data)
+    elif (data['contentHandler']['id'] == content_handler['file']):
+        # or data['contentHandler']['id'] == content_handler['document'] 
+        # or data['contentHandler']['id'] == content_handler['assignment']):
         click.confirm(
             "This is a .docx file, do you want to download it?", abort=True)
-        response = contents_service.get_file(
+        contents_service.download_file(
             ctx.obj['SESSION'], course_id, node_id)
+        
     elif data['contentHandler']['id'] == content_handler['folder']:
-        root = Node(data, True)
+        folder_ids = dict()
+        folder_ids[data['title']] = data['id']
+        root = Node(data)
         worklist = [root]
-        # res = get_children(ctx, course_id, worklist, [])
-        # contents_view.create_tree(root, res)
+        get_children(ctx, course_id, worklist, folder_ids)
+        root_node = root.preorder(root)
+        contents_view.list_tree(folder_ids, root_node, only_folders=False)
+    elif data['contentHandler']['id'] == content_handler['externallink']:
+        link = data['contentHandler']['url']
+        webbrowser.open(link)
 
 def get_children(ctx, course_id, worklist, folder_ids):
     key = 'hasChildren'
