@@ -9,3 +9,4 @@ lxml==4.8.0
 anytree==2.8.0
 html2text==2020.1.16
 python-magic==0.4.25
+python-dateutil==2.8.2
