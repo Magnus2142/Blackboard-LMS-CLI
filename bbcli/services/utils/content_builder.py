@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 from bbcli.entities.content_builder_entitites import FileContent, FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 
+
 class Builder(ABC):
 
     @property
@@ -57,7 +58,7 @@ class Builder(ABC):
     def add_content_handler_folder(self, is_bb_page: bool) -> Builder:
         pass
 
-    # Possible target types: 
+    # Possible target types:
     # Unset
     # CourseAssessment
     # CourseTOC
@@ -70,7 +71,7 @@ class Builder(ABC):
     # ModulePage
 
     @abstractmethod
-    def add_content_handler_courselink(self, target_id: str, target_type: str='Unset') -> Builder:
+    def add_content_handler_courselink(self, target_id: str, target_type: str = 'Unset') -> Builder:
         pass
 
 
@@ -100,6 +101,12 @@ class ContentBuilder(Builder):
         })
         return self
 
+    def add_name(self, name: str) -> Builder:
+        self._product.add({
+            'name': name
+        })
+        return self
+
     def add_body(self, body: str) -> Builder:
         self._product.add({
             'body': body
@@ -107,8 +114,10 @@ class ContentBuilder(Builder):
         return self
 
     def add_standard_options(self, standard_options: StandardOptions) -> Builder:
-        start_date_str = datetime.strftime(standard_options.date_interval.start_date,'%Y-%m-%dT%H:%m:%S.%fZ') if standard_options.date_interval.start_date else None
-        end_date_str = datetime.strftime(standard_options.date_interval.end_date, '%Y-%m-%dT%H:%m:%S.%fZ') if standard_options.date_interval.end_date else None
+        start_date_str = datetime.strftime(standard_options.date_interval.start_date,
+                                           '%Y-%m-%dT%H:%m:%S.%fZ') if standard_options.date_interval.start_date else None
+        end_date_str = datetime.strftime(standard_options.date_interval.end_date,
+                                         '%Y-%m-%dT%H:%m:%S.%fZ') if standard_options.date_interval.end_date else None
         self._product.add({
             'availability': {
                 'available': 'No' if standard_options.hide_content else 'Yes',
@@ -125,7 +134,7 @@ class ContentBuilder(Builder):
                 'reviewable': standard_options.reviewable,
             })
         return self
-    
+
     # Missing an extra option, but don't know what it is called
     def add_file_options(self, file_options: FileOptions) -> Builder:
         self._product.add({
@@ -140,7 +149,8 @@ class ContentBuilder(Builder):
         return self
 
     def add_grading_options(self, grading_options: GradingOptions) -> Builder:
-        due_date_str = datetime.strftime(grading_options.due, '%Y-%m-%dT%H:%m:%S.%fZ') if grading_options.due else None
+        due_date_str = datetime.strftime(
+            grading_options.due, '%Y-%m-%dT%H:%m:%S.%fZ') if grading_options.due else None
         self._product.add({
             'grading': {
                 'due': due_date_str,
@@ -153,18 +163,17 @@ class ContentBuilder(Builder):
         })
         return self
 
-
     def add_content_handler_document(self) -> Builder:
         self._product.add({
-            'contentHandler' : {
+            'contentHandler': {
                 'id': 'resource/x-bb-document'
             }
         })
         return self
-    
+
     def add_content_handler_file(self, file_content: FileContent) -> Builder:
         self._product.add({
-            'contentHandler' : {
+            'contentHandler': {
                 'id': 'resource/x-bb-file',
                 'file': {
                     'uploadId': file_content.upload_id,
@@ -176,28 +185,28 @@ class ContentBuilder(Builder):
             }
         })
         return self
-    
+
     def add_content_handler_externallink(self, url: str) -> Builder:
         self._product.add({
-            'contentHandler' : {
+            'contentHandler': {
                 'id': 'resource/x-bb-externallink',
                 'url': url
             }
         })
         return self
-    
+
     def add_content_handler_folder(self, is_bb_page: bool) -> Builder:
         self._product.add({
-            'contentHandler' : {
+            'contentHandler': {
                 'id': 'resource/x-bb-folder',
                 'isBbPage': is_bb_page
             }
         })
         return self
-    
+
     def add_content_handler_courselink(self, target_id: str, target_type: str = 'Unset') -> Builder:
         self._product.add({
-            'contentHandler' : {
+            'contentHandler': {
                 'id': 'resource/x-bb-courselink',
                 'targetId': target_id,
                 'targetType': target_type

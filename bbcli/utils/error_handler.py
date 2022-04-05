@@ -3,6 +3,7 @@ import click
 
 # ERROR HANDLER SHOULD BE USED IN VIEW??
 
+
 def exception_handler(func):
     def inner_function(*args, **kwargs):
         try:
