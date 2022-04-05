@@ -63,7 +63,6 @@ def list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders):
     root_node = root.preorder(root)
     contents_view.list_tree(folder_ids, root_node, only_folders=folders)
 
-
 @click.command(name='list')
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
