@@ -7,8 +7,9 @@ from bbcli.services.utils.content_builder import ContentBuilder
 from bbcli.entities.content_builder_entitites import FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
 import click
+import urllib.request
 
-from bbcli.utils.utils import check_response
+from bbcli.utils.utils import check_response, get_download_path
 
 url_builder = URL_builder()
 content_builder = ContentBuilder()
@@ -44,7 +45,7 @@ def get_content(session: requests.Session, course_id: str, node_id: str):
     return session.get(url)
 
 
-def get_file(session: requests.Session, course_id: str, node_id: str):
+def download_file(session: requests.Session, course_id: str, node_id: str):
     # https://ntnu.blackboard.com/learn/api/public/v1/courses/_27251_1/contents/_1685326_1
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).add_attachments()
@@ -54,16 +55,16 @@ def get_file(session: requests.Session, course_id: str, node_id: str):
     if check_response(response) == False:
         return
     else:
-        print("kommer her")
         id = data['results'][0]['id']
-        # url = url.add_id(id).add_download().create()
+        file_name = data['results'][0]['fileName']
         url = url_builder.base_v1().add_courses().add_id(course_id).add_contents(
         ).add_id(node_id).add_attachments().add_id(id).add_download().create()
-        print(url)
-        response = session.get(url)
-        print(response.headers)
-
-    return response
+        response = session.get(url, allow_redirects=True)
+        downloads_path = get_download_path(file_name)
+        f = open(downloads_path, 'wb')
+        f.write(response.content)
+        f.close()
+        click.echo("The file was downloaded to your downloads folder.")
 
 
 def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
