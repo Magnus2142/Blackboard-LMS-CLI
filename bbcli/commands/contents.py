@@ -55,7 +55,7 @@ def web_link_options(function):
 
 
 @click.command(name='list')
-@click.argument('course_id', default='_27251_1')
+@click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
 @click.pass_context
 @exception_handler
