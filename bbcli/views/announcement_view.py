@@ -24,3 +24,13 @@ def print_course_announcements(course_announcements: List, course_name: str = No
             click.echo('{:<15} {:<15}'.format('Title: ', title))
             click.echo('{:<15} {:<15}'.format('Date: ', created))
             click.echo('\n{:<15}\n'.format(body))
+
+def print_announcement_created(announcement):
+    click.echo('\nAnnouncement sucessfully created:\n\n' + announcement)
+
+
+def print_announcement_deleted():
+    click.echo('\nAnnouncement sucessfully deleted.\n')
+
+def print_announcement_updated(announcement):
+    click.echo('\nAnnouncement sucessfully updated:\n\n' + announcement)

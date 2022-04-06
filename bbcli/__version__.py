@@ -1,4 +1,4 @@
-VERSION = (0, 1, 12)
+VERSION = (0, 0, 3)
 PRERELEASE = None  # alpha, beta or rc
 REVISION = None
 
@@ -11,7 +11,7 @@ def generate_version(version, prerelease=None, revision=None):
         version_parts.append('.{}'.format(revision))
     return ''.join(version_parts)
 
-__title__ = 'Blackboard Learn Ultra CLI'
+__title__ = 'Blackboard LMS CLI'
 __description__ = 'A command-line tool suite for communicating with the Blackboard Learn Managment System'
 __url__ = 'https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072'
 __version__ = generate_version(VERSION, prerelease=PRERELEASE, revision=REVISION)
