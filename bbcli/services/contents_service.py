@@ -2,12 +2,11 @@ import json
 import os
 import requests
 import magic
-from bbcli.utils.URL_builder import URL_builder
+from bbcli.utils.URL_builder import Builder, URL_builder
 from bbcli.services.utils.content_builder import ContentBuilder
 from bbcli.entities.content_builder_entitites import FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
 import click
-import urllib.request
 
 from bbcli.utils.utils import check_response, get_download_path
 
@@ -41,30 +40,39 @@ def get_children(session: requests.Session, course_id: str, node_id: str):
 def get_content(session: requests.Session, course_id: str, node_id: str):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).create()
-    print(url)
     return session.get(url)
 
-
-def download_file(session: requests.Session, course_id: str, node_id: str):
-    # https://ntnu.blackboard.com/learn/api/public/v1/courses/_27251_1/contents/_1685326_1
+def get_content_targetid(session: requests.Session, course_id: str, target_id: str):
     url = url_builder.base_v1().add_courses().add_id(
-        course_id).add_contents().add_id(node_id).add_attachments()
-    current = url.create()
-    response = session.get(current)
-    data = response.json()
-    if check_response(response) == False:
-        return
+        course_id).add_contents().add_id(target_id).create()
+    return session.get(url)
+
+def get_attachments(session: requests.Session, course_id: str, node_id: str):
+    url = url_builder.base_v1().add_courses().add_id(
+        course_id).add_contents().add_id(node_id).add_attachments().create()
+    return session.get(url)
+
+def download_attachment(session: requests.Session, course_id: str, node_id: str, attachment):
+    attachment_id = attachment['id']
+    fn = attachment['fileName']
+    url = url_builder.base_v1().add_courses().add_id(
+        course_id).add_contents().add_id(node_id).add_attachments(
+        ).add_id(attachment_id).add_download().create()
+    response = session.get(url, allow_redirects=True)
+    downloads_path = get_download_path(fn)
+    f = open(downloads_path, 'wb')
+    f.write(response.content)
+    f.close()
+    click.echo(f'\"{fn}\" was downloaded to the downloads folder.')
+
+def download_attachments(session: requests.Session, course_id: str, node_id: str):
+    response = get_attachments(session, course_id, node_id)
+    attachments = response.json()['results']
+    if len(attachments) == 0:
+        click.echo("There was no attachments.")
     else:
-        id = data['results'][0]['id']
-        file_name = data['results'][0]['fileName']
-        url = url_builder.base_v1().add_courses().add_id(course_id).add_contents(
-        ).add_id(node_id).add_attachments().add_id(id).add_download().create()
-        response = session.get(url, allow_redirects=True)
-        downloads_path = get_download_path(file_name)
-        f = open(downloads_path, 'wb')
-        f.write(response.content)
-        f.close()
-        click.echo("The file was downloaded to your downloads folder.")
+        for attachment in attachments:
+            download_attachment(session, course_id, node_id, attachment)
 
 
 def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
