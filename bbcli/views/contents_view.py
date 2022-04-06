@@ -32,3 +32,9 @@ def open_vim(data):
         # tf.seek(0)
         # edited_message = tf.read()
         # print (edited_message.decode("utf-8"))
+
+def open_less_page(str):
+    import pydoc
+    pydoc.pager(str)
+
+
