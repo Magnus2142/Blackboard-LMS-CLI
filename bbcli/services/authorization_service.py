@@ -291,7 +291,9 @@ def write_to_env_data(session):
     xsrf = bb_router_values[len(bb_router_values) - 1].split(':')
     xsrf_value = xsrf[1]
 
-    f = open('.env', 'w')
+    enviroment_path = f'{os.path.dirname(os.path.abspath(__file__))}/../'
+
+    f = open(f'{enviroment_path}.env', 'w')
     f.write(f'BB_ROUTER={BB_ROUTER}\n')
     f.write(f'XSRF={xsrf_value}\n')
     f.write(f'BB_USERNAME={login_username}\n')

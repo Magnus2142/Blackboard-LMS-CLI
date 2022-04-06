@@ -10,7 +10,14 @@ with open('README.md', 'r') as f:
     readme = f.read()
 
 requires = [
-    'Click'
+    'Click',
+    'colorama',
+    'requests',
+    'python-dotenv',
+    'beautifulsoup4',
+    'lxml>=4.8.0',
+    'html2text',
+    'python-magic'
 ]
 
 def setup_package():
@@ -26,6 +33,7 @@ def setup_package():
         license=about['__license__'],
         packages=find_packages(),
         include_package_data=True,
+        dependency_links=['https://github.com/c0fec0de/anytree, https://github.com/sarugaku/shellingham'],
         install_requires=requires,
         entry_points={
             'console_scripts': [

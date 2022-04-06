@@ -11,6 +11,7 @@ from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
 from bbcli.commands.contents import create_assignment, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment
 from bbcli.services.authorization_service import login
+import mmap
 
 load_dotenv()
 cookies = {'BbRouter' : os.getenv("BB_ROUTER")}
@@ -45,8 +46,41 @@ def entry_point(ctx):
     session = initiate_session()
     ctx.obj['SESSION'] = session
 
-    pass
 
+"""
+ACTIVATE SHELL COMPLETION
+"""
+@click.command(name='activate-shell-completion')
+def activate_shell_completion():
+    is_activated = False
+    shell = os.environ['SHELL']
+    if shell == '/bin/bash':
+        shell = 'bash'
+    elif shell == '/bin/zsh':
+        shell = 'zsh'
+    elif shell == '/bin/fish':
+        shell = 'fish'
+    
+    path = os.path.join(os.path.expanduser('~'), f'.config/fish/completions/bb.{shell}')\
+        if shell == 'fish' else os.path.join(os.path.expanduser('~'), f'.{shell}rc')
+
+    append_text = f'eval (env _BB_COMPLETE=source_fish bb)' if shell == 'fish' else f'eval "$(_BB_COMPLETE=source_{shell} bb)"'
+
+    with open(path, 'rb') as f, \
+        mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as s:
+    
+        if s.find(bytearray(append_text.encode())) != -1:
+            is_activated = True
+
+    if not is_activated:
+        with open(path, 'a') as f:
+            f.write(f'\n{append_text}')
+            click.echo('Shell completion activated!')
+    else:    
+        click.echo('Shell completion already activated.')
+
+
+entry_point.add_command(activate_shell_completion)
 """
 COURSE COMMANDS ENTRY POINT
 """
