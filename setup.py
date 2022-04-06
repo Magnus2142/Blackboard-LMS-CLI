@@ -20,7 +20,6 @@ requires = [
     'anytree',
     'html2text',
     'python-magic',
-    'python-magic-bin',
     'python-dateutil'
 ]
 
