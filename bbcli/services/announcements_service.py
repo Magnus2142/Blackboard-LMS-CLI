@@ -79,6 +79,7 @@ def create_announcement(session: requests.Session, course_id: str, title: str, d
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_announcements().create()
     response = session.post(url, data=data)
+    response.raise_for_status()
 
     return response.text
 
@@ -87,10 +88,8 @@ def delete_announcement(session: requests.Session, course_id: str, announcement_
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_announcements().add_id(announcement_id).create()
     response = session.delete(url)
-    if response.text == '':
-        return 'Sucessfully deleted announcement!'
-    else:
-        return response.text
+    response.raise_for_status()
+    return response.text
 
 
 def update_announcement(session: requests.Session, course_id: str, announcement_id: str):
@@ -111,5 +110,6 @@ def update_announcement(session: requests.Session, course_id: str, announcement_
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_announcements().add_id(announcement_id).create()
     response = session.patch(url, data=new_data)
+    response.raise_for_status()
 
     return response.text

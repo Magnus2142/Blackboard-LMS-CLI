@@ -47,7 +47,7 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
 
     response = announcements_service.create_announcement(
         ctx.obj['SESSION'], course_id, title, date_interval)
-    click.echo(response)
+    announcement_view.print_announcement_created(response)
 
 
 @click.command(name='delete', help='Deletes an announcement. Add --help for all options available')
@@ -56,8 +56,8 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
 @click.pass_context
 @exception_handler
 def delete_announcement(ctx, course_id: str, announcement_id: str):
-    response = announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
-    click.echo(response)
+    announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
+    announcement_view.print_announcement_deleted()
 
 
 @click.command(name='update', help='Updates an announcement. Add --help for all options available.')
@@ -67,4 +67,4 @@ def delete_announcement(ctx, course_id: str, announcement_id: str):
 @exception_handler
 def update_announcement(ctx, course_id: str, announcement_id: str):
     response = announcements_service.update_announcement(ctx.obj['SESSION'], course_id, announcement_id)
-    click.echo(response)
+    announcement_view.print_announcement_updated(response)

@@ -16,8 +16,12 @@ requires = [
     'python-dotenv',
     'beautifulsoup4',
     'lxml>=4.8.0',
+    'shellingham',
+    'anytree',
     'html2text',
-    'python-magic'
+    'python-magic',
+    'python-magic-bin',
+    'python-dateutil'
 ]
 
 def setup_package():
@@ -33,7 +37,6 @@ def setup_package():
         license=about['__license__'],
         packages=find_packages(),
         include_package_data=True,
-        dependency_links=['https://github.com/c0fec0de/anytree, https://github.com/sarugaku/shellingham'],
         install_requires=requires,
         entry_points={
             'console_scripts': [
@@ -51,17 +54,3 @@ def setup_package():
 
 if __name__ == '__main__':
     setup_package()
-
-# setup(
-#     name='bb',
-#     # version='0.1.0',
-#     # py_modules=['yourscript'],
-#     install_requires=[
-#         'Click',
-#     ],
-#     entry_points={
-#         'console_scripts': [
-#             'bb=bbcli.__main__:main', # the cli() function runs inside the bbcli.py. cli is the command that is used to run the command
-#         ],
-#     },
-# )
