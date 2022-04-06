@@ -135,6 +135,18 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         click.confirm("This is a file, do you want to download it?", abort=True)
         contents_service.download_attachments(session, course_id, node_id)
 
+        # TODO: try to open a file and send in the cookies
+        # print(session.cookies)
+        # from selenium import webdriver
+
+        #browser = webdriver.Chrome()
+
+        #browser.get("http://www.example.com")
+        #browser.add_cookie({
+            #'name' : 'myLovelyCookie',
+            #'value' : 'myLovelyValue'
+        #})
+
         # click.confirm(
         #     "This is a .docx file, do you want to download it?", abort=True)
         # fn = data['contentHandler']['file']['fileName']
