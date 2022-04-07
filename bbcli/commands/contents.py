@@ -150,7 +150,8 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         str = data['title'] + '\n' + html_to_text(data['body'])
         contents_view.open_less_page(str)
         click.confirm("The assignment contains attachment(s), do you want to download?", abort=True)
-        contents_service.download_attachments(session, course_id, node_id)
+        paths = contents_service.download_attachments(session, course_id, node_id)
+        [contents_service.open_file(path) for path in paths]
         
 
 @click.command(name='get')
