@@ -1,5 +1,4 @@
-from bbcli.services.utils.content_builder import Content
-from bbcli.utils.utils import format_date, html_to_text
+from bbcli.utils.utils import format_date
 from bbcli.utils.error_handler import exception_handler
 import click
 from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
@@ -7,13 +6,10 @@ from bbcli.services import contents_service
 from bbcli.views import contents_view
 import time
 import click
-import webbrowser
 import threading
 
-from bbcli import check_response
 from bbcli.entities.Node import Node
 from bbcli.utils.URL_builder import URL_builder
-from bbcli.utils.content_handler import content_handler 
 from bbcli.utils import content_utils
 
 url_builder = URL_builder()
@@ -56,14 +52,6 @@ def web_link_options(function):
                             'launch_in_new_window', is_flag=True)(function)
     return function
 
-def list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders):
-    if folders == True:
-        get_folders(ctx, course_id, worklist, folder_ids)
-    else:
-        get_children(ctx, course_id, worklist, folder_ids)
-    root_node = root.preorder(root)
-    contents_view.list_tree(folder_ids, root_node, only_folders=folders)
-
 @click.command(name='list')
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
@@ -87,7 +75,7 @@ def list_contents(ctx, course_id: str, folders: bool = False, threads: bool = Tr
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders)
+            content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders)
     else:
         threads = []
         for node in data:
@@ -95,7 +83,7 @@ def list_contents(ctx, course_id: str, folders: bool = False, threads: bool = Tr
             worklist = [root]
             folder_ids[node['title']] = node['id']
             args = [ctx, course_id, worklist, folder_ids, root, folders]
-            t = threading.Thread(target=list_contents_thread, args=args)
+            t = threading.Thread(target=content_utils.list_contents_thread, args=args)
             t.start()
             threads.append(t)
         [t.join() for t in threads]
@@ -104,111 +92,14 @@ def list_contents(ctx, course_id: str, folders: bool = False, threads: bool = Tr
 
     print(f'\ndownload time: {end - start} seconds')
 
-def check_content_handler(ctx, course_id: str, node_id: str):
-    session = ctx.obj['SESSION']
-    response = contents_service.get_content(
-        ctx.obj['SESSION'], course_id, node_id)
-    data = response.json()
-    ch = data['contentHandler']['id']
-    if ch == content_handler['document']:
-        click.confirm("This is a document with an attachment(s), do you want to download it?", abort=True)
-        contents_service.download_attachments(session, course_id, node_id)
-        # contents_view.open_vim(data)
-    elif ch == content_handler['externallink']:
-        link = data['contentHandler']['url']
-        webbrowser.open(link)
-    elif ch == content_handler['folder']:
-        folder_ids = dict()
-        folder_ids[data['title']] = data['id']
-        root = Node(data)
-        worklist = [root]
-        get_children(ctx, course_id, worklist, folder_ids)
-        root_node = root.preorder(root)
-        contents_view.list_tree(folder_ids, root_node, only_folders=False)
-    elif ch == content_handler['courselink']:
-        print("tester ut courselink")
-        key = 'targetId'
-        if key in data['contentHandler']:
-            target_id = data['contentHandler'][key]
-            check_content_handler(ctx, course_id, target_id)
-    elif (ch == content_handler['file']):
-        click.confirm("This is a file, do you want to download and open it?", abort=True)
-        paths = contents_service.download_attachments(session, course_id, node_id)
-        print(paths)
-        [contents_service.open_file(path) for path in paths]
-
-        # click.confirm(
-        #     "This is a .docx file, do you want to download it?", abort=True)
-        # fn = data['contentHandler']['file']['fileName']
-        # ft = content_utils.get_file_type(fn)
-        # print(ft)
-        # if ft == 'image_file':
-        #     contents_service.download_file(session, course_id, node_id)
-        # elif ft == 'document_file':
-        #     contents_service.download_file(session,course_id, node_id)
-    elif ch == content_handler['assignment']:
-        str = data['title'] + '\n' + html_to_text(data['body'])
-        contents_view.open_less_page(str)
-        click.confirm("The assignment contains attachment(s), do you want to download?", abort=True)
-        paths = contents_service.download_attachments(session, course_id, node_id)
-        [contents_service.open_file(path) for path in paths]
-        
 
 @click.command(name='get')
 @click.argument('course_id', required=True, type=str)
 @click.argument('node_id', required=True, type=str)
 @click.pass_context
 def get_content(ctx, course_id: str, node_id: str):
-    check_content_handler(ctx, course_id, node_id)
+    content_utils.check_content_handler(ctx, course_id, node_id)
     
-    
-def get_children(ctx, course_id, worklist, folder_ids):
-    key = 'hasChildren'
-    if len(worklist) == 0:
-        return
-    else:
-        node = worklist.pop(0)
-        node_id = node.data['id']
-        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
-        if check_response(response) == False:
-            # return get_children(ctx, course_id, worklist, acc)
-            pass
-        else:
-            children = response.json()['results']
-            for child in children:
-                if key in child and child[key] == True:
-                    child_node = Node(child)
-                    node.add_child(child_node)
-                    worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
-                else:
-                    child_node = Node(child)
-                    node.add_child(child_node)
-            
-            return get_children(ctx, course_id, worklist, folder_ids)
-
-def get_folders(ctx, course_id, worklist, folder_ids):
-    key = 'hasChildren'
-    if len(worklist) == 0:
-        return
-    else:
-        node = worklist.pop(0)
-        node_id = node.data['id']
-        response = contents_service.get_children(ctx.obj['SESSION'], course_id, node_id)
-        if check_response(response) == False:
-            # return get_children(ctx, course_id, worklist, acc)
-            pass
-        else:
-            children = response.json()['results']
-            for child in children:
-                if key in child and child[key] == True:
-                    child_node = Node(child)
-                    node.add_child(child_node)
-                    worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
-            
-            return get_folders(ctx, course_id, worklist, folder_ids)
-
 
 @click.command(name='attachment', help='Adds an attachment to a content. Only supports contents of type document and assignment')
 @click.argument('course_id', required=True, type=str)
