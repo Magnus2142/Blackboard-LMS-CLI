@@ -1,6 +1,5 @@
 from urllib import request
 import os
-from dotenv import load_dotenv
 from bbcli.entities.RequestData import RequestData
 import requests
 import json
@@ -143,7 +142,6 @@ def scrape_microsoft_login_response(response, request_data):
     canary = script_content['canary']
     auth_methods = script_content['arrUserProofs']
     auth_method_id = find_default_auth_method(auth_methods)
-    print(auth_method_id)
     if(auth_method_id == None):
         auth_method_id = choose_auth_method(auth_methods)
     hpg_request_id = response.headers['x-ms-request-id']
@@ -307,5 +305,4 @@ def write_to_env_data(session):
 
 
 if __name__ == "__main__":
-    load_dotenv()
     login()
