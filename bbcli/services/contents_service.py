@@ -67,17 +67,12 @@ def download_attachment(session: requests.Session, course_id: str, node_id: str,
     click.echo(f'\"{fn}\" was downloaded to the downloads folder.')
     return downloads_path 
 
-def download_attachments(session: requests.Session, course_id: str, node_id: str):
-    response = get_attachments(session, course_id, node_id)
-    attachments = response.json()['results']
-    if len(attachments) == 0:
-        click.echo("There was no attachments.")
-    else:
-        paths = []
-        for attachment in attachments:
-            path = download_attachment(session, course_id, node_id, attachment)
-            paths.append(path)
-        return paths
+def download_attachments(session: requests.Session, course_id: str, node_id: str, attachments):
+    paths = []
+    for attachment in attachments:
+        path = download_attachment(session, course_id, node_id, attachment)
+        paths.append(path)
+    return paths
 
 def open_file(path):
     webbrowser.open(r'file:'+path)

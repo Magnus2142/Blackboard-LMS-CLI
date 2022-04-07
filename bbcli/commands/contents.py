@@ -3,7 +3,6 @@ from bbcli.utils.error_handler import exception_handler
 import click
 from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services import contents_service
-from bbcli.views import contents_view
 import time
 import click
 import threading
@@ -11,6 +10,7 @@ import threading
 from bbcli.entities.Node import Node
 from bbcli.utils.URL_builder import URL_builder
 from bbcli.utils import content_utils
+from bbcli.utils.content_handler import content_handler
 
 url_builder = URL_builder()
 
@@ -56,9 +56,10 @@ def web_link_options(function):
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
 @click.option('-t', '--threads', required=False, is_flag=True, help='Specify this if you want to run with threads')
+@click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
 @click.pass_context
 @exception_handler
-def list_contents(ctx, course_id: str, folders: bool = False, threads: bool = True):
+def list_contents(ctx, course_id: str, content_type, folders: bool = False, threads: bool = True):
     '''
     Get the contents\n
     Folders are blue and have an id \n
@@ -75,14 +76,14 @@ def list_contents(ctx, course_id: str, folders: bool = False, threads: bool = Tr
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders)
+            content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders, content_type)
     else:
         threads = []
         for node in data:
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            args = [ctx, course_id, worklist, folder_ids, root, folders]
+            args = [ctx, course_id, worklist, folder_ids, root, folders, content_type]
             t = threading.Thread(target=content_utils.list_contents_thread, args=args)
             t.start()
             threads.append(t)
