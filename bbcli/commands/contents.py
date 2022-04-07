@@ -132,20 +132,10 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             target_id = data['contentHandler'][key]
             check_content_handler(ctx, course_id, target_id)
     elif (ch == content_handler['file']):
-        click.confirm("This is a file, do you want to download it?", abort=True)
-        contents_service.download_attachments(session, course_id, node_id)
-
-        # TODO: try to open a file and send in the cookies
-        # print(session.cookies)
-        # from selenium import webdriver
-
-        #browser = webdriver.Chrome()
-
-        #browser.get("http://www.example.com")
-        #browser.add_cookie({
-            #'name' : 'myLovelyCookie',
-            #'value' : 'myLovelyValue'
-        #})
+        click.confirm("This is a file, do you want to download and open it?", abort=True)
+        paths = contents_service.download_attachments(session, course_id, node_id)
+        print(paths)
+        [contents_service.open_file(path) for path in paths]
 
         # click.confirm(
         #     "This is a .docx file, do you want to download it?", abort=True)

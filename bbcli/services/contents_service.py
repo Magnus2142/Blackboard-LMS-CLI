@@ -7,6 +7,7 @@ from bbcli.services.utils.content_builder import ContentBuilder
 from bbcli.entities.content_builder_entitites import FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
 from bbcli.utils.utils import input_body
 import click
+import webbrowser
 
 from bbcli.utils.utils import check_response, get_download_path
 
@@ -52,7 +53,7 @@ def get_attachments(session: requests.Session, course_id: str, node_id: str):
         course_id).add_contents().add_id(node_id).add_attachments().create()
     return session.get(url)
 
-def download_attachment(session: requests.Session, course_id: str, node_id: str, attachment):
+def download_attachment(session: requests.Session, course_id: str, node_id: str, attachment) -> str:
     attachment_id = attachment['id']
     fn = attachment['fileName']
     url = url_builder.base_v1().add_courses().add_id(
@@ -64,6 +65,7 @@ def download_attachment(session: requests.Session, course_id: str, node_id: str,
     f.write(response.content)
     f.close()
     click.echo(f'\"{fn}\" was downloaded to the downloads folder.')
+    return downloads_path 
 
 def download_attachments(session: requests.Session, course_id: str, node_id: str):
     response = get_attachments(session, course_id, node_id)
@@ -71,9 +73,14 @@ def download_attachments(session: requests.Session, course_id: str, node_id: str
     if len(attachments) == 0:
         click.echo("There was no attachments.")
     else:
+        paths = []
         for attachment in attachments:
-            download_attachment(session, course_id, node_id, attachment)
+            path = download_attachment(session, course_id, node_id, attachment)
+            paths.append(path)
+        return paths
 
+def open_file(path):
+    webbrowser.open(r'file:'+path)
 
 def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
     uploaded_file = upload_file(session, file_dst)
