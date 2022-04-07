@@ -37,17 +37,17 @@ class Node:
 			queue = level
 		return res
 
-	def preorder(self, root):
-		q = deque([root])
-		out = []
+	# def preorder(self, root):
+	# 	q = deque([root])
+	# 	out = []
 
-		while q:
-			cand = q.popleft()
-			out.append(cand.data['title'])
-			for c in reversed(cand.children):
-				q.appendleft(c)
+	# 	while q:
+	# 		cand = q.popleft()
+	# 		out.append(cand.data['title'])
+	# 		for c in reversed(cand.children):
+	# 			q.appendleft(c)
 		
-		return out
+	# 	return out
 	
 				
 
