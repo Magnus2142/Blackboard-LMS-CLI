@@ -5,6 +5,8 @@ from requests import Session
 import html2text
 import click
 
+from bbcli.services.authorization_service import login
+
 def check_valid_key(obj, key) -> bool:
     # print("the keys are", obj.keys())
     if key not in obj.keys():
@@ -24,12 +26,11 @@ def check_response(response) -> bool:
         return True
 
 
-def check_valid_date(cookies) -> bool:
-    tmp = cookies['BbRouter']
+def check_valid_date(cookie) -> bool:
+    tmp = cookie
     start = int(tmp.find('expires')) + len('expires') + 1
     end = int(tmp.find(','))
     timestmp = int(tmp[start: end])
-    print(timestmp)
     expires = datetime.fromtimestamp(timestmp)
     now = datetime.now()
     if expires >= now:
@@ -78,3 +79,15 @@ def get_download_path(file_name):
         return f'{location}\{file_name}'
     else:
         return os.path.join(os.path.expanduser('~'), f'Downloads/{file_name}')
+
+
+def authorization_handler(func):
+	def inner_function(*args, **kwargs):
+		is_authorized = True if os.getenv("BB_ROUTER") != None else False
+		if is_authorized:
+			func(*args, **kwargs)
+		else:
+			click.echo('You are not logged in, running login script:')
+			login()
+			click.echo('You can now communicate with Blackboard LMS')
+	return inner_function
