@@ -269,7 +269,7 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
 @grading_options
 @click.pass_context
 @exception_handler
-def create_assignment(ctx, course_id: str, parent_id: str, title: str,
+def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: str,
                       hide_content: bool, reviewable: bool,
                       start_date: str, end_date: str,
                       due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
