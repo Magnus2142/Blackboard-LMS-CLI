@@ -1,7 +1,7 @@
 # Blackboard LMS CLI
 
 ----
-<img src="/uploads/a2b91adfa7cb2daea2c6865253afd5e5/cli-logo.png" align="left" width="250px" height="192px"/>
+<img src="![cli-logo_1_](/uploads/e2da4491446c30269edc08a4885e6b35/cli-logo_1_.png)" align="left" width="211px" height="192px"/>
 <img align="left" width="0" height="192px" hspace="10"/>
 
 > Command-line tool suite for Blackboard LMS
