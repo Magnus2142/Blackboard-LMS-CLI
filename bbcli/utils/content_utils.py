@@ -7,9 +7,11 @@ from bbcli.entities.Node import Node
 from bbcli.utils.content_handler import content_handler
 from bbcli.views import contents_view
 
+def is_folder(node):
+    key = 'contentHandler'
+    return key in node and node[key]['id'] == content_handler['folder']
 
-def get_children(ctx, course_id, worklist, folder_ids):
-    key = 'hasChildren'
+def get_children(ctx, course_id, worklist, folder_ids, node_ids):
     if len(worklist) == 0:
         return
     else:
@@ -24,15 +26,16 @@ def get_children(ctx, course_id, worklist, folder_ids):
             for child in children:
                 child_node = Node(child)
                 node.add_child(child_node)
-                if key in child and child[key]:
+                if is_folder(child):
                     worklist.append(child_node)
                     folder_ids[child['title']] = child['id']
+                else:
+                    node_ids[child['title']] = child['id']
 
-            return get_children(ctx, course_id, worklist, folder_ids)
+            return get_children(ctx, course_id, worklist, folder_ids, node_ids)
 
 
-def get_folders(ctx, course_id, worklist, folder_ids):
-    key = 'hasChildren'
+def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
     if len(worklist) == 0:
         return
     else:
@@ -45,17 +48,18 @@ def get_folders(ctx, course_id, worklist, folder_ids):
         else:
             children = response.json()['results']
             for child in children:
-                if key in child and child[key]:
+                if is_folder(child):
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
                     folder_ids[child['title']] = child['id']
+                else:
+                    node_ids[child['title']] = child['id']
 
-            return get_folders(ctx, course_id, worklist, folder_ids)
+            return get_folders(ctx, course_id, worklist, folder_ids, node_ids)
 
 
-def get_content_type(ctx, course_id, worklist, folder_ids, content_type):
-    key = 'hasChildren'
+def get_content_type(ctx, course_id, worklist, folder_ids, node_ids, content_type):
     if len(worklist) == 0:
         return
     else:
@@ -68,7 +72,7 @@ def get_content_type(ctx, course_id, worklist, folder_ids, content_type):
         else:
             children = response.json()['results']
             for child in children:
-                if key in child and child[key]:
+                if is_folder(child):
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
@@ -76,9 +80,10 @@ def get_content_type(ctx, course_id, worklist, folder_ids, content_type):
                 elif 'contentHandler' in child and content_handler[content_type] == child['contentHandler']['id']:
                     child_node = Node(child)
                     node.add_child(child_node)
+                    node_ids[child['title']] = child['id']
 
             return get_content_type(
-                ctx, course_id, worklist, folder_ids, content_type)
+                ctx, course_id, worklist, folder_ids, node_ids, content_type)
 
 
 def list_contents_thread(
@@ -86,6 +91,7 @@ def list_contents_thread(
         course_id,
         worklist,
         folder_ids,
+        node_ids,
         root,
         folders: bool,
         content_type: str):
@@ -93,14 +99,17 @@ def list_contents_thread(
         click.ClickException(
             'Cannot list contents and a specific folder type. Try either one.')
     elif folders and content_type is None:
-        get_folders(ctx, course_id, worklist, folder_ids)
+        get_folders(ctx, course_id, worklist, folder_ids, node_ids)
     elif folders == False and content_type is not None:
-        get_content_type(ctx, course_id, worklist, folder_ids, content_type)
+        get_content_type(ctx, course_id, worklist, folder_ids, node_ids,  content_type)
     else:
-        get_children(ctx, course_id, worklist, folder_ids)
+        get_children(ctx, course_id, worklist, folder_ids, node_ids)
 
     root_node = root.preorder()
-    contents_view.list_tree(folder_ids, root_node, only_folders=folders)
+    if root_node is not None:
+        contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
+    else:
+        return 
 
 
 def check_content_handler(ctx, course_id: str, node_id: str):

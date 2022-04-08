@@ -70,20 +70,21 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
     data = response.json()['results']
     folder_ids = dict()
+    node_ids = dict()
 
     if threads == False:
         for node in data:
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, root, folders, content_type)
+            content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type)
     else:
         threads = []
         for node in data:
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            args = [ctx, course_id, worklist, folder_ids, root, folders, content_type]
+            args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
             t = threading.Thread(target=content_utils.list_contents_thread, args=args)
             t.start()
             threads.append(t)

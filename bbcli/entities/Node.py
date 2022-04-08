@@ -10,7 +10,7 @@ class Node:
 
 	def add_child(self, obj):
 		self.children.append(obj)
-		obj.parent = self.data
+		obj.parent = self
 
 	# __repr__ is a way to represent a class object as a string
 	# def __repr__(self):
@@ -59,8 +59,8 @@ class Node:
 
 		root_node = Nd(root.data['title'])
 		def dfs(node, root_node, parent):
-			if not node: 
-				parent = Nd(node.parent.parent['title']) 
+			if not node: # kjøres aldri
+				# parent = Nd(node.parent.parent['title']) 
 				return
 			elif parent is None:
 				parent = root_node
@@ -74,6 +74,11 @@ class Node:
 
 		dfs(root, root_node, None)
 		return root_node 
+	
+	def is_folder(node):
+		key = 'contentHandler'
+		from bbcli.utils.content_handler import content_handler
+		return key in node.data and node.data[key]['id'] == content_handler['folder']
 
 	# This is only getting folders. 
 	def preorder2(self):
@@ -81,18 +86,24 @@ class Node:
 		root_node = Nd(root.data['title'])	
 		def dfs(node, root_node, parent):
 			if not node:
-				parent = Nd(node.parent.parent['title'])
+				# parent = Nd(node.parent.parent['title'])
 				return
 			elif parent is None:
 				parent = root_node
-			elif len(node.children) > 0:
+			elif len(node.children) == 0 and Node.is_folder(node):
+				# print("children0", node.data['title'])
+				node.parent.children.remove(node)
+			else:
 				nd = Nd(node.data['title'], parent)
 				parent = nd
 			for c in node.children:
 				dfs(c, root_node, parent)
 
-		dfs(root, root_node, None)
-		return root_node
+		if len(root.children) == 0 and Node.is_folder(root):
+			return None
+		else:
+			dfs(root, root_node, None)
+			return root_node
 		
 
 	def inorder(self, root):
