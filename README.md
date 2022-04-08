@@ -8,7 +8,9 @@
 
 [![Under Development](https://img.shields.io/badge/under-development-orange.svg)](https://github.com/cezaraugusto/github-template-guidelines) [![Public Domain](https://img.shields.io/badge/public-domain-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![Travis](https://img.shields.io/travis/cezaraugusto/github-template-guidelines.svg)](http://github.com/cezaraugusto/github-template-guidelines)
 
-Blackboard LMS CLI is a command-line tool suite that students and staff can use to communicates with the Blackboard Learn REST API. It was created because the blackboard web interface can be ineffective and awkward to use. The CLI aims to offer a simple, intuitive and effective way to execute tasks in the Blackboard LMS. The software is written in python and based on the python package [Click](https://click.palletsprojects.com/en/8.1.x/)
+Blackboard LMS CLI is a command-line tool suite that students and staff can use to communicates with the Blackboard Learn REST API. It was created because the blackboard web interface can be ineffective and awkward to use. The CLI aims to offer a simple, intuitive and effective way to execute tasks in the Blackboard LMS.
+
+The software is written in python and based on the python package [Click](https://click.palletsprojects.com/en/8.1.x/)
 
 
 <!-- <br>
