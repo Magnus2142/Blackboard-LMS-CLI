@@ -53,8 +53,6 @@ def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
                     node.add_child(child_node)
                     worklist.append(child_node)
                     folder_ids[child['title']] = child['id']
-                else:
-                    node_ids[child['title']] = child['id']
 
             return get_folders(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -107,10 +105,6 @@ def list_contents_thread(
 
     root_node = root.preorder()
     return root_node
-    # if root_node is not None:
-    #     contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
-    # else:
-    #     return 
 
 
 def check_content_handler(ctx, course_id: str, node_id: str):

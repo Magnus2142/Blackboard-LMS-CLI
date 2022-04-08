@@ -95,9 +95,6 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
                 args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
                 t = executor.submit(content_utils.list_contents_thread, *args)
                 threads.append(t)
-                # t = threading.Thread(target=content_utils.list_contents_thread, args=args)
-                # t.start()
-                # threads.append(t)
                 
         for t in threads:
             root_node = t.result()
