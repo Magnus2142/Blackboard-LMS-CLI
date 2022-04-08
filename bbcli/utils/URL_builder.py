@@ -82,6 +82,18 @@ class Builder(ABC):
     def add_columns(self) -> Builder:
         pass
 
+    @abstractmethod
+    def add_attempts(self) -> Builder:
+        pass
+
+    @abstractmethod
+    def add_files(self) -> Builder:
+        pass
+
+    @abstractmethod
+    def create(self) -> Builder:
+        pass
+
 
 class URL_builder(Builder):
 
@@ -162,6 +174,14 @@ class URL_builder(Builder):
 
     def add_columns(self) -> Builder:
         self._product.add('/columns')
+        return self
+
+    def add_attempts(self) -> Builder:
+        self._product.add('/attempts')
+        return self
+    
+    def add_files(self) -> Builder:
+        self._product.add('/files')
         return self
 
     def create(self) -> str:

@@ -40,6 +40,8 @@ Blackboard LMS CLI is a command-line tool suite that students and staff can use 
 </p>
 <br> -->
 
+**On mac/linux:** `source ./venv/bin/activate`
+**On Windows:** `.\venv\Scripts\activate`
 
 
 **Links to production or demo instances:** LInksssss
