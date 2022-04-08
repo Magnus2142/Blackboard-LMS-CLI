@@ -52,9 +52,10 @@ class Node:
 				
 
 	# It's working bby
-	def preorder(self, root):
+	def preorder(self):
 		# l = defaultdict(list) # it is level order when you use dict
 		# folder_ids = dict()
+		root = self
 
 		root_node = Nd(root.data['title'])
 		def dfs(node, root_node, parent):
@@ -73,6 +74,25 @@ class Node:
 
 		dfs(root, root_node, None)
 		return root_node 
+
+	# This is only getting folders. 
+	def preorder2(self):
+		root = self
+		root_node = Nd(root.data['title'])	
+		def dfs(node, root_node, parent):
+			if not node:
+				parent = Nd(node.parent.parent['title'])
+				return
+			elif parent is None:
+				parent = root_node
+			elif len(node.children) > 0:
+				nd = Nd(node.data['title'], parent)
+				parent = nd
+			for c in node.children:
+				dfs(c, root_node, parent)
+
+		dfs(root, root_node, None)
+		return root_node
 		
 
 	def inorder(self, root):

@@ -8,11 +8,16 @@ from subprocess import call
 def list_tree(folder_ids, root, only_folders = False):
     color = Fore.RESET if only_folders else Fore.BLUE
     for pre, fill, node in RenderTree(root):
-        if not node.children and only_folders == False:
-            click.echo("%s%s" % (pre, node.name))
-        else:
+        if node.name in folder_ids: 
             folder_id = folder_ids[node.name]
             click.echo(f'{pre}{color}{folder_id} {node.name} {Style.RESET_ALL}')
+        else:
+            click.echo("%s%s" % (pre, node.name))
+        # if not node.children and only_folders == False:
+        #     click.echo("%s%s" % (pre, node.name))
+        # else:
+        #     folder_id = folder_ids[node.name]
+        #     click.echo(f'{pre}{color}{folder_id} {node.name} {Style.RESET_ALL}')
 
 def open_vim(data):
     str = data['title'] + '\n'

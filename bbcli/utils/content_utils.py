@@ -18,19 +18,15 @@ def get_children(ctx, course_id, worklist, folder_ids):
         response = contents_service.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
-            # return get_children(ctx, course_id, worklist, acc)
             pass
         else:
             children = response.json()['results']
             for child in children:
+                child_node = Node(child)
+                node.add_child(child_node)
                 if key in child and child[key]:
-                    child_node = Node(child)
-                    node.add_child(child_node)
                     worklist.append(child_node)
                     folder_ids[child['title']] = child['id']
-                else:
-                    child_node = Node(child)
-                    node.add_child(child_node)
 
             return get_children(ctx, course_id, worklist, folder_ids)
 
@@ -45,7 +41,6 @@ def get_folders(ctx, course_id, worklist, folder_ids):
         response = contents_service.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
-            # return get_children(ctx, course_id, worklist, acc)
             pass
         else:
             children = response.json()['results']
@@ -75,6 +70,7 @@ def get_content_type(ctx, course_id, worklist, folder_ids, content_type):
             for child in children:
                 if key in child and child[key]:
                     child_node = Node(child)
+                    node.add_child(child_node)
                     worklist.append(child_node)
                     folder_ids[child['title']] = child['id']
                 elif 'contentHandler' in child and content_handler[content_type] == child['contentHandler']['id']:
@@ -103,7 +99,7 @@ def list_contents_thread(
     else:
         get_children(ctx, course_id, worklist, folder_ids)
 
-    root_node = root.preorder(root)
+    root_node = root.preorder()
     contents_view.list_tree(folder_ids, root_node, only_folders=folders)
 
 
