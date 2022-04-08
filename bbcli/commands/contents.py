@@ -6,11 +6,13 @@ from bbcli.services import contents_service
 import time
 import click
 import threading
+import concurrent.futures
 
 from bbcli.entities.Node import Node
 from bbcli.utils.URL_builder import URL_builder
 from bbcli.utils import content_utils
 from bbcli.utils.content_handler import content_handler
+from bbcli.views import contents_view
 
 url_builder = URL_builder()
 
@@ -65,6 +67,7 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
     Folders are blue and have an id \n
     Files are white
     '''
+    click.echo('Loading...')
     start = time.time()
 
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
@@ -77,18 +80,32 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
             root = Node(node)
             worklist = [root]
             folder_ids[node['title']] = node['id']
-            content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type)
+            root_node = content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type)
+            if root_node is not None:
+                contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
+            else:
+                return
     else:
         threads = []
-        for node in data:
-            root = Node(node)
-            worklist = [root]
-            folder_ids[node['title']] = node['id']
-            args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
-            t = threading.Thread(target=content_utils.list_contents_thread, args=args)
-            t.start()
-            threads.append(t)
-        [t.join() for t in threads]
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for node in data:
+                root = Node(node)
+                worklist = [root]
+                folder_ids[node['title']] = node['id']
+                args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
+                t = executor.submit(content_utils.list_contents_thread, *args)
+                threads.append(t)
+                # t = threading.Thread(target=content_utils.list_contents_thread, args=args)
+                # t.start()
+                # threads.append(t)
+                
+        for t in threads:
+            root_node = t.result()
+            if root_node is not None:
+                contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
+            else: return 
+
+        # [t.join() for t in threads]
 
     end = time.time()
 

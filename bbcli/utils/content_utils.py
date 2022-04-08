@@ -106,10 +106,11 @@ def list_contents_thread(
         get_children(ctx, course_id, worklist, folder_ids, node_ids)
 
     root_node = root.preorder()
-    if root_node is not None:
-        contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
-    else:
-        return 
+    return root_node
+    # if root_node is not None:
+    #     contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
+    # else:
+    #     return 
 
 
 def check_content_handler(ctx, course_id: str, node_id: str):
