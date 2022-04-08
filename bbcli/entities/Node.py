@@ -12,37 +12,17 @@ class Node:
 		self.children.append(obj)
 		obj.parent = self
 
-	# __repr__ is a way to represent a class object as a string
-	# def __repr__(self):
-	# 	if self.children:
-	# 		out = repr(self.data['title']) + " ↴" + "\n"
-	# 		indent = "    "
-	# 		for child in self.children:
-	# 			for line in repr(child).splitlines():
-	# 				out += indent + line + "\n"
-	# 		return out
-	# 	else:
-	# 		return repr(self.data['title'])
-
-
-	# It's working bby
 	def preorder(self):
-		# l = defaultdict(list) # it is level order when you use dict
-		# folder_ids = dict()
 		root = self
 
 		root_node = Nd(root.data['title'])
 		def dfs(node, root_node, parent):
-			if not node: # kjøres seff aldri
-				# parent = Nd(node.parent.parent['title']) 
-				return
+			if not node: return
 			elif parent is None:
 				parent = root_node
 			else:
 				nd = Nd(node.data['title'], parent)
 				parent = nd
-			# if len(node.children) > 0: 
-				# folder_ids[node.data['title']] = node.data['id'] 
 			for c in node.children:
 				dfs(c, root_node, parent)
 
@@ -59,9 +39,7 @@ class Node:
 		root = self
 		root_node = Nd(root.data['title'])	
 		def dfs(node, root_node, parent):
-			if not node:
-				# parent = Nd(node.parent.parent['title'])
-				return
+			if not node: return
 			elif parent is None:
 				parent = root_node
 			elif len(node.children) == 0 and Node.is_folder(node):

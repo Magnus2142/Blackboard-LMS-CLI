@@ -102,8 +102,6 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
                 contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
             else: return 
 
-        # [t.join() for t in threads]
-
     end = time.time()
 
     print(f'\ndownload time: {end - start} seconds')
