@@ -41,3 +41,5 @@ to run the tests:
 ### 6. Setup the bbcli script inside the root of the project
 
 `pip install --editable .` **OR** `pip3 install --editable .`
+
+[image](/uploads/8780c8ce8ccb66bfe0bad77eb9410769/image.png)
