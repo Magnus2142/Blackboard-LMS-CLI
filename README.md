@@ -42,4 +42,4 @@ to run the tests:
 
 `pip install --editable .` **OR** `pip3 install --editable .`
 
-[image](/uploads/8780c8ce8ccb66bfe0bad77eb9410769/image.png)
+![image](/uploads/8780c8ce8ccb66bfe0bad77eb9410769/image.png)
