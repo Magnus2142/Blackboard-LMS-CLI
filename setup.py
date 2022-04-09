@@ -10,7 +10,7 @@ with open('README.md', 'r') as f:
     readme = f.read()
 
 requires = [
-    'Click',
+    'Click>=8.1',
     'colorama',
     'requests',
     'python-dotenv',
@@ -20,7 +20,8 @@ requires = [
     'anytree',
     'html2text',
     'python-magic',
-    'python-dateutil'
+    'python-dateutil',
+    'tabulate==0.8.9'
 ]
 
 def setup_package():

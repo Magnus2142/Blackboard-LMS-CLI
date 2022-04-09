@@ -1,8 +1,9 @@
 
 import requests
-from bbcli.utils.utils import set_cookies, set_headers
+from bbcli.utils.utils import handle_fish_shell_completion, set_cookies, set_headers
 from bbcli import __app_name__, __version__
 import os
+import shutil
 from dotenv import load_dotenv
 from bbcli import check_valid_date
 import click
@@ -64,6 +65,36 @@ def logout():
 entry_point.add_command(authorize_user)
 entry_point.add_command(logout)
 
+"""
+SHELL COMPLETION COMMANDS
+"""
+@click.command(name='activate-shell-completion', help='Activate shell completion for your shell')
+@click.argument('shell', required=True, type=str)
+def activate_shell_completion(shell: str):
+    if shell == 'fish':
+        handle_fish_shell_completion()
+    else:
+        if shell == 'bash' or shell == 'zsh':
+            is_activated = False
+            path = os.path.join(os.path.expanduser('~'), f'.{shell}rc')
+            append_text = f'. ~/.bb-complete.{shell}'
+            with open(path, 'rb') as f, \
+                mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as s:
+                if s.find(bytearray(append_text.encode())) != -1:
+                    is_activated = True
+
+            if not is_activated:
+                shutil.copy(f'{os.path.dirname(os.path.abspath(__file__))}/../shell-completion/.bb-complete.bash', os.path.expanduser('~'))
+                with open(os.path.join(os.path.expanduser('~'), f'.{shell}rc'), 'a') as f:
+                    f.write('\n. ~/.bb-complete.bash\n')
+                    click.echo('Shell completion activated! Restart shell to load the changes.')
+            else:
+                click.echo('Shell completion already activated.')
+        else: 
+            click.echo('Did not recognize the Shell or CLI shell completion is not compatible with your Shell.')
+
+
+entry_point.add_command(activate_shell_completion)
 
 """
 COURSE COMMANDS ENTRY POINT

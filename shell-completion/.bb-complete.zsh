@@ -1,0 +1,1 @@
+_BB_COMPLETE=zsh_source bb > ~/.bb-complete.zsh

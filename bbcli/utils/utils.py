@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import mmap
 from typing import Dict, List
 from requests import Session
 import html2text
@@ -91,3 +92,18 @@ def authorization_handler(func):
 			login()
 			click.echo('You can now communicate with Blackboard LMS')
 	return inner_function
+
+def handle_fish_shell_completion():
+    append_text = '_BB_COMPLETE=fish_source bb > ~/.config/fish/completions/bb.fish'
+    path = os.path.join(os.path.expanduser('~'), f'/.config/fish/completions/bb.fish')
+    if os.path.exists(path):
+        with open(path, 'rb') as f, \
+            mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as s:
+            if s.find(bytearray(append_text)) != -1:
+                is_activated = True
+                click.echo('Shell completion already activated!')
+    
+    if is_activated == False:
+        with open(path, 'a') as f:
+            f.write(f'\n{append_text}\n')
+            click.echo('Shell completion activated! Restart shell to load the changes.')

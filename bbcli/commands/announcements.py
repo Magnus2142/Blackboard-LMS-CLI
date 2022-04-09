@@ -38,8 +38,8 @@ def list_announcements(ctx,course_id=None, announcement_id=None):
 @click.pass_context
 @exception_handler
 def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str):
+    date_interval = DateInterval()
     if start_date or end_date:
-        date_interval = DateInterval()
         if start_date:
             date_interval.start_date = format_date(start_date)
         if end_date:

@@ -1,0 +1,1 @@
+_BB_COMPLETE=fish_source bb > ~/.config/fish/completions/bb.fish

@@ -20,10 +20,9 @@ The software is written in python and based on the python package [Click](https:
 </p>
 <br> -->
 
-**Links to production or demo instances:** LInksssss
+**Links to production or demo instances:** [Demo](https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq)
 
-
-![Image](/uploads/8780c8ce8ccb66bfe0bad77eb9410769/image.png)
+<a href="https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq"><img src="https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq.png"/></a>
 
 ## Installation
 
@@ -50,7 +49,13 @@ Test if the installation was successful by running ```$ bb --version``` command.
 
 ![bb-version-command](/uploads/7ac03cafbe917fd399267a2bde3b90f4/image.png)
 
-TODO: Add shell completion add
+**Shell completion:** The CLI also supports shell completion with TAB, but is currently only comaptible with bash, zsh and fish. To activate this, execute the command:
+
+```Shell
+bb activate-shell-completion {YOUR_SHELL}
+```
+
+This feauture is still unstable and if you encounter any problems, please check the [Click shell completion help page](https://click.palletsprojects.com/en/8.1.x/shell-completion/).
 
 ## Dependencies
 
@@ -78,12 +83,35 @@ If the software is configurable, describe it in detail, either here or in other 
 
 ## Usage
 
-TODO:
+First of all, you can either login using the command:
+```Shell
+bb login
+```
+or just execute the command you want, and you'll be logged in if you aren't already.
 
-Show users how to use the software.
-Be specific.
-Use appropriate formatting when showing code snippets.
+The CLI is designed in such a way that its commands and subcommands, is structured much alike like the Blackboard Learn REST API modules. ```bb``` is the main command, then for example is ```courses``` a subcommand of ```bb```, and at last, ```list``` is a subcommand of ```courses```. See [demo here](https://asciinema.org/a/rehJmCIuhmLlwk2JgXxX72eKk
+)
+<a href="https://asciinema.org/a/rehJmCIuhmLlwk2JgXxX72eKk
+"><img src="https://asciinema.org/a/rehJmCIuhmLlwk2JgXxX72eKk
+.png"/></a>
 
+All commands contains a help page that can be accessed through adding the flag ```--help```, for example if I want to see the help page about creating a file content:
+
+```Shell
+bb contents create file --help
+```
+
+![create content file help example](/uploads/3906681cfd9827c8196369f551cbe00f/image.png)
+
+Using the ```--help``` flag is very useful, because many commands have many possible options which can be hard to memorize in the beginnning.
+
+**Example usage of the CLI:**
+
+- [List announcements demo](https://asciinema.org/a/XFxL1rCvbcuceRbLMK7CKFvwz)
+- [Create announcement demo](https://asciinema.org/a/Au24dsFbPSKIjvZEnJgXofG75)
+- [List course content demo](https://asciinema.org/a/OiQ1s1YwwuyAVudn8uvrUwFQI)
+- [Get spesific course content demo]()
+- [Create a file content demo]()
 
 
 ## How to test the software
@@ -155,5 +183,3 @@ TODO:
 7. Write some great software and tell people about it.
 
 > Keep the README fresh! It's the first thing people see and will make the initial impression.
-
-<a href="https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq"><img src="https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq.png" width="836"/></a>
