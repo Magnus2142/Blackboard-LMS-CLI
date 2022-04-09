@@ -155,3 +155,5 @@ TODO:
 7. Write some great software and tell people about it.
 
 > Keep the README fresh! It's the first thing people see and will make the initial impression.
+
+<script src="https://asciinema.org/a/LN7DQw2htXmj0yQU1133CGqG6" id="asciicast-14" async></script>
