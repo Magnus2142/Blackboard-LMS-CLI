@@ -156,4 +156,4 @@ TODO:
 
 > Keep the README fresh! It's the first thing people see and will make the initial impression.
 
-<script src="https://asciinema.org/a/LN7DQw2htXmj0yQU1133CGqG6" id="asciicast-14" async></script>
+<a href="https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq"><img src="https://asciinema.org/a/zGCiYxcziqUrBVaMCOeM7ZECq.png" width="836"/></a>
