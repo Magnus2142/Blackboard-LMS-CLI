@@ -16,7 +16,7 @@ class Node:
 		root = self
 
 		root_node = Nd(root.data['title'])
-		def dfs(node, root_node, parent):
+		def dfs(node: Node, root_node: Nd, parent: Nd) -> None:
 			if not node: return
 			elif parent is None:
 				parent = root_node
