@@ -8,3 +8,4 @@ content_handler['blti-link'] = 'resource/x-bb-blti-link' # has not implemented g
 content_handler['file'] = 'resource/x-bb-file'
 content_handler['asmt-test-link'] = 'resource/x-bb-asmt-test-link' # has not implemented get content for this
 content_handler['assignment'] = 'resource/x-bb-assignment'
+content_handler['blankpage'] = 'resource/x-bb-blankpage'

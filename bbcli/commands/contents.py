@@ -77,7 +77,7 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
             folder_ids[node['title']] = node['id']
             root_node = content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type)
             if root_node is not None:
-                contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
+                contents_view.list_tree(root_node, folder_ids, node_ids)
             else:
                 return
     else:
@@ -94,7 +94,7 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
         for t in threads:
             root_node = t.result()
             if root_node is not None:
-                contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
+                contents_view.list_tree(root_node, folder_ids, node_ids)
             else: return 
 
     end = time.time()

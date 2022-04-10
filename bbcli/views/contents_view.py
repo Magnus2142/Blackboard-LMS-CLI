@@ -5,7 +5,7 @@ import click
 import tempfile, os
 from subprocess import call
 
-def list_tree(root, folder_ids, node_ids, only_folders = False):
+def list_tree(root, folder_ids, node_ids):
     # color = Fore.RESET if only_folders else Fore.BLUE
     color = Fore.BLUE
     for pre, fill, node in RenderTree(root):
@@ -15,11 +15,6 @@ def list_tree(root, folder_ids, node_ids, only_folders = False):
         else:
             node_id = node_ids[node.name] 
             click.echo(f'{pre}{node_id} {node.name}')
-        # if not node.children and only_folders == False:
-        #     click.echo("%s%s" % (pre, node.name))
-        # else:
-        #     folder_id = folder_ids[node.name]
-        #     click.echo(f'{pre}{color}{folder_id} {node.name} {Style.RESET_ALL}')
 
 def open_vim(data):
     str = data['title'] + '\n'

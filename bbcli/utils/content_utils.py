@@ -122,14 +122,15 @@ def check_content_handler(ctx, course_id: str, node_id: str):
     elif ch == content_handler['externallink']:
         link = data['contentHandler']['url']
         webbrowser.open(link)
-    elif ch == content_handler['folder']:
+    elif ch == content_handler['folder']: # this will list the contents of a folder
         folder_ids = dict()
+        node_ids = dict()
         folder_ids[data['title']] = data['id']
         root = Node(data)
         worklist = [root]
-        get_children(ctx, course_id, worklist, folder_ids)
-        root_node = root.preorder(root)
-        contents_view.list_tree(folder_ids, root_node, only_folders=False)
+        get_children(ctx, course_id, worklist, folder_ids, node_ids)
+        root_node = root.preorder()
+        contents_view.list_tree(root_node, folder_ids, node_ids)
     elif ch == content_handler['courselink']:
         print("tester ut courselink")
         key = 'targetId'
@@ -160,6 +161,9 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             paths = contents_service.download_attachments(
                 session, course_id, node_id, attachments)
             [contents_service.open_file(path) for path in paths]
+    elif ch == content_handler['blankpage']:
+        str = data['title'] + '\n' + html_to_text(data['body'])
+        contents_view.open_less_page(str)
 
 
 image_files = ['jpeg', 'jpg', 'gif', 'svg', 'png', 'tiff', 'tif']
