@@ -60,7 +60,7 @@ def web_link_options(function):
 @click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
 @click.pass_context
 @exception_handler
-def list_contents(ctx, course_id: str, content_type, folders: bool = False, threads: bool = True):
+def list_contents(ctx, course_id: str, content_type, folders: bool = False):
     click.echo('Loading...')
     start = time.time()
 
