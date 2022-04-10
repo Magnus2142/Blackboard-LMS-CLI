@@ -28,9 +28,9 @@ def get_children(ctx, course_id, worklist, folder_ids, node_ids):
                 node.add_child(child_node)
                 if is_folder(child):
                     worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
+                    folder_ids[child['id']] = child['title']
                 else:
-                    node_ids[child['title']] = child['id']
+                    node_ids[child['id']] = child['title']
 
             return get_children(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -52,7 +52,7 @@ def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
+                    folder_ids[child['id']] = child['title']
 
             return get_folders(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -74,11 +74,11 @@ def get_content_type(ctx, course_id, worklist, folder_ids, node_ids, content_typ
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
+                    folder_ids[child['id']] = child['title']
                 elif 'contentHandler' in child and content_handler[content_type] == child['contentHandler']['id']:
                     child_node = Node(child)
                     node.add_child(child_node)
-                    node_ids[child['title']] = child['id']
+                    node_ids[child['id']] = child['title']
 
             return get_content_type(
                 ctx, course_id, worklist, folder_ids, node_ids, content_type)
@@ -127,7 +127,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         click.echo('Listing the contents of a folder...')
         folder_ids = dict()
         node_ids = dict()
-        folder_ids[data['title']] = data['id']
+        folder_ids[data['id']] = data['title']
         root = Node(data)
         worklist = [root]
         get_children(ctx, course_id, worklist, folder_ids, node_ids)

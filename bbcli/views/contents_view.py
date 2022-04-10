@@ -9,12 +9,20 @@ def list_tree(root, folder_ids, node_ids):
     # color = Fore.RESET if only_folders else Fore.BLUE
     color = Fore.BLUE
     for pre, fill, node in RenderTree(root):
-        if node.name in folder_ids: 
-            folder_id = folder_ids[node.name]
-            click.echo(f'{pre}{color}{folder_id} {node.name} {Style.RESET_ALL}')
+        node_id = None
+        if 'node_id' in dir(node):
+            node_id = getattr(node, 'node_id')
         else:
-            node_id = node_ids[node.name] 
-            click.echo(f'{pre}{node_id} {node.name}')
+            click.echo('Could not retreive the node id.')
+        if node_id in folder_ids:
+            node_name = folder_ids[node_id]
+            click.echo(f'{pre}{color}{node_id} {node_name} {Style.RESET_ALL}')
+        elif node_id in node_ids:
+            node_name = node_ids[node_id]
+            click.echo(f'{pre}{node_id} {node_name}')
+        else:
+            click.echo('Neither node nor folder.')
+        
 
 def open_vim(data):
     str = data['title'] + '\n'

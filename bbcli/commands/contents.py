@@ -54,7 +54,7 @@ def web_link_options(function):
                             'launch_in_new_window', is_flag=True)(function)
     return function
 
-@click.command(name='list', help='Get the contents\nFolders are blue and have an id\nFiles are white.')
+@click.command(name='list', help='List the contents. Folders are blue and files are white.')
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
 @click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
@@ -74,7 +74,7 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False):
         for node in data:
             root = Node(node)
             worklist = [root]
-            folder_ids[node['title']] = node['id']
+            folder_ids[node['id']] = node['title']
             args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
             t = executor.submit(content_utils.list_contents_thread, *args)
             threads.append(t)
