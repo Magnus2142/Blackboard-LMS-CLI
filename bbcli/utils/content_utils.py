@@ -28,9 +28,9 @@ def get_children(ctx, course_id, worklist, folder_ids, node_ids):
                 node.add_child(child_node)
                 if is_folder(child):
                     worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
+                    folder_ids.append(child['id'])
                 else:
-                    node_ids[child['title']] = child['id']
+                    node_ids.append(child['id'])
 
             return get_children(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -52,7 +52,7 @@ def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
+                    folder_ids.append(child['id'])
 
             return get_folders(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -74,11 +74,11 @@ def get_content_type(ctx, course_id, worklist, folder_ids, node_ids, content_typ
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    folder_ids[child['title']] = child['id']
+                    folder_ids.append(child['id'])
                 elif 'contentHandler' in child and content_handler[content_type] == child['contentHandler']['id']:
                     child_node = Node(child)
                     node.add_child(child_node)
-                    node_ids[child['title']] = child['id']
+                    node_ids.append(child['id'])
 
             return get_content_type(
                 ctx, course_id, worklist, folder_ids, node_ids, content_type)
@@ -111,27 +111,41 @@ def check_content_handler(ctx, course_id: str, node_id: str):
     session = ctx.obj['SESSION']
     response = contents_service.get_content(
         ctx.obj['SESSION'], course_id, node_id)
+    if check_response(response) == False:
+        return
     data = response.json()
     ch = data['contentHandler']['id']
     if ch == content_handler['document']:
-        click.confirm(
-            "This is a document with an attachment(s), do you want to download it?",
-            abort=True)
-        contents_service.download_attachments(session, course_id, node_id)
-        # contents_view.open_vim(data)
+        response = contents_service.get_attachments(session, course_id, node_id)
+        attachments = response.json()['results']
+        str = data['title'] + '\n'
+        body = '' if 'body' not in data else html_to_text(data['body'])
+        str += body
+        contents_view.open_less_page(str)
+        if len(attachments) > 0:
+            click.confirm(
+                "This is a document with an attachment(s), do you want to download it?",
+                abort=True)
+            paths = contents_service.download_attachments(session, course_id, node_id, attachments)
+            [contents_service.open_file(path) for path in paths]
+        else:
+            click.echo('The document has no attachments.')
     elif ch == content_handler['externallink']:
         link = data['contentHandler']['url']
+        click.echo(f'Opening an weblink: {link}')
         webbrowser.open(link)
-    elif ch == content_handler['folder']:
-        folder_ids = dict()
-        folder_ids[data['title']] = data['id']
+    elif ch == content_handler['folder']: # this will list the contents of a folder
+        click.echo('Listing the contents of a folder...')
+        folder_ids = []
+        node_ids = []
+        folder_ids.append(data['id'])
         root = Node(data)
         worklist = [root]
-        get_children(ctx, course_id, worklist, folder_ids)
-        root_node = root.preorder(root)
-        contents_view.list_tree(folder_ids, root_node, only_folders=False)
+        get_children(ctx, course_id, worklist, folder_ids, node_ids)
+        root_node = root.preorder()
+        contents_view.list_tree(root_node, folder_ids, node_ids)
     elif ch == content_handler['courselink']:
-        print("tester ut courselink")
+        click.echo('Opening the contents of a courselink...')
         key = 'targetId'
         if key in data['contentHandler']:
             target_id = data['contentHandler'][key]
@@ -148,6 +162,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             session, course_id, node_id, attachments)
         [contents_service.open_file(path) for path in paths]
     elif ch == content_handler['assignment']:
+        click.echo('Opening assignment...')
         str = data['title'] + '\n' + html_to_text(data['body'])
         contents_view.open_less_page(str)
         response = contents_service.get_attachments(
@@ -160,6 +175,12 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             paths = contents_service.download_attachments(
                 session, course_id, node_id, attachments)
             [contents_service.open_file(path) for path in paths]
+    elif ch == content_handler['blankpage']:
+        click.echo('Opening blankpage...')
+        str = data['title'] + '\n' + html_to_text(data['body'])
+        contents_view.open_less_page(str)
+    else:
+        click.echo('The cli does not currently support the content type.')
 
 
 image_files = ['jpeg', 'jpg', 'gif', 'svg', 'png', 'tiff', 'tif']

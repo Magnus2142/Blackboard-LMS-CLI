@@ -15,13 +15,13 @@ class Node:
 	def preorder(self):
 		root = self
 
-		root_node = Nd(root.data['title'])
-		def dfs(node, root_node, parent):
+		root_node = Nd(root.data['title'], **{'node_id' : root.data['id']})
+		def dfs(node: Node, root_node: Nd, parent: Nd) -> None:
 			if not node: return
 			elif parent is None:
 				parent = root_node
 			else:
-				nd = Nd(node.data['title'], parent)
+				nd = Nd(node.data['title'], parent, **{'node_id' : node.data['id']})
 				parent = nd
 			for c in node.children:
 				dfs(c, root_node, parent)

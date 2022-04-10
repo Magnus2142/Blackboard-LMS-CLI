@@ -54,52 +54,41 @@ def web_link_options(function):
                             'launch_in_new_window', is_flag=True)(function)
     return function
 
-@click.command(name='list', help='Get the contents\nFolders are blue and have an id\nFiles are white.')
+@click.command(name='list', help='List the contents. Folders are blue and files are white.')
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
-@click.option('-t', '--threads', required=False, is_flag=True, help='Specify this if you want to run with threads')
 @click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
 @click.pass_context
 @exception_handler
-def list_contents(ctx, course_id: str, content_type, folders: bool = False, threads: bool = True):
-    click.echo('Loading...')
+def list_contents(ctx, course_id: str, content_type, folders: bool = False):
+    ct = 'content' if content_type is None else content_type
+    click.echo(f'Listing the {ct}s...')
     start = time.time()
 
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
     data = response.json()['results']
-    folder_ids = dict()
-    node_ids = dict()
+    folder_ids = []
+    node_ids = []
 
-    if threads == False:
+    threads = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for node in data:
             root = Node(node)
             worklist = [root]
-            folder_ids[node['title']] = node['id']
-            root_node = content_utils.list_contents_thread(ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type)
-            if root_node is not None:
-                contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
-            else:
-                return
-    else:
-        threads = []
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            for node in data:
-                root = Node(node)
-                worklist = [root]
-                folder_ids[node['title']] = node['id']
-                args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
-                t = executor.submit(content_utils.list_contents_thread, *args)
-                threads.append(t)
+            folder_ids.append(node['id'])
+            args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
+            t = executor.submit(content_utils.list_contents_thread, *args)
+            threads.append(t)
                 
-        for t in threads:
-            root_node = t.result()
-            if root_node is not None:
-                contents_view.list_tree(root_node, folder_ids, node_ids, only_folders=folders)
-            else: return 
+    for t in threads:
+        root_node = t.result()
+        if root_node is not None:
+            contents_view.list_tree(root_node, folder_ids, node_ids)
+        else: return 
 
     end = time.time()
 
-    print(f'\Fetch time: {end - start} seconds')
+    print(f'Fetch time: {end - start} seconds')
 
 
 @click.command(name='get', help='Get a spesific content from a course, using the content id.')
