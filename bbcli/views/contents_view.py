@@ -15,11 +15,9 @@ def list_tree(root, folder_ids, node_ids):
         else:
             click.echo('Could not retreive the node id.')
         if node_id in folder_ids:
-            node_name = folder_ids[node_id]
-            click.echo(f'{pre}{color}{node_id} {node_name} {Style.RESET_ALL}')
+            click.echo(f'{pre}{color}{node_id} {node.name} {Style.RESET_ALL}')
         elif node_id in node_ids:
-            node_name = node_ids[node_id]
-            click.echo(f'{pre}{node_id} {node_name}')
+            click.echo(f'{pre}{node_id} {node.name}')
         else:
             click.echo('Neither node nor folder.')
         

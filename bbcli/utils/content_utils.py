@@ -28,9 +28,9 @@ def get_children(ctx, course_id, worklist, folder_ids, node_ids):
                 node.add_child(child_node)
                 if is_folder(child):
                     worklist.append(child_node)
-                    folder_ids[child['id']] = child['title']
+                    folder_ids.append(child['id'])
                 else:
-                    node_ids[child['id']] = child['title']
+                    node_ids.append(child['id'])
 
             return get_children(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -52,7 +52,7 @@ def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    folder_ids[child['id']] = child['title']
+                    folder_ids.append(child['id'])
 
             return get_folders(ctx, course_id, worklist, folder_ids, node_ids)
 
@@ -74,11 +74,11 @@ def get_content_type(ctx, course_id, worklist, folder_ids, node_ids, content_typ
                     child_node = Node(child)
                     node.add_child(child_node)
                     worklist.append(child_node)
-                    folder_ids[child['id']] = child['title']
+                    folder_ids.append(child['id'])
                 elif 'contentHandler' in child and content_handler[content_type] == child['contentHandler']['id']:
                     child_node = Node(child)
                     node.add_child(child_node)
-                    node_ids[child['id']] = child['title']
+                    node_ids.append(child['id'])
 
             return get_content_type(
                 ctx, course_id, worklist, folder_ids, node_ids, content_type)
@@ -114,20 +114,29 @@ def check_content_handler(ctx, course_id: str, node_id: str):
     data = response.json()
     ch = data['contentHandler']['id']
     if ch == content_handler['document']:
-        click.confirm(
-            "This is a document with an attachment(s), do you want to download it?",
-            abort=True)
-        contents_service.download_attachments(session, course_id, node_id)
-        # contents_view.open_vim(data)
+        response = contents_service.get_attachments(session, course_id, node_id)
+        attachments = response.json()['results']
+        str = data['title'] + '\n'
+        body = '' if 'body' not in data else html_to_text(data['body'])
+        str += body
+        contents_view.open_less_page(str)
+        if len(attachments) > 0:
+            click.confirm(
+                "This is a document with an attachment(s), do you want to download it?",
+                abort=True)
+            paths = contents_service.download_attachments(session, course_id, node_id, attachments)
+            [contents_service.open_file(path) for path in paths]
+        else:
+            click.echo('The document has no attachments.')
     elif ch == content_handler['externallink']:
         link = data['contentHandler']['url']
         click.echo(f'Opening an weblink: {link}')
         webbrowser.open(link)
     elif ch == content_handler['folder']: # this will list the contents of a folder
         click.echo('Listing the contents of a folder...')
-        folder_ids = dict()
-        node_ids = dict()
-        folder_ids[data['id']] = data['title']
+        folder_ids = []
+        node_ids = []
+        folder_ids.append(data['id'])
         root = Node(data)
         worklist = [root]
         get_children(ctx, course_id, worklist, folder_ids, node_ids)
@@ -140,7 +149,6 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             target_id = data['contentHandler'][key]
             check_content_handler(ctx, course_id, target_id)
     elif ch == content_handler['file']:
-        click.echo('Opening file...')
         response = contents_service.get_attachments(
             session, course_id, node_id)
         attachments = response.json()['results']
@@ -169,6 +177,8 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         click.echo('Opening blankpage...')
         str = data['title'] + '\n' + html_to_text(data['body'])
         contents_view.open_less_page(str)
+    else:
+        click.echo('The cli does not currently support the content type.')
 
 
 image_files = ['jpeg', 'jpg', 'gif', 'svg', 'png', 'tiff', 'tif']

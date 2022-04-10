@@ -61,20 +61,21 @@ def web_link_options(function):
 @click.pass_context
 @exception_handler
 def list_contents(ctx, course_id: str, content_type, folders: bool = False):
-    click.echo('Loading...')
+    ct = 'content' if content_type is None else content_type
+    click.echo(f'Listing the {ct}s...')
     start = time.time()
 
     response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
     data = response.json()['results']
-    folder_ids = dict()
-    node_ids = dict()
+    folder_ids = []
+    node_ids = []
 
     threads = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         for node in data:
             root = Node(node)
             worklist = [root]
-            folder_ids[node['id']] = node['title']
+            folder_ids.append(node['id'])
             args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
             t = executor.submit(content_utils.list_contents_thread, *args)
             threads.append(t)
