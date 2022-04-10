@@ -54,7 +54,7 @@ def web_link_options(function):
                             'launch_in_new_window', is_flag=True)(function)
     return function
 
-@click.command(name='list')
+@click.command(name='list', help='Get the contents\nFolders are blue and have an id\nFiles are white.')
 @click.argument('course_id')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
 @click.option('-t', '--threads', required=False, is_flag=True, help='Specify this if you want to run with threads')
@@ -62,11 +62,6 @@ def web_link_options(function):
 @click.pass_context
 @exception_handler
 def list_contents(ctx, course_id: str, content_type, folders: bool = False, threads: bool = True):
-    '''
-    Get the contents\n
-    Folders are blue and have an id \n
-    Files are white
-    '''
     click.echo('Loading...')
     start = time.time()
 
@@ -104,10 +99,10 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False, thre
 
     end = time.time()
 
-    print(f'\ndownload time: {end - start} seconds')
+    print(f'\Fetch time: {end - start} seconds')
 
 
-@click.command(name='get')
+@click.command(name='get', help='Get a spesific content from a course, using the content id.')
 @click.argument('course_id', required=True, type=str)
 @click.argument('node_id', required=True, type=str)
 @click.pass_context
