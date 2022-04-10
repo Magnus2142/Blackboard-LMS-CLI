@@ -121,8 +121,10 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         # contents_view.open_vim(data)
     elif ch == content_handler['externallink']:
         link = data['contentHandler']['url']
+        click.echo(f'Opening an weblink: {link}')
         webbrowser.open(link)
     elif ch == content_handler['folder']: # this will list the contents of a folder
+        click.echo('Listing the contents of a folder...')
         folder_ids = dict()
         node_ids = dict()
         folder_ids[data['title']] = data['id']
@@ -132,12 +134,13 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         root_node = root.preorder()
         contents_view.list_tree(root_node, folder_ids, node_ids)
     elif ch == content_handler['courselink']:
-        print("tester ut courselink")
+        click.echo('Opening the contents of a courselink...')
         key = 'targetId'
         if key in data['contentHandler']:
             target_id = data['contentHandler'][key]
             check_content_handler(ctx, course_id, target_id)
     elif ch == content_handler['file']:
+        click.echo('Opening file...')
         response = contents_service.get_attachments(
             session, course_id, node_id)
         attachments = response.json()['results']
@@ -149,6 +152,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             session, course_id, node_id, attachments)
         [contents_service.open_file(path) for path in paths]
     elif ch == content_handler['assignment']:
+        click.echo('Opening assignment...')
         str = data['title'] + '\n' + html_to_text(data['body'])
         contents_view.open_less_page(str)
         response = contents_service.get_attachments(
@@ -162,6 +166,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
                 session, course_id, node_id, attachments)
             [contents_service.open_file(path) for path in paths]
     elif ch == content_handler['blankpage']:
+        click.echo('Opening blankpage...')
         str = data['title'] + '\n' + html_to_text(data['body'])
         contents_view.open_less_page(str)
 
