@@ -11,7 +11,7 @@ from bbcli.services.authorization_service import login
 def check_valid_key(obj, key) -> bool:
     # print("the keys are", obj.keys())
     if key not in obj.keys():
-        print(f'The key: \"{key}\" is not in the object')
+        click.echo(f'The key: \"{key}\" is not in the object')
         return False
     else:
         return True
@@ -20,8 +20,8 @@ def check_valid_key(obj, key) -> bool:
 def check_response(response) -> bool:
     invalid_statuscodes = [401, 403, 404]
     if response.status_code in invalid_statuscodes:
-        print(response.json()['status'])
-        print(response.json()['message'])
+        click.echo('Status: ' + str(response.json()['status']))
+        click.echo('Message: ' + response.json()['message'])
         return False
     else:
         return True

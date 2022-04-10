@@ -111,6 +111,8 @@ def check_content_handler(ctx, course_id: str, node_id: str):
     session = ctx.obj['SESSION']
     response = contents_service.get_content(
         ctx.obj['SESSION'], course_id, node_id)
+    if check_response(response) == False:
+        return
     data = response.json()
     ch = data['contentHandler']['id']
     if ch == content_handler['document']:
