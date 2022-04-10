@@ -23,7 +23,7 @@ def attempt_options(function):
 
 
 # TODO: This function is a copy of the same function in contents.py. Fix this.
-@click.command(name='create')
+@click.command(name='create', help='Create an assignment.')
 @click.argument('course_id', required=True, type=str)
 @click.argument('parent_id', required=True, type=str)
 @click.argument('title', required=True, type=str)
@@ -37,9 +37,6 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
                       start_date: str, end_date: str,
                       due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
                       attachments: tuple):
-    """
-    Create an assignment.
-    """
     standard_options = StandardOptions(hide_content, reviewable)
     grading_options = GradingOptions(
         attempts_allowed=max_attempts, is_unlimited_attemps_allowed=unlimited_attempts, score_possible=score)
