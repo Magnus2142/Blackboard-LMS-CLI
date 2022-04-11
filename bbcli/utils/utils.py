@@ -64,10 +64,12 @@ def input_body():
 
 
 def format_date(date: str):
-    try:
-        return datetime.strptime(date, '%d/%m/%y %H:%M:%S')
-    except ValueError:
-        click.echo('Value format is not valid, please see --help for more info.')
+    if date:
+        try:
+            return datetime.strptime(date, '%d/%m/%y %H:%M:%S')
+        except ValueError:
+            click.echo('Value format is not valid, please see --help for more info.')
+            raise click.Abort()
 
 def get_download_path(file_name):
     """Returns the default downloads path for linux or windows"""

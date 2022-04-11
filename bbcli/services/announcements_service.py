@@ -54,6 +54,9 @@ def list_announcement(session: requests.Session, course_id: str, announcement_id
 
 
 def create_announcement(session: requests.Session, course_id: str, title: str, date_interval: DateInterval):
+    if title == '':
+        raise click.BadParameter('Argument TITLE cannot be empty!')
+    
     body = input_body()
 
     data = {

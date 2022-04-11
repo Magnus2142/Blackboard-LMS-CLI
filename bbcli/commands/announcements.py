@@ -2,7 +2,7 @@ from datetime import datetime
 import click
 from bbcli.entities.content_builder_entitites import DateInterval
 from bbcli.services import announcements_service
-from bbcli.utils.error_handler import exception_handler, list_exception_handler
+from bbcli.utils.error_handler import create_exception_handler, delete_exception_handler, list_exception_handler, update_exception_handler
 from bbcli.utils.utils import format_date
 from bbcli.views import announcement_view
 import os
@@ -36,7 +36,7 @@ def list_announcements(ctx,course_id=None, announcement_id=None):
 @click.option('--start-date', type=str, help='When to make announcement available. Format: DD/MM/YY HH:MM:SS')
 @click.option('--end-date', type=str, help='When to make announcement unavailable. Format: DD/MM/YY HH:MM:SS')
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str):
     date_interval = DateInterval()
     if start_date or end_date:
@@ -54,7 +54,7 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
 @click.argument('course_id', required=True, type=str)
 @click.argument('announcement_id', required=True, type=str)
 @click.pass_context
-@exception_handler
+@delete_exception_handler
 def delete_announcement(ctx, course_id: str, announcement_id: str):
     announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
     announcement_view.print_announcement_deleted()
@@ -64,7 +64,7 @@ def delete_announcement(ctx, course_id: str, announcement_id: str):
 @click.argument('course_id', required=True, type=str)
 @click.argument('announcement_id', required=True, type=str)
 @click.pass_context
-@exception_handler
+@update_exception_handler
 def update_announcement(ctx, course_id: str, announcement_id: str):
     response = announcements_service.update_announcement(ctx.obj['SESSION'], course_id, announcement_id)
     announcement_view.print_announcement_updated(response)

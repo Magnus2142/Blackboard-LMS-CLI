@@ -19,18 +19,16 @@ content_builder = ContentBuilder()
 def list_contents(session: requests.Session, course_id):
     url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
     response = session.get(url)
-    if check_response(response) is False:
-        return
-    else:
-        return response
+    response.raise_for_status()
+    return response
 
 # get the children of a specific folder
-
-
 def get_children(session: requests.Session, course_id: str, node_id: str):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).add_children().create()
-    return session.get(url)
+    response = session.get(url)
+    response.raise_for_status()
+    return response
 
 # If it is a folder, list it like a tree structure view like mentioned above.
 # If it is a document, download and open the document maybe?
@@ -41,7 +39,9 @@ def get_children(session: requests.Session, course_id: str, node_id: str):
 def get_content(session: requests.Session, course_id: str, node_id: str):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).create()
-    return session.get(url)
+    response = session.get(url)
+    response.raise_for_status()
+    return response
 
 def get_content_targetid(session: requests.Session, course_id: str, target_id: str):
     url = url_builder.base_v1().add_courses().add_id(
@@ -51,7 +51,9 @@ def get_content_targetid(session: requests.Session, course_id: str, target_id: s
 def get_attachments(session: requests.Session, course_id: str, node_id: str):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).add_attachments().create()
-    return session.get(url)
+    response = session.get(url)
+    response.raise_for_status()
+    return response
 
 def download_attachment(session: requests.Session, course_id: str, node_id: str, attachment) -> str:
     attachment_id = attachment['id']
@@ -60,6 +62,7 @@ def download_attachment(session: requests.Session, course_id: str, node_id: str,
         course_id).add_contents().add_id(node_id).add_attachments(
         ).add_id(attachment_id).add_download().create()
     response = session.get(url, allow_redirects=True)
+    response.raise_for_status()
     downloads_path = get_download_path(fn)
     f = open(downloads_path, 'wb')
     f.write(response.content)
@@ -231,7 +234,6 @@ def create_assignment(session: requests.Session, course_id: str, parent_id: str,
 
 
 def delete_content(session: requests.Session, course_id: str, content_id: str, delete_grades: bool):
-
     parameters = {
         'deleteGrades': delete_grades
     }

@@ -2,7 +2,7 @@ import click
 from bbcli.commands.contents import grading_options, set_dates, standard_options
 from bbcli.entities.content_builder_entitites import GradingOptions, StandardOptions
 from bbcli.services import assignment_service, contents_service
-from bbcli.utils.error_handler import exception_handler
+from bbcli.utils.error_handler import create_exception_handler, list_exception_handler, update_exception_handler
 from bbcli.utils.utils import format_date
 
 
@@ -31,7 +31,7 @@ def attempt_options(function):
 @standard_options
 @grading_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_assignment(ctx, course_id: str, parent_id: str, title: str,
                       hide_content: bool, reviewable: bool,
                       start_date: str, end_date: str,
@@ -52,6 +52,7 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
 @click.command(name='list')
 @click.argument('course-id', required=True)
 @click.pass_context
+@list_exception_handler
 def get_assignments(ctx, course_id):
     """
     List assignments for a course.
@@ -64,6 +65,7 @@ def get_assignments(ctx, course_id):
 @click.argument('column_id', required=True)
 @click.option('--submitted', is_flag=True, help='List only submitted attempts.')
 @click.pass_context
+@list_exception_handler
 def get_attempts(ctx, course_id, column_id, submitted):
     """
     List attempts for an assignment.
@@ -78,6 +80,7 @@ def get_attempts(ctx, course_id, column_id, submitted):
 @click.argument('column_id', required=True)
 @click.argument('attempt_id', required=True)
 @click.pass_context
+@list_exception_handler
 def get_attempt(ctx, course_id, column_id, attempt_id):
     """
     Get a specific attempt for an assignment.
@@ -94,6 +97,7 @@ def get_attempt(ctx, course_id, column_id, attempt_id):
 @click.option('--file', help='Attach a file to an attempt for a Student Submission. Relative path of file.')
 @click.option('--draft', is_flag=True)
 @click.pass_context
+@create_exception_handler
 def submit_attempt(ctx, course_id, column_id, studentComments, studentSubmission, file, draft):
     """
     Submit assignment attempt.
@@ -107,6 +111,7 @@ def submit_attempt(ctx, course_id, column_id, studentComments, studentSubmission
 @click.argument('column_id', required=True)
 @click.argument('attempt_id', required=True)
 @click.pass_context
+@update_exception_handler
 def submit_draft(ctx, course_id, column_id, attempt_id):
     """
     Submit assignment draft.
@@ -123,6 +128,7 @@ def submit_draft(ctx, course_id, column_id, attempt_id):
 @click.option('--studentComments', help='The student comments associated with this attempt.')
 @click.option('--studentSubmission', help='The student submission text associated with this attempt.')
 @click.pass_context
+@update_exception_handler
 def update_attempt(ctx, course_id, column_id, attempt_id, status, comments, submission, file):
     """
     Update assignment.
@@ -137,6 +143,7 @@ def update_attempt(ctx, course_id, column_id, attempt_id, status, comments, subm
 @click.argument('attempt_id', required=True)
 @attempt_options
 @click.pass_context
+@update_exception_handler
 def grade_assignment(ctx, course_id, column_id, attempt_id, status, score, text, notes, feedback, exempt):
     """
     Grade assignment.

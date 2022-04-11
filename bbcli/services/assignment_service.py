@@ -13,14 +13,15 @@ url_builder = URL_builder()
 
 
 def get_assignments(session: requests.Session, course_id):
-    url = url_builder.base_v1().add_courses().add_id(
+    url = url_builder.base_v2().add_courses().add_id(
         course_id).add_gradebook().add_columns().create()
     response = session.get(url)
+    response.raise_for_status()
     response = json.loads(response.text)
     results = response['results']
     print_assignments(results)
 
-
+# TODO: This should be in view
 def print_assignments(assignments):
     for i in range(len(assignments)):
         column_id = assignments[i]['id']
@@ -46,6 +47,7 @@ def get_column_attempts(session: requests.Session, course_id, column_id, print_s
     ).add_columns().add_id(column_id).add_attempts().create()
 
     response = session.get(url)
+    response.raise_for_status()
     response = json.loads(response.text)
     results = response['results']
 
@@ -130,6 +132,7 @@ def update_column_attempt(session: requests.Session, course_id, column_id, attem
     json_data = json.dumps(data, indent=2)
 
     response = session.patch(url, data=json_data)
+    response.raise_for_status()
     response = json.loads(response.text)
     click.echo(response)
 

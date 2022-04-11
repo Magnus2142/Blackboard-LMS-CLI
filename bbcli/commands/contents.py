@@ -1,5 +1,5 @@
 from bbcli.utils.utils import format_date
-from bbcli.utils.error_handler import exception_handler
+from bbcli.utils.error_handler import create_exception_handler, delete_exception_handler, list_exception_handler, update_exception_handler
 import click
 from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services import contents_service
@@ -59,7 +59,7 @@ def web_link_options(function):
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
 @click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
 @click.pass_context
-@exception_handler
+@list_exception_handler
 def list_contents(ctx, course_id: str, content_type, folders: bool = False):
     ct = 'content' if content_type is None else content_type
     click.echo(f'Listing the {ct}s...')
@@ -95,6 +95,7 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False):
 @click.argument('course_id', required=True, type=str)
 @click.argument('node_id', required=True, type=str)
 @click.pass_context
+@list_exception_handler
 def get_content(ctx, course_id: str, node_id: str):
     content_utils.check_content_handler(ctx, course_id, node_id)
     
@@ -104,7 +105,7 @@ def get_content(ctx, course_id: str, node_id: str):
 @click.argument('content_id', required=True, type=str)
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
     contents_service.upload_attachment(ctx.obj['SESSION'], course_id, content_id, file_path)
 
@@ -116,7 +117,7 @@ def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str=None, end_date: str=None, attachments: tuple=None):
     standard_options = StandardOptions(hide_content=hide_content, reviewable=reviewable)
     set_dates(standard_options, start_date, end_date)
@@ -134,7 +135,7 @@ def create_document(ctx, course_id: str, parent_id: str, title: str, hide_conten
 @file_options
 @standard_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str, 
                         launch_in_new_window:bool, hide_content: bool, reviewable: bool,
                         start_date: str=None, end_date: str=None):
@@ -155,7 +156,7 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 @standard_options
 @web_link_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str, 
                         launch_in_new_window:bool, hide_content: bool, reviewable: bool,
                         start_date: str=None, end_date: str=None):
@@ -174,7 +175,7 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
 @click.option('--is-bb-page', is_flag=True, help='Make folder a blackboard page')
 @standard_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_folder(ctx, course_id: str, parent_id: str, title: str,
                         hide_content: bool, reviewable: bool, is_bb_page: bool = False,
                         start_date: str=None, end_date: str=None):
@@ -191,7 +192,7 @@ def create_folder(ctx, course_id: str, parent_id: str, title: str,
 @click.argument('target_id', required=True, type=str)
 @standard_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id: str,
                         hide_content: bool, reviewable: bool, 
                         start_date: str=None, end_date: str=None):
@@ -209,7 +210,7 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
 @standard_options
 @grading_options
 @click.pass_context
-@exception_handler
+@create_exception_handler
 def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: str,
                       hide_content: bool, reviewable: bool,
                       start_date: str, end_date: str,
@@ -230,21 +231,23 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
     click.echo(response)
 
 
+# TODO: ADD RESPONSES
 @click.command(name='delete', help='Deletes a content.')
 @click.argument('course_id', required=True, type=str)
 @click.argument('content_id', required=True, type=str)
 @click.option('--delete-grades', is_flag=True, help='Deletes grades if a grade column is assosciated with the content.')
 @click.pass_context
-@exception_handler
+@delete_exception_handler
 def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
     response = contents_service.delete_content(ctx.obj['SESSION'], course_id, content_id, delete_grades)
     click.echo(response)
 
+# TODO: ADD RESPONSES
 @click.command(name='update', help='Updates a given content.\nEditable content types: document, files, assignments, externallinks, courselinks')
 @click.argument('course_id', required=True, type=str)
 @click.argument('content_id', required=True, type=str)
 @click.pass_context
-@exception_handler
+@update_exception_handler
 def update_content(ctx, course_id: str, content_id: str):
     response = contents_service.update_content(ctx.obj['SESSION'], course_id, content_id)
     click.echo(response)

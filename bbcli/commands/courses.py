@@ -1,6 +1,6 @@
 import click
 from bbcli.services import courses_service
-from bbcli.utils.error_handler import exception_handler
+from bbcli.utils.error_handler import list_exception_handler
 from bbcli.views import course_view
 import os
 import requests
@@ -11,7 +11,7 @@ import requests
 @click.argument('course_id', required=False)
 @click.option('-a', '--all/--no-all', 'show_all', default=False, help='Lists all courses you have ever been signed up for')
 @click.pass_context
-@exception_handler
+@list_exception_handler
 def list_courses(ctx, course_id=None, show_all=False):
     response = None
 
