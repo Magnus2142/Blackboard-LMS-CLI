@@ -46,6 +46,7 @@ def list_announcement(session: requests.Session, course_id: str, announcement_id
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_announcements().add_id(announcement_id).create()
     announcement = session.get(url)
+    announcement.raise_for_status()
     announcement = json.loads(announcement.text)
     return announcement
 

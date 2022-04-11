@@ -2,7 +2,7 @@ from datetime import datetime
 import click
 from bbcli.entities.content_builder_entitites import DateInterval
 from bbcli.services import announcements_service
-from bbcli.utils.error_handler import exception_handler
+from bbcli.utils.error_handler import exception_handler, list_exception_handler
 from bbcli.utils.utils import format_date
 from bbcli.views import announcement_view
 import os
@@ -11,7 +11,7 @@ import os
 @click.argument('course_id', required=False)
 @click.argument('announcement_id', required=False)
 @click.pass_context
-@exception_handler
+@list_exception_handler
 def list_announcements(ctx,course_id=None, announcement_id=None):
     response = None
 
