@@ -14,14 +14,14 @@
   <p align="center">
     Command-line tool suite for Blackboard LMS
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
+    <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://asciinema.org/a/6OQm4JDG0Uh71YrX1BXF7Hi6P">View Demo</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
+    <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/issues">Report Bug</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+    <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/issues">Request Feature</a>
   </p>
 </div>
 
