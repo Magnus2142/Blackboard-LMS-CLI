@@ -84,7 +84,7 @@ def activate_shell_completion(shell: str):
                     is_activated = True
 
             if not is_activated:
-                shutil.copy(f'{os.path.dirname(os.path.abspath(__file__))}/../shell-completion/.bb-complete.bash', os.path.expanduser('~'))
+                shutil.copy(f'{os.path.dirname(os.path.abspath(__file__))}/shell-completion/.bb-complete.bash', os.path.expanduser('~'))
                 with open(os.path.join(os.path.expanduser('~'), f'.{shell}rc'), 'a') as f:
                     f.write('\n. ~/.bb-complete.bash\n')
                     click.echo('Shell completion activated! Restart shell to load the changes.')
