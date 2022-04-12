@@ -55,9 +55,9 @@ def web_link_options(function):
     return function
 
 @click.command(name='list', help='List the contents. Folders are blue and files are white.')
-@click.argument('course_id')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course you want to list content from.')
 @click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
-@click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
+@click.option('-ct', '--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
 @click.pass_context
 @list_exception_handler
 def list_contents(ctx, course_id: str, content_type, folders: bool = False):
@@ -92,8 +92,8 @@ def list_contents(ctx, course_id: str, content_type, folders: bool = False):
 
 
 @click.command(name='get', help='Get a spesific content from a course, using the content id.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('node_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course you want to get content from.')
+@click.option('-co', '--content','node_id', required=True, type=str, help='CONTENT ID, of the content you want to fetch.')
 @click.pass_context
 @list_exception_handler
 def get_content(ctx, course_id: str, node_id: str):
@@ -101,8 +101,8 @@ def get_content(ctx, course_id: str, node_id: str):
     
 
 @click.command(name='attachment', help='Adds an attachment to a content. Only supports contents of type document and assignment')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content is.')
+@click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID, of the content you want to attach a file to.')
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @click.pass_context
 @create_exception_handler
@@ -111,8 +111,8 @@ def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
 
 
 @click.command(name='document', help='Creates a document content, optionally with file attachments')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course you want to create content.')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to create content in.')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
@@ -128,8 +128,8 @@ def create_document(ctx, course_id: str, parent_id: str, title: str, hide_conten
 
 
 @click.command(name='file', help='Creates a file content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to create content in.')
 @click.argument('title', required=True, type=str)
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @file_options
@@ -149,8 +149,8 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 
 
 @click.command(name='web-link', help='Create a web link content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to create content in.')
 @click.argument('title', required=True, type=str)
 @click.argument('url', required=True, type=str)
 @standard_options
@@ -169,9 +169,9 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
 
 
 @click.command(name='folder', help='Create a folder either in top level or inside another content.')
-@click.argument('course_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists')
+@click.option('-f', '--folder', 'parent_id', required=False, type=str, help='FOLDER ID, of the folder you want to create folder in.')
 @click.argument('title', required=True, type=str)
-@click.option('-p', '--parent_id', required=False, type=str, help='Id of parent folder')
 @click.option('--is-bb-page', is_flag=True, help='Make folder a blackboard page')
 @standard_options
 @click.pass_context
@@ -186,8 +186,8 @@ def create_folder(ctx, course_id: str, parent_id: str, title: str,
     click.echo(response)
     
 @click.command(name='course-link', help='Create a course link content which redirects user to the target content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to create content in.')
 @click.argument('title', required=True, type=str)
 @click.argument('target_id', required=True, type=str)
 @standard_options
@@ -203,8 +203,8 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
     click.echo(response)
     
 @click.command(name='assignment', help='Creates an assignment.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to create content in.')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
@@ -233,8 +233,8 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
 
 # TODO: ADD RESPONSES
 @click.command(name='delete', help='Deletes a content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists')
+@click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID, of the content you want to delete.')
 @click.option('--delete-grades', is_flag=True, help='Deletes grades if a grade column is assosciated with the content.')
 @click.pass_context
 @delete_exception_handler
@@ -244,8 +244,8 @@ def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
 
 # TODO: ADD RESPONSES
 @click.command(name='update', help='Updates a given content.\nEditable content types: document, files, assignments, externallinks, courselinks')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID, of the course where the content exists.')
+@click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID, of the content you want to update.')
 @click.pass_context
 @update_exception_handler
 def update_content(ctx, course_id: str, content_id: str):
