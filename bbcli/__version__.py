@@ -1,4 +1,4 @@
-VERSION = (0, 0, 12)
+VERSION = (0, 0, 13)
 PRERELEASE = None  # alpha, beta or rc
 REVISION = None
 

@@ -5,7 +5,7 @@
 
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/issues">
     <img src="https://user-images.githubusercontent.com/54250237/162905944-761af968-d419-42ba-9864-3a443782cd4a.png" alt="Logo" width="140" height="140">
   </a>
 
