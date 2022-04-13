@@ -16,9 +16,6 @@ from bbcli.views import contents_view
 
 url_builder = URL_builder()
 
-base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
-
-
 def standard_options(function):
     function = click.option('-h', '--hide-content', is_flag=True,
                             help='Hide contents for students')(function)
