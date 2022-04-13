@@ -190,6 +190,13 @@ TODO:
 
 If the software is configurable, describe it in detail, either here or in other documentation to which you link.
 
+At the moment, the CLI is not configurable. However, this is something we plan on adding in the future.
+
+**Ideas configurable elements**:
+
+  - A setting that chooses whether ID's such as course id and content id is used as positional arguments or required options.
+  - If they want the responses in json or formatted by the CLI.
+
 
 ## How to test the software
 
@@ -205,15 +212,13 @@ Document any known significant shortcomings with the software.
 
 ## Getting help
 
-TODO:
+If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker, or mail us:
 
-Instruct users how to get help with this software; this might include links to an issue tracker, wiki, mailing list, etc.
+**Mail info:**
 
-**Example**
-
-TODO:
-
-If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker.
+  - hansw0701@gmail.com
+  - mattias.a.eggen@gmail.com
+  - magnus.bredeli@hotmail.com
 
 ## Getting involved
 
