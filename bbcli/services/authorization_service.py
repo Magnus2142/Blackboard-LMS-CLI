@@ -19,6 +19,7 @@ login_username = ''
 otc = None
 saml_response = None
 
+# TODO: Add better error handling here. WIth try catch etc.
 
 def login():
     click.echo("Logging in...")
