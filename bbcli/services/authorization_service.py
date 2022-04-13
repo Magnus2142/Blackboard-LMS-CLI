@@ -1,5 +1,7 @@
 from urllib import request
 import os
+
+import click
 from bbcli.entities.RequestData import RequestData
 import requests
 import json
@@ -18,7 +20,7 @@ otc = None
 
 
 def login():
-    print("Logging in...")
+    click.echo("Logging in...")
 # TODO: Let user choose between feide log in or ID-gate
     feide_login()
 
@@ -43,7 +45,7 @@ def feide_login():
     post_auth_saml_SSO(session, request_data)
 
     write_to_env_data(session)
-    print('Login successful!')
+    click.echo('Login successful')
 
 
 def get_credentials():
@@ -162,10 +164,10 @@ def find_default_auth_method(auth_methods):
 
 
 def choose_auth_method(auth_methods):
-    print('Choose auth method:\n')
+    click.echo('Choose auth method:\n')
     choice = 1
     for auth_method in auth_methods:
-        print(str(choice) + ". " + auth_method['authMethodId'])
+        click.echo(str(choice) + ". " + auth_method['authMethodId'])
         choice += 1
 
     user_input = input()
@@ -237,13 +239,14 @@ def app_auth_wait(session, request_data, client_request_id, flow_token):
     }
 
     data = json.dumps(request_data.data)
-
-    for tries in range(10):
+    click.echo('Sent login request to authentification app')
+    click.echo('Waiting for user to approve sign in request...')
+    for tries in range(20):
         response = session.post(
             'https://login.microsoftonline.com/common/SAS/EndAuth', data=data, headers=request_data.headers)
         j = json.loads(response.text)
         if j['Success'] == True:
-            print('User accepted')
+            click.echo('User accepted')
             flowtoken = j['FlowToken']
             break
         request_data.data = {
@@ -255,7 +258,6 @@ def app_auth_wait(session, request_data, client_request_id, flow_token):
             "PollCount": str(tries + 1)
         }
         data = json.dumps(request_data.data)
-        print('User still havent authorized')
         time.sleep(2)
 
 
