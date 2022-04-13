@@ -1,6 +1,6 @@
 from urllib import request
 import os
-
+import pwinput
 import click
 from bbcli.entities.RequestData import RequestData
 import requests
@@ -17,6 +17,7 @@ hpg_request_id = ''
 flowtoken = ''
 login_username = ''
 otc = None
+saml_response = None
 
 
 def login():
@@ -39,9 +40,11 @@ def feide_login():
     response = post_microsoft_login(session, request_data)
     scrape_microsoft_login_response(response, request_data)
 
-    begin_auth(session, request_data)
-    response = process_auth(session, request_data, otc)
-    scrape_process_auth(response, request_data)
+    if saml_response == None:
+        begin_auth(session, request_data)
+        response = process_auth(session, request_data, otc)
+        scrape_process_auth(response, request_data)
+
     post_auth_saml_SSO(session, request_data)
 
     write_to_env_data(session)
@@ -51,8 +54,8 @@ def feide_login():
 def get_credentials():
     # TODO: Give user an option to save their username and password
     # so they don't have to write their login everytime they want to login
-    username = getpass("Username: ")
-    password = getpass()
+    username = input("Username: ")
+    password = pwinput.pwinput()
 
     credentials = {
         'username': username,
@@ -86,18 +89,21 @@ def post_login_request(session, request_data, credentials):
 
 def scrape_login_response(response, request_data):
     soup = BeautifulSoup(response.text, 'lxml')
-    try:
-        samlResponse = soup.find(
-            'input', {'name': 'SAMLResponse'})['value']
-        relayState = soup.find(
-            'input', {'name': 'RelayState'})['value']
-    except TypeError:
-        raise TypeError("Username or password is wrong...")
-    else:
-        request_data.data = {
-            'SAMLResponse': samlResponse,
+    # try:
+    samlResponse = soup.find(
+        'input', {'name': 'SAMLResponse'})['value']
+    relayState = soup.find(
+        'input', {'name': 'RelayState'})['value']
+    # except TypeError:
+    #     raise TypeError("Username or password is wrong...")
+    # else:
+    request_data.data = {
+        'SAMLResponse': samlResponse,
+    }
+    if relayState:
+        request_data.data.update({
             'RelayState': relayState
-        }
+        })
 
 
 def post_adfs_request(session, request_data):
@@ -125,36 +131,43 @@ def post_microsoft_login(session, request_data):
 
 
 def scrape_microsoft_login_response(response, request_data):
+    global saml_response
+
     soup = BeautifulSoup(response.text, 'lxml')
+    try:
+        saml_response = soup.find('input', {'name': 'SAMLResponse'})['value']
+        request_data.data = {
+            'SAMLResponse': saml_response
+        }
+    except Exception:
+        script_tag = soup.find('script')
+        # Remove certaint parts of the script content to be able to use json.loads
+        script_tag = script_tag.contents[0][20:len(script_tag.contents[0]) - 7]
+        script_content = json.loads(script_tag)
 
-    script_tag = soup.find('script')
-    # Remove certaint parts of the script content to be able to use json.loads
-    script_tag = script_tag.contents[0][20:len(script_tag.contents[0]) - 7]
-    script_content = json.loads(script_tag)
+        global ctx
+        global session_id
+        global canary
+        global auth_method_id
+        global hpg_request_id
 
-    global ctx
-    global session_id
-    global canary
-    global auth_method_id
-    global hpg_request_id
+        ctx = script_content['sCtx']
+        flowtoken = script_content['sFT']
+        session_id = script_content['sessionId']
+        canary = script_content['canary']
+        auth_methods = script_content['arrUserProofs']
+        auth_method_id = find_default_auth_method(auth_methods)
+        if(auth_method_id == None):
+            auth_method_id = choose_auth_method(auth_methods)
+        hpg_request_id = response.headers['x-ms-request-id']
 
-    ctx = script_content['sCtx']
-    flowtoken = script_content['sFT']
-    session_id = script_content['sessionId']
-    canary = script_content['canary']
-    auth_methods = script_content['arrUserProofs']
-    auth_method_id = find_default_auth_method(auth_methods)
-    if(auth_method_id == None):
-        auth_method_id = choose_auth_method(auth_methods)
-    hpg_request_id = response.headers['x-ms-request-id']
-
-    request_data.data = {
-        "AuthMethodId": auth_method_id,
-        "Method": "BeginAuth",
-        "ctx": ctx,
-        "flowToken": flowtoken
-    }
-    request_data.data = json.dumps(request_data.data)
+        request_data.data = {
+            "AuthMethodId": auth_method_id,
+            "Method": "BeginAuth",
+            "ctx": ctx,
+            "flowToken": flowtoken
+        }
+        request_data.data = json.dumps(request_data.data)
 
 
 def find_default_auth_method(auth_methods):
@@ -278,7 +291,6 @@ def process_auth(session, request_data, otc=None):
 
 def scrape_process_auth(response, request_data):
     soup = BeautifulSoup(response.text, 'lxml')
-
     saml_response = soup.find('input', {'name': 'SAMLResponse'})['value']
 
     request_data.data = {

@@ -10,3 +10,4 @@ html2text==2020.1.16
 python-magic==0.4.25
 python-dateutil==2.8.2
 tabulate==0.8.9
+pwinput==1.0.2
