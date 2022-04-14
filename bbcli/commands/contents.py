@@ -100,7 +100,7 @@ def get_content(ctx, course_id: str, node_id: str):
     content_utils.check_content_handler(ctx, course_id, node_id)
     
 
-@click.command(name='attachment', help='Adds an attachment to a content. Only supports contents of type document and assignment')
+@click.command(name='attachment', help='Add attachment to content. Only supports contents of type document and assignment')
 @click.argument('course_id', required=True, type=str)
 @click.argument('content_id', required=True, type=str)
 @click.argument('file_path', required=True, type=click.Path(exists=True))
