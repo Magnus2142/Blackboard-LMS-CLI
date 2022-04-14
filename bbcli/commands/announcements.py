@@ -7,12 +7,13 @@ from bbcli.utils.utils import format_date
 from bbcli.views import announcement_view
 import os
 
+
 @click.command(name='list', help='This command lists your announcements.\nEither all announcements, all announcements from a spesific course, or one announcement.')
-@click.argument('course_id', required=False)
-@click.argument('announcement_id', required=False)
+@click.option('-c', '--course', 'course_id', required=False, type=str, help='COURSE ID, list announcements from a spesific course')
+@click.option('-a', '--announcement', 'announcement_id', required=False, type=str, help='ANNONUCEMENT ID, list a spesific announcement from a course.')
 @click.pass_context
 @list_exception_handler
-def list_announcements(ctx,course_id=None, announcement_id=None):
+def list_announcements(ctx, course_id=None, announcement_id=None):
     response = None
 
     if announcement_id:
@@ -31,7 +32,7 @@ def list_announcements(ctx,course_id=None, announcement_id=None):
 
 
 @click.command(name='create', help='Creates an announcement. Add --help for all options available.')
-@click.argument('course_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course you want to create an announcement in.')
 @click.argument('title', required=True, type=str)
 @click.option('--start-date', type=str, help='When to make announcement available. Format: DD/MM/YY HH:MM:SS')
 @click.option('--end-date', type=str, help='When to make announcement unavailable. Format: DD/MM/YY HH:MM:SS')
@@ -51,20 +52,22 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
 
 
 @click.command(name='delete', help='Deletes an announcement. Add --help for all options available')
-@click.argument('course_id', required=True, type=str)
-@click.argument('announcement_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course you want to create an announcement in.')
+@click.option('-a', '--announcement', 'announcement_id', required=True, type=str, help='ANNOUNCEMENT ID, of the announcement you want to delete.')
 @click.pass_context
 @delete_exception_handler
 def delete_announcement(ctx, course_id: str, announcement_id: str):
-    announcements_service.delete_announcement(ctx.obj['SESSION'], course_id, announcement_id)
+    announcements_service.delete_announcement(
+        ctx.obj['SESSION'], course_id, announcement_id)
     announcement_view.print_announcement_deleted()
 
 
 @click.command(name='update', help='Updates an announcement. Add --help for all options available.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('announcement_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course you want to create an announcement in.')
+@click.option('-a', '--announcement', 'announcement_id', required=True, type=str, help='ANNOUNCEMENT ID, of the annonucement you want to update.')
 @click.pass_context
 @update_exception_handler
 def update_announcement(ctx, course_id: str, announcement_id: str):
-    response = announcements_service.update_announcement(ctx.obj['SESSION'], course_id, announcement_id)
+    response = announcements_service.update_announcement(
+        ctx.obj['SESSION'], course_id, announcement_id)
     announcement_view.print_announcement_updated(response)

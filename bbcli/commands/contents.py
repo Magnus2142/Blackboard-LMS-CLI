@@ -21,7 +21,7 @@ base_url = 'https://ntnu.blackboard.com/learn/api/public/v1/'
 
 def standard_options(function):
     function = click.option('-h', '--hide-content', is_flag=True,
-                            help='Hide contents for students')(function)
+                            help='Hide content for students')(function)
     function = click.option(
         '-r', '--reviewable', is_flag=True, help='Make content reviewable')(function)
     function = click.option('--start-date', type=str,
@@ -35,11 +35,11 @@ def grading_options(function):
     function = click.option('-d', '--due-date', type=str,
                             help='Set a sumbission deadline for assignment. Format: DD/MM/YY HH:MM:SS')(function)
     function = click.option('-a', '--max-attempts', type=int,
-                            help='Set a maximum amount of attempts.')(function)
+                            help='Set maximum amount of attempts')(function)
     function = click.option('-u', '--unlimited-attempts',
-                            is_flag=True, help='Enable unlimited attempts.')(function)
+                            is_flag=True, help='Enable unlimited attempts')(function)
     function = click.option('-s', '--score', required=True,
-                            type=int, help='Set assignment score reward.')(function)
+                            type=int, help='Set assignment score reward')(function)
     return function
 
 
@@ -54,72 +54,77 @@ def web_link_options(function):
                             'launch_in_new_window', is_flag=True)(function)
     return function
 
-@click.command(name='list', help='List the contents. Folders are blue and files are white.')
-@click.argument('course_id')
-@click.option('-f', '--folders', required=False, is_flag=True, help='Specify this if you want to only list folders.')
-@click.option('--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
+
+@click.command(name='list', help='List contents\n\nFolders are blue and files are white')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'folder_id', required=False, type=str, help='FOLDER ID')
+@click.option('-fo', '--folders-only', required=False, is_flag=True, help='List only folders')
+@click.option('-ct', '--content-type', required=False, type=click.Choice(content_handler.keys(), case_sensitive=False))
 @click.pass_context
 @list_exception_handler
-def list_contents(ctx, course_id: str, content_type, folders: bool = False):
-    ct = 'content' if content_type is None else content_type
-    click.echo(f'Listing the {ct}s...')
-    start = time.time()
+def list_contents(ctx, course_id: str, folder_id: str, content_type, folders_only: bool = False):
+    if folder_id:
+        content_utils.check_content_handler(ctx, course_id, folder_id)
+    else:
+        ct = 'content' if content_type is None else content_type
+        click.echo(f'Listing the {ct}s...')
 
-    response = contents_service.list_contents(ctx.obj['SESSION'], course_id)
-    data = response.json()['results']
-    folder_ids = []
-    node_ids = []
+        response = contents_service.list_contents(
+            ctx.obj['SESSION'], course_id)
+        data = response.json()['results']
+        folder_ids = []
+        node_ids = []
 
-    threads = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for node in data:
-            root = Node(node)
-            worklist = [root]
-            folder_ids.append(node['id'])
-            args = [ctx, course_id, worklist, folder_ids, node_ids, root, folders, content_type]
-            t = executor.submit(content_utils.list_contents_thread, *args)
-            threads.append(t)
-                
-    for t in threads:
-        root_node = t.result()
-        if root_node is not None:
-            contents_view.list_tree(root_node, folder_ids, node_ids)
-        else: return 
+        threads = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for node in data:
+                root = Node(node)
+                worklist = [root]
+                folder_ids.append(node['id'])
+                args = [ctx, course_id, worklist, folder_ids,
+                        node_ids, root, folders_only, content_type]
+                t = executor.submit(content_utils.list_contents_thread, *args)
+                threads.append(t)
 
-    end = time.time()
-
-    print(f'Fetch time: {end - start} seconds')
+        for t in threads:
+            root_node = t.result()
+            if root_node is not None:
+                contents_view.list_tree(root_node, folder_ids, node_ids)
+            else:
+                return
 
 
-@click.command(name='get', help='Get a spesific content from a course, using the content id.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('node_id', required=True, type=str)
+@click.command(name='get', help='Get content')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-co', '--content', 'node_id', required=True, type=str, help='CONTENT ID')
 @click.pass_context
 @list_exception_handler
 def get_content(ctx, course_id: str, node_id: str):
     content_utils.check_content_handler(ctx, course_id, node_id)
-    
 
-@click.command(name='attachment', help='Add attachment to content. Only supports contents of type document and assignment')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=True, type=str)
+
+@click.command(name='attachment', help='Add attachment to content\n\nOnly supports contents of type document and assignment')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course where the content is located')
+@click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID of content to attach a file')
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @click.pass_context
 @create_exception_handler
 def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
-    contents_service.upload_attachment(ctx.obj['SESSION'], course_id, content_id, file_path)
+    contents_service.upload_attachment(
+        ctx.obj['SESSION'], course_id, content_id, file_path)
 
 
-@click.command(name='document', help='Creates a document content, optionally with file attachments')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.command(name='document', help='Create document content')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
 @click.pass_context
 @create_exception_handler
-def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str=None, end_date: str=None, attachments: tuple=None):
-    standard_options = StandardOptions(hide_content=hide_content, reviewable=reviewable)
+def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str = None, end_date: str = None, attachments: tuple = None):
+    standard_options = StandardOptions(
+        hide_content=hide_content, reviewable=reviewable)
     set_dates(standard_options, start_date, end_date)
 
     response = contents_service.create_document(
@@ -127,18 +132,18 @@ def create_document(ctx, course_id: str, parent_id: str, title: str, hide_conten
     click.echo(response)
 
 
-@click.command(name='file', help='Creates a file content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.command(name='file', help='Create file content')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @file_options
 @standard_options
 @click.pass_context
 @create_exception_handler
-def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str, 
-                        launch_in_new_window:bool, hide_content: bool, reviewable: bool,
-                        start_date: str=None, end_date: str=None):
+def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
+                launch_in_new_window: bool, hide_content: bool, reviewable: bool,
+                start_date: str = None, end_date: str = None):
     file_options = FileOptions(launch_in_new_window)
     standard_options = StandardOptions(
         hide_content=hide_content, reviewable=reviewable)
@@ -148,18 +153,18 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
     click.echo(response)
 
 
-@click.command(name='web-link', help='Create a web link content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.command(name='web-link', help='Create web link content')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('url', required=True, type=str)
 @standard_options
 @web_link_options
 @click.pass_context
 @create_exception_handler
-def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str, 
-                        launch_in_new_window:bool, hide_content: bool, reviewable: bool,
-                        start_date: str=None, end_date: str=None):
+def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
+                    launch_in_new_window: bool, hide_content: bool, reviewable: bool,
+                    start_date: str = None, end_date: str = None):
     web_link_options = WeblinkOptions(launch_in_new_window)
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
@@ -168,43 +173,45 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
     click.echo(response)
 
 
-@click.command(name='folder', help='Create a folder either in top level or inside another content.')
-@click.argument('course_id', required=True, type=str)
+@click.command(name='folder', help='Create folder')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'parent_id', required=False, type=str, help='FOLDER ID of the parent folder')
 @click.argument('title', required=True, type=str)
-@click.option('-p', '--parent_id', required=False, type=str, help='Id of parent folder')
 @click.option('--is-bb-page', is_flag=True, help='Make folder a blackboard page')
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_folder(ctx, course_id: str, parent_id: str, title: str,
-                        hide_content: bool, reviewable: bool, is_bb_page: bool = False,
-                        start_date: str=None, end_date: str=None):
+                  hide_content: bool, reviewable: bool, is_bb_page: bool = False,
+                  start_date: str = None, end_date: str = None):
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_folder(
         ctx.obj['SESSION'], course_id, parent_id, title, is_bb_page, standard_options)
     click.echo(response)
-    
-@click.command(name='course-link', help='Create a course link content which redirects user to the target content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+
+
+@click.command(name='course-link', help='Create course link content\n\nRedirects user to the target content')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('target_id', required=True, type=str)
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id: str,
-                        hide_content: bool, reviewable: bool, 
-                        start_date: str=None, end_date: str=None):
+                      hide_content: bool, reviewable: bool,
+                      start_date: str = None, end_date: str = None):
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_courselink(
         ctx.obj['SESSION'], course_id, parent_id, title, target_id, standard_options)
     click.echo(response)
-    
-@click.command(name='assignment', help='Creates an assignment.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+
+
+@click.command(name='assignment', help='Create assignment')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
@@ -212,12 +219,12 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
 @click.pass_context
 @create_exception_handler
 def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: str,
-                      hide_content: bool, reviewable: bool,
-                      start_date: str, end_date: str,
-                      due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
-                      attachments: tuple):
+                                    hide_content: bool, reviewable: bool,
+                                    start_date: str, end_date: str,
+                                    due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
+                                    attachments: tuple):
     """
-    Creates an assignment.
+    Create assignment
     """
     standard_options = StandardOptions(hide_content, reviewable)
     grading_options = GradingOptions(
@@ -232,24 +239,28 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
 
 
 # TODO: ADD RESPONSES
-@click.command(name='delete', help='Deletes a content.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=True, type=str)
-@click.option('--delete-grades', is_flag=True, help='Deletes grades if a grade column is assosciated with the content.')
+@click.command(name='delete', help='Delete content')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
+@click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID')
+@click.option('--delete-grades', is_flag=True, help='Delete grades if a grade column is associated with the content')
 @click.pass_context
 @delete_exception_handler
 def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
-    response = contents_service.delete_content(ctx.obj['SESSION'], course_id, content_id, delete_grades)
+    response = contents_service.delete_content(
+        ctx.obj['SESSION'], course_id, content_id, delete_grades)
     click.echo(response)
 
 # TODO: ADD RESPONSES
-@click.command(name='update', help='Updates a given content.\nEditable content types: document, files, assignments, externallinks, courselinks')
-@click.argument('course_id', required=True, type=str)
-@click.argument('content_id', required=True, type=str)
+
+
+@click.command(name='update', help='Update content\n\nEditable content types: document, files, assignments, externallinks, courselinks')
+@click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID.')
+@click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID')
 @click.pass_context
 @update_exception_handler
 def update_content(ctx, course_id: str, content_id: str):
-    response = contents_service.update_content(ctx.obj['SESSION'], course_id, content_id)
+    response = contents_service.update_content(
+        ctx.obj['SESSION'], course_id, content_id)
     click.echo(response)
 
 

@@ -24,8 +24,8 @@ def attempt_options(function):
 
 # TODO: This function is a copy of the same function in contents.py. Fix this.
 @click.command(name='create', help='Create an assignment.')
-@click.argument('course_id', required=True, type=str)
-@click.argument('parent_id', required=True, type=str)
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want to create an assignment in.')
+@click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to place the assignment.')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @standard_options
@@ -49,49 +49,40 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
     click.echo(response)
 
 
-@click.command(name='list')
-@click.argument('course-id', required=True)
+@click.command(name='list', help='List all assignments from a course.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want assignments from.')
 @click.pass_context
 @list_exception_handler
 def get_assignments(ctx, course_id):
-    """
-    List assignments for a course.
-    """
     assignment_service.get_assignments(ctx.obj['SESSION'], course_id)
 
 
-@click.command(name='list')
-@click.argument('course_id', required=True)
-@click.argument('column_id', required=True)
+@click.command(name='list', help='List attempts for an assignment.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want the assignment attempts from')
+@click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want attempts from')
 @click.option('--submitted', is_flag=True, help='List only submitted attempts.')
 @click.pass_context
 @list_exception_handler
 def get_attempts(ctx, course_id, column_id, submitted):
-    """
-    List attempts for an assignment.
-    """
     assignment_service.get_column_attempts(
         ctx.obj['SESSION'], course_id, column_id, print_submitted=submitted)
 
 
 # TODO: Retrieve the submission w/ attachments.
-@click.command(name='get')
-@click.argument('course_id', required=True)
-@click.argument('column_id', required=True)
-@click.argument('attempt_id', required=True)
+@click.command(name='get', help='Get a specific attempt for an assignment.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course of you want to get attempt from')
+@click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want attempts from')
+@click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to fetch.')
 @click.pass_context
 @list_exception_handler
 def get_attempt(ctx, course_id, column_id, attempt_id):
-    """
-    Get a specific attempt for an assignment.
-    """
     assignment_service.get_column_attempt(
         ctx.obj['SESSION'], course_id, column_id, attempt_id)
 
 
-@click.command(name='submit')
-@click.argument('course_id', required=True)
-@click.argument('column_id', required=True)
+@click.command(name='submit', help='Submit assignment attempt.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course to submit an assignment to.')
+@click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
 @click.option('--studentComments', help='The student comments associated with this attempt.')
 @click.option('--studentSubmission', help='The student submission text associated with this attempt.')
 @click.option('--file', help='Attach a file to an attempt for a Student Submission. Relative path of file.')
@@ -99,55 +90,43 @@ def get_attempt(ctx, course_id, column_id, attempt_id):
 @click.pass_context
 @create_exception_handler
 def submit_attempt(ctx, course_id, column_id, studentComments, studentSubmission, file, draft):
-    """
-    Submit assignment attempt.
-    """
     assignment_service.create_column_attempt(
         ctx.obj['SESSION'], course_id, column_id, studentComments=studentComments, studentSubmission=studentSubmission, dst=file, status='needsGrading', draft=draft)
 
 
-@click.command(name='submit-draft')
-@click.argument('course_id', required=True)
-@click.argument('column_id', required=True)
-@click.argument('attempt_id', required=True)
+@click.command(name='submit-draft', help='Submit assignment draft.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
+@click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
+@click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to update.')
 @click.pass_context
 @update_exception_handler
 def submit_draft(ctx, course_id, column_id, attempt_id):
-    """
-    Submit assignment draft.
-    """
     assignment_service.update_column_attempt(
         ctx.obj['SESSION'], course_id=course_id, column_id=column_id, attempt_id=attempt_id, status='needsGrading')
 
 
-@click.command(name='update')
-@click.argument('course_id', required=True)
-@click.argument('column_id', required=True)
-@click.argument('attempt_id', required=True)
+@click.command(name='update', help='Update assignment.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
+@click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
+@click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to update.')
 @attempt_options
 @click.option('--studentComments', help='The student comments associated with this attempt.')
 @click.option('--studentSubmission', help='The student submission text associated with this attempt.')
 @click.pass_context
 @update_exception_handler
 def update_attempt(ctx, course_id, column_id, attempt_id, status, comments, submission, file):
-    """
-    Update assignment.
-    """
     assignment_service.update_column_attempt(
         session=ctx.obj['SESSION'], course_id=course_id, column_id=column_id, attempt_id=attempt_id, status=status, studentComments=comments, studentSubmission=submission, dst=file)
 
 
-@click.command(name='grade')
-@click.argument('course_id', required=True)
-@click.argument('column_id', required=True)
-@click.argument('attempt_id', required=True)
+@click.command(name='grade', help='Grade an assignment.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
+@click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want.')
+@click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to grade.')
 @attempt_options
 @click.pass_context
 @update_exception_handler
 def grade_assignment(ctx, course_id, column_id, attempt_id, status, score, text, notes, feedback, exempt):
-    """
-    Grade assignment.
-    """
     if status is None:
         status = 'Completed'
 

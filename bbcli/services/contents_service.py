@@ -202,9 +202,6 @@ def create_courselink(session: requests.Session, course_id: str, parent_id: str,
     response.raise_for_status()
     return response.text
 
-# TODO: Figure out how a lecturer can get/edit submission-, grading-, and display of grades options.
-
-
 def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions, grading_options: GradingOptions, attachments: tuple = None):
 
     instructions = input_body()

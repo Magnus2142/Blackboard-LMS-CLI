@@ -6,10 +6,10 @@ import os
 import requests
 
 
-#, help='List a spesific course with the corresponding id'
-@click.command(name='list', help='This command lists your courses, by default only the courses from two last semesters.')
-@click.argument('course_id', required=False)
-@click.option('-a', '--all/--no-all', 'show_all', default=False, help='Lists all courses you have ever been signed up for')
+# , help='List a spesific course with the corresponding id'
+@click.command(name='list', help='List courses')
+@click.option('-c', '--course', 'course_id', required=False, type=str, help='[COURSE ID] Get information about a specific course')
+@click.option('-a', '--all/--no-all', 'show_all', default=False, help='List all registered courses on the current user')
 @click.pass_context
 @list_exception_handler
 def list_courses(ctx, course_id=None, show_all=False):
