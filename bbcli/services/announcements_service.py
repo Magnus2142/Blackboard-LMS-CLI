@@ -16,11 +16,12 @@ url_builder = URL_builder()
 def list_announcements(session: requests.Session, user_name: str):
     courses = list_courses(session, user_name=user_name)
     announcements = []
-
+    click.echo(courses)
     for course in courses:
         url = url_builder.base_v1().add_courses().add_id(
             course['id']).add_announcements().create()
         course_announcements = session.get(url)
+        # course_announcements.raise_for_status()
         course_announcements = json.loads(course_announcements.text)
 
         # Adds the course name to each course announcement list to make it easier to display which course the announcement comes from
@@ -37,6 +38,7 @@ def list_course_announcements(session: requests.Session, course_id: str):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_announcements().create()
     course_announcements = session.get(url)
+    print(course_announcements.text)
     course_announcements.raise_for_status()
     course_announcements = json.loads(course_announcements.text)['results']
     return course_announcements

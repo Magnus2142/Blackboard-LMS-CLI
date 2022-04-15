@@ -58,7 +58,6 @@ def list_course(session: requests.Session, course_id: str) -> Any:
     url = url_builder.base_v3().add_courses().add_id(course_id).create()
     response = session.get(url)
     response.raise_for_status()
-
     return json.loads(response.text)
 
 
