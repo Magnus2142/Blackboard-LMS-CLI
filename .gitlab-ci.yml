@@ -43,7 +43,6 @@ deploy-prod-pypi:
   cache: {}
   script:
     - pip install -U twine
-    - python setup.py check sdist bdist  # This will fail if your creds are bad.
     - python setup.py bdist_wheel
     - twine upload dist/*
     
