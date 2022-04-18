@@ -20,17 +20,18 @@ variables:
 cache:
   paths:
     - .cache/pip
-    - ./venv/
+    - venv/
 
 before_script:
   - python --version  # For debugging
   - pip install virtualenv
-  - python venv ./venv
-  - source ./venv/bin/activate
+  - virtualenv venv
+  - source venv/bin/activate
   - python -m pip install -r requirements.txt 
 
 test:
   script:
+    - ls
     - nosetests tests --verbosity 2
 
 build-job:
