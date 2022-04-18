@@ -50,17 +50,17 @@ LOGIN AND LOGOUT COMMANDS
 @click.command(name='login')
 def authorize_user():
     """
-    Authorize user with username and password.
+    Authorize user with username and password
     """
     login()
 
 @click.command(name='logout')
 def logout():
     """
-    Logout user.
+    Logout user
     """
     open(f'{os.path.dirname(os.path.abspath(__file__))}/.env', 'w').close()
-    click.echo('Sucessfully logged out.')
+    click.echo('Sucessfully logged out')
 
 entry_point.add_command(authorize_user)
 entry_point.add_command(logout)
@@ -68,7 +68,7 @@ entry_point.add_command(logout)
 """
 SHELL COMPLETION COMMANDS
 """
-@click.command(name='activate-shell-completion', help='Activate shell completion for your shell')
+@click.command(name='activate-shell-completion', help='Activate shell completion')
 @click.argument('shell', required=True, type=str)
 def activate_shell_completion(shell: str):
     if shell == 'fish':
@@ -87,11 +87,11 @@ def activate_shell_completion(shell: str):
                 shutil.copy(f'{os.path.dirname(os.path.abspath(__file__))}/shell-completion/.bb-complete.bash', os.path.expanduser('~'))
                 with open(os.path.join(os.path.expanduser('~'), f'.{shell}rc'), 'a') as f:
                     f.write('\n. ~/.bb-complete.bash\n')
-                    click.echo('Shell completion activated! Restart shell to load the changes.')
+                    click.echo('Shell completion activated. Restart shell to load changes')
             else:
-                click.echo('Shell completion already activated.')
+                click.echo('Shell completion already activated')
         else: 
-            click.echo('Did not recognize the Shell or CLI shell completion is not compatible with your Shell.')
+            click.echo('Shell not recognized, or CLI shell completion is not compatible with your Shell')
 
 
 entry_point.add_command(activate_shell_completion)
@@ -141,7 +141,7 @@ announcements.add_command(update_announcement)
 @click.pass_context
 def assignments(ctx):
     """
-    Commands for creating, listing and submitting assignments.
+    Commands for creating, listing and submitting assignments
     """
     authenticate_user()
     load_dotenv()
@@ -157,7 +157,7 @@ assignments.add_command(grade_assignment)
 @click.pass_context
 def attempts(ctx):
     """
-    Commands for creating, submitting and listing attempts for an assignment.
+    Commands for creating, submitting and listing attempts for an assignment
     """
     pass
 

@@ -13,14 +13,14 @@ def is_folder(node):
 
 def get_children(ctx, course_id, worklist, folder_ids, node_ids):
     if len(worklist) == 0:
-        return
+        return 
     else:
         node = worklist.pop(0)
         node_id = node.data['id']
         response = contents_service.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
-            pass
+            return
         else:
             children = response.json()['results']
             for child in children:
@@ -44,7 +44,7 @@ def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
         response = contents_service.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
-            pass
+            return
         else:
             children = response.json()['results']
             for child in children:
@@ -66,7 +66,7 @@ def get_content_type(ctx, course_id, worklist, folder_ids, node_ids, content_typ
         response = contents_service.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
-            pass
+            return
         else:
             children = response.json()['results']
             for child in children:
@@ -91,14 +91,13 @@ def list_contents_thread(
         folder_ids,
         node_ids,
         root,
-        folders: bool,
+        folders_only: bool,
         content_type: str):
-    if folders and content_type is not None:
-        click.ClickException(
-            'Cannot list contents and a specific folder type. Try either one.')
-    elif folders and content_type is None:
+    if folders_only and content_type is not None:
+        return
+    elif folders_only and content_type is None:
         get_folders(ctx, course_id, worklist, folder_ids, node_ids)
-    elif folders == False and content_type is not None:
+    elif folders_only == False and content_type is not None:
         get_content_type(ctx, course_id, worklist, folder_ids, node_ids,  content_type)
     else:
         get_children(ctx, course_id, worklist, folder_ids, node_ids)

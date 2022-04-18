@@ -24,7 +24,7 @@ def attempt_options(function):
 
 # TODO: This function is a copy of the same function in contents.py. Fix this.
 @click.command(name='create', help='Create an assignment.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course you want to create an assignment in.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want to create an assignment in.')
 @click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID, of the folder you want to place the assignment.')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
@@ -58,7 +58,7 @@ def get_assignments(ctx, course_id):
 
 
 @click.command(name='list', help='List attempts for an assignment.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course you want the assignment attempts from')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want the assignment attempts from')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want attempts from')
 @click.option('--submitted', is_flag=True, help='List only submitted attempts.')
 @click.pass_context
@@ -70,7 +70,7 @@ def get_attempts(ctx, course_id, column_id, submitted):
 
 # TODO: Retrieve the submission w/ attachments.
 @click.command(name='get', help='Get a specific attempt for an assignment.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course of you want to get attempt from')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course of you want to get attempt from')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want attempts from')
 @click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to fetch.')
 @click.pass_context
@@ -81,7 +81,7 @@ def get_attempt(ctx, course_id, column_id, attempt_id):
 
 
 @click.command(name='submit', help='Submit assignment attempt.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course to submit an assignment to.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course to submit an assignment to.')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
 @click.option('--studentComments', help='The student comments associated with this attempt.')
 @click.option('--studentSubmission', help='The student submission text associated with this attempt.')
@@ -95,7 +95,7 @@ def submit_attempt(ctx, course_id, column_id, studentComments, studentSubmission
 
 
 @click.command(name='submit-draft', help='Submit assignment draft.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
 @click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to update.')
 @click.pass_context
@@ -106,7 +106,7 @@ def submit_draft(ctx, course_id, column_id, attempt_id):
 
 
 @click.command(name='update', help='Update assignment.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
 @click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to update.')
 @attempt_options
@@ -120,7 +120,7 @@ def update_attempt(ctx, course_id, column_id, attempt_id, status, comments, subm
 
 
 @click.command(name='grade', help='Grade an assignment.')
-@click.option('-c', '--course' ,'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
+@click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want.')
 @click.option('-at', '--attempt', 'attempt_id', required=True, help='ATTEMPT ID, of the attempt you want to grade.')
 @attempt_options
