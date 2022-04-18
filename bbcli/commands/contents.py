@@ -3,9 +3,7 @@ from bbcli.utils.error_handler import create_exception_handler, delete_exception
 import click
 from bbcli.entities.content_builder_entitites import FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services import contents_service
-import time
 import click
-import threading
 import concurrent.futures
 
 from bbcli.entities.Node import Node
@@ -91,7 +89,11 @@ def list_contents(ctx, course_id: str, folder_id: str, content_type, folders_onl
             if root_node is not None:
                 contents_view.list_tree(root_node, folder_ids, node_ids)
             else:
+                click.ClickException(
+                    'Cannot list folders only and a specific content type. Try either one.'
+                    ).show()
                 return
+
 
 
 @click.command(name='get', help='Get content')
