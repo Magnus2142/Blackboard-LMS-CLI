@@ -45,5 +45,6 @@ deploy-prod-pypi:
     - pip install -U twine
     - python setup.py check sdist bdist  # This will fail if your creds are bad.
     - python setup.py bdist_wheel
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token twine upload dist/*
+    - TWINE_PASSWORD=$CI_JOB_TOKEN TWINE_USERNAME=__token__ twine upload dist/*
+    
 
