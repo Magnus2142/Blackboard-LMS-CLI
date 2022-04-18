@@ -7,7 +7,20 @@
 # https://hub.docker.com/r/library/python/tags/
 image: python:latest
 
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/topics/caching/
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - venv/
 
 before_script:
   - python --version  # For debugging
@@ -22,10 +35,14 @@ build-job:
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
 
-test:
+py36_nose:
+  image: python:3.6
   stage: test
   script:
-    - nosetests --verbosity 2
+    - apt-get update -q -y
+    - pip install -r requirements.txt
+    - nosetests -v --nocapture
+
 
 test-job1:
   stage: test
