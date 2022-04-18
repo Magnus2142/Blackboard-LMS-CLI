@@ -16,29 +16,25 @@ url_builder = URL_builder()
 def list_announcements(session: requests.Session, user_name: str):
     courses = list_courses(session, user_name=user_name)
     announcements = []
-
     for course in courses:
-        url = url_builder.base_v1().add_courses().add_id(
-            course['id']).add_announcements().create()
-        course_announcements = session.get(url)
-        course_announcements = json.loads(course_announcements.text)
+        course_announcements = list_course_announcements(session, course['id'], True)
 
         # Adds the course name to each course announcement list to make it easier to display which course the announcement comes from
         if 'results' in course_announcements:
             announcements.append({
                 'course_name': course['name'],
-                'course_announcements': course_announcements['results']
+                'course_announcements': course_announcements
             })
-
     return announcements
 
 
-def list_course_announcements(session: requests.Session, course_id: str):
+def list_course_announcements(session: requests.Session, course_id: str, allow_bad_request: bool=False):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_announcements().create()
     course_announcements = session.get(url)
-    course_announcements.raise_for_status()
-    course_announcements = json.loads(course_announcements.text)['results']
+    if not allow_bad_request:
+        course_announcements.raise_for_status()
+    course_announcements = json.loads(course_announcements.text)
     return course_announcements
 
 
@@ -93,7 +89,7 @@ def delete_announcement(session: requests.Session, course_id: str, announcement_
         course_id).add_announcements().add_id(announcement_id).create()
     response = session.delete(url)
     response.raise_for_status()
-    return response.text
+    return response
 
 
 def update_announcement(session: requests.Session, course_id: str, announcement_id: str):
@@ -115,5 +111,5 @@ def update_announcement(session: requests.Session, course_id: str, announcement_
         course_id).add_announcements().add_id(announcement_id).create()
     response = session.patch(url, data=new_data)
     response.raise_for_status()
-
+    
     return response.text

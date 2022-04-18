@@ -19,7 +19,7 @@ def list_announcements(ctx, course_id=None, announcement_id=None):
     if announcement_id:
         response = announcements_service.list_announcement(
             ctx.obj['SESSION'], course_id, announcement_id)
-        announcement_view.print_course_announcements([response])
+        announcement_view.print_announcement(response)
     elif course_id:
         response = announcements_service.list_course_announcements(
             ctx.obj['SESSION'], course_id)

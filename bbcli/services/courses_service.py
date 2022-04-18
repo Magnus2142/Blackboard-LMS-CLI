@@ -18,38 +18,25 @@ def list_courses(session: requests.Session, user_name: str) -> Any:
 
     course_memberships = get_course_memberships(session, user_name)
 
-    course_list = []
+    courses = get_courses_from_course_memberships(session, course_memberships)
 
-    # Get courses from the correct terms
-    for course in course_memberships:
-        url = url_builder.base_v3().add_courses().add_id(
-            course['courseId']).create()
-        response = session.get(url, params={'fields': 'id, name, termId'})
-        response.raise_for_status()
-        response = json.loads(response.text)
-        if response['termId'] == term_1['id'] or response['termId'] == term_2['id']:
+    course_list = []
+    for course in courses:    
+        if course['termId'] == term_1['id'] or course['termId'] == term_2['id']:
             course_list.append({
-                'id': response['id'],
-                'name': response['name']
+                'id': course['id'],
+                'name': course['name']
             })
         else:
             break
-
+    
     return course_list
 
 
 def list_all_courses(session: requests.Session, user_name: str) -> Any:
     course_memberships = get_course_memberships(session, user_name)
 
-    course_list = []
-
-    for course in course_memberships:
-        url = url_builder.base_v3().add_courses().add_id(
-            course['courseId']).create()
-        response = session.get(url, params={'fields': 'id, name'})
-        response.raise_for_status()
-        response = json.loads(response.text)
-        course_list.append(response)
+    course_list = get_courses_from_course_memberships(session, course_memberships)
 
     return course_list
 
@@ -58,7 +45,6 @@ def list_course(session: requests.Session, course_id: str) -> Any:
     url = url_builder.base_v3().add_courses().add_id(course_id).create()
     response = session.get(url)
     response.raise_for_status()
-
     return json.loads(response.text)
 
 
@@ -96,3 +82,15 @@ def get_course_memberships(session: requests.Session, user_name: str):
     course_memberships.raise_for_status()
     course_memberships = json.loads(course_memberships.text)['results']
     return course_memberships
+
+def get_courses_from_course_memberships(session: requests.Session, course_memberships: List):
+    courses = []
+    for course in course_memberships:
+        url = url_builder.base_v3().add_courses().add_id(
+            course['courseId']).create()
+        response = session.get(url, params={'fields': 'id, name, termId'})
+        response.raise_for_status()
+        response = json.loads(response.text)
+        courses.append(response)
+    
+    return courses
