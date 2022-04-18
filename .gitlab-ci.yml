@@ -45,5 +45,7 @@ deploy-prod-pypi:
     - pip install -U twine
     - python setup.py bdist_wheel
     - twine upload dist/*
-    
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 
