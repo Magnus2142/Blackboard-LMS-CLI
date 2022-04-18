@@ -31,7 +31,7 @@ before_script:
 
 test:
   script:
-    - nosetests
+    - nosetests tests --verbosity 2
 
 build-job:
   stage: build
