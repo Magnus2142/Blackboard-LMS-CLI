@@ -89,7 +89,7 @@ def delete_announcement(session: requests.Session, course_id: str, announcement_
         course_id).add_announcements().add_id(announcement_id).create()
     response = session.delete(url)
     response.raise_for_status()
-    return response.text
+    return response
 
 
 def update_announcement(session: requests.Session, course_id: str, announcement_id: str):
@@ -111,5 +111,5 @@ def update_announcement(session: requests.Session, course_id: str, announcement_
         course_id).add_announcements().add_id(announcement_id).create()
     response = session.patch(url, data=new_data)
     response.raise_for_status()
-
+    
     return response.text

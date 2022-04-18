@@ -90,14 +90,15 @@ def post_login_request(session, request_data, credentials):
 
 def scrape_login_response(response, request_data):
     soup = BeautifulSoup(response.text, 'lxml')
-    # try:
-    samlResponse = soup.find(
-        'input', {'name': 'SAMLResponse'})['value']
-    relayState = soup.find(
-        'input', {'name': 'RelayState'})['value']
-    # except TypeError:
-    #     raise TypeError("Username or password is wrong...")
-    # else:
+    try:
+        samlResponse = soup.find(
+            'input', {'name': 'SAMLResponse'})['value']
+        relayState = soup.find(
+            'input', {'name': 'RelayState'})['value']
+    except TypeError:
+        click.echo('Username or password is wrong, please try again...')
+        raise click.Abort()
+        
     request_data.data = {
         'SAMLResponse': samlResponse,
     }

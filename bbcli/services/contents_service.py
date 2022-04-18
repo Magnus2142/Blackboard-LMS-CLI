@@ -113,8 +113,6 @@ def create_document(session: requests.Session, course_id: str, parent_id: str, t
 
 # TODO: Bug that if a file is created with an attachment, the attachment takes the place of the actual file for the content. In addition,
 #       if two attachments is added, only the last one is added/overwrite the first one
-
-
 def create_file(session: requests.Session, course_id: str, parent_id: str, title: str, file_dst: str, file_options: FileOptions, standard_options: StandardOptions):
 
     uploaded_file = upload_file(session, file_dst)
@@ -133,7 +131,7 @@ def create_file(session: requests.Session, course_id: str, parent_id: str, title
         .add_file_options(file_options)\
         .add_content_handler_file(file_content)\
         .create()
-
+    
     data = json.dumps(data)
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
@@ -203,7 +201,6 @@ def create_courselink(session: requests.Session, course_id: str, parent_id: str,
     return response.text
 
 def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions, grading_options: GradingOptions, attachments: tuple = None):
-
     instructions = input_body()
 
     data = content_builder\
@@ -238,7 +235,7 @@ def delete_content(session: requests.Session, course_id: str, content_id: str, d
         course_id).add_contents().add_id(content_id).create()
     response = session.delete(url, params=parameters)
     response.raise_for_status()
-    return response.text
+    return response
 
 
 def update_content(session: requests.Session, course_id: str, content_id: str):
