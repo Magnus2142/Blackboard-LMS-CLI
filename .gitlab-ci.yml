@@ -20,7 +20,7 @@ variables:
 cache:
   paths:
     - .cache/pip
-    - venv/
+    - ./venv/
 
 before_script:
   - python --version  # For debugging
