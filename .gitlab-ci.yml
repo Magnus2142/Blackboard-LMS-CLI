@@ -46,6 +46,4 @@ deploy-prod-pypi:
     - python setup.py check sdist bdist  # This will fail if your creds are bad.
     - python setup.py bdist_wheel
     - twine upload dist/*
-  rules:
-    - if: $CI_COMMIT_BRANCH == magnus_feature_add-testing
 
