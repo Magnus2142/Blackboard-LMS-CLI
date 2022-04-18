@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 import mmap
-from typing import Dict, List
+from typing import List
 from requests import Session
 import html2text
 import click
