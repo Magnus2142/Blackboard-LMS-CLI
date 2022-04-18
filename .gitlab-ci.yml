@@ -29,12 +29,6 @@ before_script:
   - source venv/bin/activate
   - python -m pip install -r requirements.txt 
 
-
-build-job:
-  stage: build
-  script:
-    - echo "Hello, $GITLAB_USER_LOGIN!"
-
 py37_nose:
   image: python:3.7
   stage: test
@@ -43,14 +37,15 @@ py37_nose:
     - pip install -r requirements.txt
     - nosetests -v --nocapture
 
-
-test-job1:
-  stage: test
-  script:
-    - echo "This job tests something"
-
-    
-deploy-prod:
+deploy-prod-pypi:
+  image: docker.km3net.de/base/python:3
   stage: deploy
+  cache: {}
   script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    - pip install -U twine
+    - python setup.py check sdist bdist  # This will fail if your creds are bad.
+    - python setup.py bdist_wheel
+    - twine upload dist/*
+  rules:
+    - if: $CI_COMMIT_BRANCH == magnus_feature_add-testing
+
