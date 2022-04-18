@@ -31,8 +31,7 @@ before_script:
 
 test:
   script:
-    - ls
-    - nosetests tests --verbosity 2
+    - pytest
 
 build-job:
   stage: build
