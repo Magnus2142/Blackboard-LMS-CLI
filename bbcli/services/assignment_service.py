@@ -19,7 +19,7 @@ def get_assignments(session: requests.Session, course_id):
     response.raise_for_status()
     response = json.loads(response.text)
     results = response['results']
-    print_assignments(results)
+    return results
 
 # TODO: This should be in view
 def print_assignments(assignments):
@@ -42,7 +42,7 @@ def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
 
 
-def get_column_attempts(session: requests.Session, course_id, column_id, print_submitted):
+def get_column_attempts(session: requests.Session, course_id, column_id):
     url = url_builder.base_v2().add_courses().add_id(course_id).add_gradebook(
     ).add_columns().add_id(column_id).add_attempts().create()
 
@@ -50,11 +50,7 @@ def get_column_attempts(session: requests.Session, course_id, column_id, print_s
     response.raise_for_status()
     response = json.loads(response.text)
     results = response['results']
-
-    if print_submitted:
-        print_submitted_attempts(results)
-    else:
-        print_all_attempts(results)
+    return results
 
 
 def print_submitted_attempts(attempts):
@@ -93,7 +89,7 @@ def get_column_attempt(session: requests.Session, course_id, column_id, attempt_
     response = session.get(url)
     attempt = json.loads(response.text)
     attempt = json.dumps(attempt, indent=2)
-    click.echo(attempt)
+    return attempt
 
 
 def create_column_attempt(session: requests.Session, course_id, column_id, studentComments=None, studentSubmission=None, dst: str = None, status=None, draft: bool = False):
@@ -110,7 +106,6 @@ def create_column_attempt(session: requests.Session, course_id, column_id, stude
     json_data = json.dumps(data, indent=2)
     response = session.post(url, data=json_data)
     response_json = json.loads(response.text)
-    click.echo(response_json)
 
     if dst is not None and response.status_code == 201:
         attempt_id = response_json['id']
@@ -119,6 +114,8 @@ def create_column_attempt(session: requests.Session, course_id, column_id, stude
             return
         update_column_attempt(session, course_id, column_id,
                               attempt_id, status='NeedsGrading')
+
+    return response_json
 
 
 def update_column_attempt(session: requests.Session, course_id, column_id, attempt_id, status=None, score=None, text=None, notes=None, feedback=None, studentComments=None, studentSubmission=None, exempt=None, dst=None):
@@ -134,11 +131,11 @@ def update_column_attempt(session: requests.Session, course_id, column_id, attem
     response = session.patch(url, data=json_data)
     response.raise_for_status()
     response = json.loads(response.text)
-    click.echo(response)
 
     if dst is not None:
         attach_file(session, course_id, attempt_id, dst)
 
+    return response
 
 def attach_file(session: requests.Session, course_id, attempt_id, dst: str):
     url = url_builder.base_v1().add_courses().add_id(

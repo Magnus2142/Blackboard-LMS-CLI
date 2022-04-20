@@ -23,7 +23,7 @@ TEST_GET_CONTENT_UPDATED = {'id': '_1698141_1', 'parentId': '_1697863_1', 'title
 TEST_UPLOADED_FILE = {'id': '53-5321C30FA434825104FDC83B173BF720-abcdf665d3294daf8addddc56a670674'}
 
 
-class TestAnnouncementsServices(object):
+class TestContentsServices(object):
     @classmethod
     def setup_class(cls):
         cls.test_session = requests.Session()

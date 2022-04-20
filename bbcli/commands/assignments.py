@@ -54,8 +54,8 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
 @click.pass_context
 @list_exception_handler
 def get_assignments(ctx, course_id):
-    assignment_service.get_assignments(ctx.obj['SESSION'], course_id)
-
+    response = assignment_service.get_assignments(ctx.obj['SESSION'], course_id)
+    assignment_service.print_assignments(response)
 
 @click.command(name='list', help='List attempts for an assignment.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want the assignment attempts from')
@@ -64,8 +64,11 @@ def get_assignments(ctx, course_id):
 @click.pass_context
 @list_exception_handler
 def get_attempts(ctx, course_id, column_id, submitted):
-    assignment_service.get_column_attempts(
-        ctx.obj['SESSION'], course_id, column_id, print_submitted=submitted)
+    response = assignment_service.get_column_attempts(ctx.obj['SESSION'], course_id, column_id)
+    if submitted:
+        assignment_service.print_submitted_attempts(response)
+    else:
+        assignment_service.print_all_attempts(response)
 
 
 # TODO: Retrieve the submission w/ attachments.
@@ -76,23 +79,22 @@ def get_attempts(ctx, course_id, column_id, submitted):
 @click.pass_context
 @list_exception_handler
 def get_attempt(ctx, course_id, column_id, attempt_id):
-    assignment_service.get_column_attempt(
-        ctx.obj['SESSION'], course_id, column_id, attempt_id)
-
+    response = assignment_service.get_column_attempt(ctx.obj['SESSION'], course_id, column_id, attempt_id)
+    click.echo(response)
 
 @click.command(name='submit', help='Submit assignment attempt.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course to submit an assignment to.')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
-@click.option('--studentComments', help='The student comments associated with this attempt.')
-@click.option('--studentSubmission', help='The student submission text associated with this attempt.')
+@click.option('--student-comments', help='The student comments associated with this attempt.')
+@click.option('--student-submission', help='The student submission text associated with this attempt.')
 @click.option('--file', help='Attach a file to an attempt for a Student Submission. Relative path of file.')
 @click.option('--draft', is_flag=True)
 @click.pass_context
 @create_exception_handler
-def submit_attempt(ctx, course_id, column_id, studentComments, studentSubmission, file, draft):
-    assignment_service.create_column_attempt(
-        ctx.obj['SESSION'], course_id, column_id, studentComments=studentComments, studentSubmission=studentSubmission, dst=file, status='needsGrading', draft=draft)
-
+def submit_attempt(ctx, course_id, column_id, student_comments, student_submission, file, draft):
+    response = assignment_service.create_column_attempt(
+        ctx.obj['SESSION'], course_id, column_id, studentComments=student_comments, studentSubmission=student_submission, dst=file, status='needsGrading', draft=draft)
+    click.echo(response)
 
 @click.command(name='submit-draft', help='Submit assignment draft.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
@@ -101,9 +103,9 @@ def submit_attempt(ctx, course_id, column_id, studentComments, studentSubmission
 @click.pass_context
 @update_exception_handler
 def submit_draft(ctx, course_id, column_id, attempt_id):
-    assignment_service.update_column_attempt(
+    response = assignment_service.update_column_attempt(
         ctx.obj['SESSION'], course_id=course_id, column_id=column_id, attempt_id=attempt_id, status='needsGrading')
-
+    click.echo(response)
 
 @click.command(name='update', help='Update assignment.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
@@ -115,9 +117,9 @@ def submit_draft(ctx, course_id, column_id, attempt_id):
 @click.pass_context
 @update_exception_handler
 def update_attempt(ctx, course_id, column_id, attempt_id, status, comments, submission, file):
-    assignment_service.update_column_attempt(
+    response = assignment_service.update_column_attempt(
         session=ctx.obj['SESSION'], course_id=course_id, column_id=column_id, attempt_id=attempt_id, status=status, studentComments=comments, studentSubmission=submission, dst=file)
-
+    click.echo(response)
 
 @click.command(name='grade', help='Grade an assignment.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
@@ -130,5 +132,6 @@ def grade_assignment(ctx, course_id, column_id, attempt_id, status, score, text,
     if status is None:
         status = 'Completed'
 
-    assignment_service.update_column_attempt(session=ctx.obj['SESSION'], status=status, course_id=course_id, column_id=column_id,
+    response = assignment_service.update_column_attempt(session=ctx.obj['SESSION'], status=status, course_id=course_id, column_id=column_id,
                                              attempt_id=attempt_id, score=score, text=text, notes=notes, feedback=feedback, exempt=exempt)
+    click.echo(response)
