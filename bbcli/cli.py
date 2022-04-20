@@ -151,6 +151,8 @@ def assignments(ctx):
 assignments.add_command(get_assignments)
 assignments.add_command(create_assignment)
 assignments.add_command(grade_assignment)
+assignments.add_command(submit_attempt)
+
 
 
 @assignments.group()
@@ -164,7 +166,6 @@ def attempts(ctx):
 
 attempts.add_command(get_attempts)
 attempts.add_command(get_attempt)
-attempts.add_command(submit_attempt)
 attempts.add_command(submit_draft)
 attempts.add_command(update_attempt)
 
