@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from bbcli import check_valid_date
 import click
 
-from bbcli.commands.courses import list_courses
+from bbcli.commands.courses import list_course_users, list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
 from bbcli.commands.contents import create_assignment_from_contents, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment, get_content
 from bbcli.commands.assignments import get_assignments, submit_attempt, grade_assignment, get_attempts, get_attempt, submit_draft, update_attempt, submit_draft, create_assignment
@@ -114,6 +114,19 @@ def courses(ctx):
 
 courses.add_command(list_courses)
 
+"""
+COURSE USER COMMANDS ENTRY POINT
+"""
+
+@courses.group(name='users')
+@click.pass_context
+def course_users(ctx):
+    """
+    Commands for listing users of a course
+    """
+
+course_users.add_command(list_course_users)
+
 
 """
 ANNOUNCEMENT COMMANDS ENTRY POINT
@@ -202,11 +215,7 @@ def create(ctx):
     """
     Commands for creating different types of content types in blackboard
     """
-    authenticate_user()
-    load_dotenv()
-    session = initiate_session()
-    ctx.obj['SESSION'] = session
-
+    pass
 
 create.add_command(create_document)
 create.add_command(create_file)

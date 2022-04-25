@@ -47,6 +47,17 @@ def list_course(session: requests.Session, course_id: str) -> Any:
     response.raise_for_status()
     return json.loads(response.text)
 
+# TODO: add threading here to make it effective: aiohttp? OPen new sessoin for getting the users? https://python.plainenglish.io/send-http-requests-as-fast-as-possible-in-python-304134d46604
+def list_course_users(session: requests.Session(), course_id: str) -> Any:
+    all_course_memberships = get_all_course_users_memberships(session, course_id)
+    users = []
+    get_user_base_url = url_builder.base_v1().add_users().create()
+    for course_membership in all_course_memberships:
+        url = get_user_base_url + f'/{course_membership["userId"]}'
+        user = session.get(url, params={'fields' : 'id, userName, name, systemRoleIds'})
+        user = json.loads(user.text)
+        users.append(user)
+    return users
 
 """
 
@@ -74,6 +85,24 @@ def sort_terms(terms):
             terms.remove(term)
     terms.sort(key=take_start_date)
 
+def get_course_users_memberships(session: requests.Session, course_id: str, offset: int = None):
+    url = url_builder.base_v1().add_courses().add_id(course_id).add_users().create()
+    if offset:
+        url += f'?offset={offset}'
+    response = session.get(url)
+    response = json.loads(response.text)
+    return response
+
+def get_all_course_users_memberships(session: requests.Session, course_id: str):
+    course_memberships = []
+    offset = 0
+    page_results = 200
+    while page_results == 200:
+        response = get_course_users_memberships(session, course_id, offset)
+        page_results = len(response['results'])
+        course_memberships += response['results']
+        offset += 200
+    return course_memberships
 
 def get_course_memberships(session: requests.Session, user_name: str):
     url = url_builder.base_v1().add_users().add_id(
