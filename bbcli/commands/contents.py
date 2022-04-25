@@ -7,12 +7,9 @@ import click
 import concurrent.futures
 
 from bbcli.entities.Node import Node
-from bbcli.utils.URL_builder import URL_builder
 from bbcli.utils import content_utils
 from bbcli.utils.content_handler import content_handler
 from bbcli.views import contents_view
-
-url_builder = URL_builder()
 
 def standard_options(function):
     function = click.option('-h', '--hide-content', is_flag=True,
