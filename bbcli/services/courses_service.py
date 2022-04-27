@@ -19,14 +19,10 @@ def list_courses(session: requests.Session, user_name: str) -> Any:
     course_memberships = get_course_memberships(session, user_name)
 
     courses = get_courses_from_course_memberships(session, course_memberships)
-
     course_list = []
     for course in courses:    
         if course['termId'] == term_1['id'] or course['termId'] == term_2['id']:
-            course_list.append({
-                'id': course['id'],
-                'name': course['name']
-            })
+            course_list.append(course)
         else:
             break
     
@@ -46,7 +42,6 @@ def list_course(session: requests.Session, course_id: str) -> Any:
     response = session.get(url)
     response.raise_for_status()
     return json.loads(response.text)
-
 
 """
 
@@ -88,7 +83,7 @@ def get_courses_from_course_memberships(session: requests.Session, course_member
     for course in course_memberships:
         url = url_builder.base_v3().add_courses().add_id(
             course['courseId']).create()
-        response = session.get(url, params={'fields': 'id, name, termId'})
+        response = session.get(url)
         response.raise_for_status()
         response = json.loads(response.text)
         courses.append(response)

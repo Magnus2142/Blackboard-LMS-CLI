@@ -105,5 +105,5 @@ class TestAssignmentsServices(object):
 
         response = update_column_attempt(self.test_session, 'test_course_id', 'test_column_id', 'test_attempt_id')
 
-        assert_equal(response, TEST_GRADE_ATTEMPT)
+        assert_equal(json.loads(response), TEST_GRADE_ATTEMPT)
 

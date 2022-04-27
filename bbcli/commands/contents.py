@@ -1,3 +1,4 @@
+import json
 from bbcli.utils.utils import format_date
 from bbcli.utils.error_handler import create_exception_handler, delete_exception_handler, list_exception_handler, update_exception_handler
 import click
@@ -106,29 +107,31 @@ def get_content(ctx, course_id: str, node_id: str):
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course where the content is located')
 @click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID of content to attach a file')
 @click.argument('file_path', required=True, type=click.Path(exists=True))
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @click.pass_context
 @create_exception_handler
-def upload_attachment(ctx, course_id: str, content_id: str, file_path: str):
-    contents_service.upload_attachment(
+def upload_attachment(ctx, course_id: str, content_id: str, file_path: str, print_json: bool):
+    response = contents_service.upload_attachment(
         ctx.obj['SESSION'], course_id, content_id, file_path)
-
+    contents_view.print_created_attachment_response(json.loads(response), print_json)
 
 @click.command(name='document', help='Create document content')
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
 @click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @standard_options
 @click.pass_context
 @create_exception_handler
-def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str = None, end_date: str = None, attachments: tuple = None):
+def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str = None, end_date: str = None, attachments: tuple = None, print_json: bool=False):
     standard_options = StandardOptions(
         hide_content=hide_content, reviewable=reviewable)
     set_dates(standard_options, start_date, end_date)
 
     response = contents_service.create_document(
         ctx.obj['SESSION'], course_id, parent_id, title, standard_options, attachments)
-    click.echo(response)
+    contents_view.print_created_content_response(json.loads(response), print_json)
 
 
 @click.command(name='file', help='Create file content')
@@ -137,19 +140,20 @@ def create_document(ctx, course_id: str, parent_id: str, title: str, hide_conten
 @click.argument('title', required=True, type=str)
 @click.argument('file_path', required=True, type=click.Path(exists=True))
 @file_options
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
                 launch_in_new_window: bool, hide_content: bool, reviewable: bool,
-                start_date: str = None, end_date: str = None):
+                start_date: str = None, end_date: str = None, print_json: bool=False):
     file_options = FileOptions(launch_in_new_window)
     standard_options = StandardOptions(
         hide_content=hide_content, reviewable=reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_file(
         ctx.obj['SESSION'], course_id, parent_id, title, file_path, file_options, standard_options)
-    click.echo(response)
+    contents_view.print_created_content_response(json.loads(response), print_json)
 
 
 @click.command(name='web-link', help='Create web link content')
@@ -157,19 +161,20 @@ def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
 @click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('url', required=True, type=str)
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @standard_options
 @web_link_options
 @click.pass_context
 @create_exception_handler
 def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
                     launch_in_new_window: bool, hide_content: bool, reviewable: bool,
-                    start_date: str = None, end_date: str = None):
+                    start_date: str = None, end_date: str = None, print_json: bool=False):
     web_link_options = WeblinkOptions(launch_in_new_window)
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_externallink(
         ctx.obj['SESSION'], course_id, parent_id, title, url, web_link_options, standard_options)
-    click.echo(response)
+    contents_view.print_created_content_response(json.loads(response), print_json)
 
 
 @click.command(name='folder', help='Create folder')
@@ -177,17 +182,18 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
 @click.option('-f', '--folder', 'parent_id', required=False, type=str, help='FOLDER ID of the parent folder')
 @click.argument('title', required=True, type=str)
 @click.option('--is-bb-page', is_flag=True, help='Make folder a blackboard page')
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_folder(ctx, course_id: str, parent_id: str, title: str,
                   hide_content: bool, reviewable: bool, is_bb_page: bool = False,
-                  start_date: str = None, end_date: str = None):
+                  start_date: str = None, end_date: str = None, print_json: bool=False):
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_folder(
         ctx.obj['SESSION'], course_id, parent_id, title, is_bb_page, standard_options)
-    click.echo(response)
+    contents_view.print_created_content_response(json.loads(response), print_json)
 
 
 @click.command(name='course-link', help='Create course link content\n\nRedirects user to the target content')
@@ -195,17 +201,18 @@ def create_folder(ctx, course_id: str, parent_id: str, title: str,
 @click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('target_id', required=True, type=str)
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id: str,
                       hide_content: bool, reviewable: bool,
-                      start_date: str = None, end_date: str = None):
+                      start_date: str = None, end_date: str = None, print_json: bool=False):
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_courselink(
         ctx.obj['SESSION'], course_id, parent_id, title, target_id, standard_options)
-    click.echo(response)
+    contents_view.print_created_content_response(json.loads(response), print_json)
 
 
 @click.command(name='assignment', help='Create assignment')
@@ -213,6 +220,7 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
 @click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @standard_options
 @grading_options
 @click.pass_context
@@ -221,7 +229,7 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
                                     hide_content: bool, reviewable: bool,
                                     start_date: str, end_date: str,
                                     due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
-                                    attachments: tuple):
+                                    attachments: tuple, print_json: bool=False):
     """
     Create assignment
     """
@@ -234,7 +242,7 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
 
     response = contents_service.create_assignment(
         ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments)
-    click.echo(response)
+    contents_view.print_created_content_response(json.loads(response), print_json)
 
 
 # TODO: ADD RESPONSES
@@ -245,9 +253,9 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
 @click.pass_context
 @delete_exception_handler
 def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
-    response = contents_service.delete_content(
+    contents_service.delete_content(
         ctx.obj['SESSION'], course_id, content_id, delete_grades)
-    click.echo(response)
+    contents_view.print_deleted_content_response()
 
 # TODO: ADD RESPONSES
 
@@ -255,12 +263,13 @@ def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
 @click.command(name='update', help='Update content\n\nEditable content types: document, files, assignments, externallinks, courselinks')
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID.')
 @click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID')
+@click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @click.pass_context
 @update_exception_handler
-def update_content(ctx, course_id: str, content_id: str):
+def update_content(ctx, course_id: str, content_id: str, print_json: bool):
     response = contents_service.update_content(
         ctx.obj['SESSION'], course_id, content_id)
-    click.echo(response)
+    contents_view.print_updated_content_response(json.loads(response), print_json)
 
 
 """

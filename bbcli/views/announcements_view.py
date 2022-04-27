@@ -1,6 +1,7 @@
+import json
 import click
 from typing import Dict, List
-from bbcli.utils.utils import html_to_text
+from bbcli.utils.utils import html_to_text, print_keys_in_dict
 
 def print_announcement(announcement: Dict):
     announcement_id = announcement['id']
@@ -21,13 +22,22 @@ def print_announcements(announcements: List):
 def print_course_announcements(course_announcements: List, course_name: str = None):
     course_announcements = course_announcements['results']
     course_announcements.reverse()
+    
+    click.echo('\n')
+    table = {'id': [], 'title': [], 'body': [], 'date': []}
     for announcement in course_announcements:
         if 'body' in announcement:
+
             announcement_id = announcement['id']
             title = announcement['title']
             body = html_to_text(announcement['body'])
             created = announcement['created'].split('T')[0]
 
+            table['id'].append(announcement_id)
+            table['title'].append(title)
+            table['body'].append(body)
+            table['date'].append(created)
+            
             click.echo('----------------------------------------------------------------------\n')
             if course_name:
                 click.echo(f'{course_name}\n')
@@ -37,11 +47,16 @@ def print_course_announcements(course_announcements: List, course_name: str = No
             click.echo('\n{:<15}\n'.format(body))
 
 def print_announcement_created(announcement):
-    click.echo('\nAnnouncement sucessfully created:\n\n' + announcement)
+    data = json.loads(announcement)
+    click.echo('\nAnnouncement sucessfully created:\n')
+    print_keys_in_dict(data)
 
 
 def print_announcement_deleted():
     click.echo('\nAnnouncement sucessfully deleted.\n')
 
 def print_announcement_updated(announcement):
-    click.echo('\nAnnouncement sucessfully updated:\n\n' + announcement)
+    data = json.loads(announcement)
+    click.echo('\nAnnouncement sucessfully updated:\n')
+    print_keys_in_dict(data)
+        

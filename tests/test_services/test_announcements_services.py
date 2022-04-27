@@ -160,10 +160,11 @@ class TestAnnouncementsServices(object):
         mock_delete = mock_delete_patcher.start()
         mock_delete.return_value.ok = True
         mock_delete.return_value.status_code = 204
+        mock_delete.return_value.text = ''
 
         response = delete_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
-        
-        assert_equal(response.status_code, 204)
+
+        assert_equal(response, '')
 
     @raises(requests.exceptions.HTTPError)
     def test_delete_announcement_with_wrong_announcement_id(self):

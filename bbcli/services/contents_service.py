@@ -88,6 +88,7 @@ def upload_attachment(session: requests.Session, course_id: str, content_id: str
         course_id).add_contents().add_id(content_id).add_attachments().create()
     response = session.post(url, data=data)
     response.raise_for_status()
+    return response.text
 
 
 def create_document(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions = None, attachments: tuple = None):

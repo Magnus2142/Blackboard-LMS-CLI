@@ -11,7 +11,7 @@ import click
 from bbcli.commands.courses import list_courses
 from bbcli.commands.announcements import list_announcements, create_announcement, delete_announcement, update_announcement
 from bbcli.commands.contents import create_assignment_from_contents, create_courselink, create_folder, delete_content, list_contents, create_document, create_file, create_web_link, update_content, upload_attachment, get_content
-from bbcli.commands.assignments import get_assignments, submit_attempt, grade_assignment, get_attempts, get_attempt, submit_draft, update_attempt, submit_draft, create_assignment
+from bbcli.commands.assignments import get_assignments, submit_attempt, grade_assignment, get_attempts, get_attempt, submit_draft, submit_draft, create_assignment
 from bbcli.services.authorization_service import login
 import mmap
 
@@ -167,7 +167,7 @@ def attempts(ctx):
 attempts.add_command(get_attempts)
 attempts.add_command(get_attempt)
 attempts.add_command(submit_draft)
-attempts.add_command(update_attempt)
+# attempts.add_command(update_attempt)
 
 """
 CONTENT COMMANDS ENTRY POINT

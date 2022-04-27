@@ -1,6 +1,7 @@
+import json
 from anytree import Node as Nd, RenderTree
 from colorama import Fore, Style
-from bbcli.utils.utils import html_to_text
+from bbcli.utils.utils import html_to_text, print_keys_in_dict
 import click
 import tempfile, os
 from subprocess import call
@@ -44,3 +45,26 @@ def open_less_page(str):
     pydoc.pager(str)
 
 
+def print_created_attachment_response(response, print_json):
+    if print_json:
+        click.echo(json.dumps(response, indent=2))
+    else:
+        click.echo('\nAttachment successfully uploaded: \n')
+        print_keys_in_dict(response)
+
+def print_created_content_response(response, print_json):
+    if print_json:
+        click.echo(json.dumps(response, indent=2))
+    else:
+        click.echo('\nContent successfully created: \n')
+        print_keys_in_dict(response)
+
+def print_deleted_content_response():
+    click.echo('\nContent successfully deleted.\n')
+
+def print_updated_content_response(response, print_json):
+    if print_json:
+        click.echo(json.dumps(response, indent=2))
+    else:
+        click.echo('\nContent successfully updated: \n')
+        print_keys_in_dict(response)
