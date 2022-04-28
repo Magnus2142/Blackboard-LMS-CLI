@@ -99,7 +99,7 @@ To run this CLI you need python and pip installed, as well as ```magic``` librar
     sudo apt-get install libmagic1
 
     # Mac OS X
-    brew install libmagic1
+    brew install libmagic
     ```
 
 Test if the installation was successful by running ```$ bb --version``` command. You should see something like this:
