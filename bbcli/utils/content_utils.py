@@ -106,7 +106,7 @@ def list_contents_thread(
     return root_node
 
 
-def check_content_handler(ctx, course_id: str, node_id: str):
+def check_content_handler(ctx, course_id: str, node_id: str, path: str):
     session = ctx.obj['SESSION']
     response = contents_service.get_content(
         ctx.obj['SESSION'], course_id, node_id)
@@ -125,7 +125,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             click.confirm(
                 "This is a document with an attachment(s), do you want to download it?",
                 abort=True)
-            paths = contents_service.download_attachments(session, course_id, node_id, attachments)
+            paths = contents_service.download_attachments(session, course_id, node_id, attachments, path)
             [contents_service.open_file(path) for path in paths]
         else:
             click.echo('The document has no attachments.')
@@ -158,7 +158,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
                 "This is a file, do you want to download and open it?",
                 abort=True)
         paths = contents_service.download_attachments(
-            session, course_id, node_id, attachments)
+            session, course_id, node_id, attachments, path)
         [contents_service.open_file(path) for path in paths]
     elif ch == content_handler['assignment']:
         click.echo('Opening assignment...')
@@ -172,7 +172,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
                 "The assignment contains attachment(s), do you want to download?",
                 abort=True)
             paths = contents_service.download_attachments(
-                session, course_id, node_id, attachments)
+                session, course_id, node_id, attachments, path)
             [contents_service.open_file(path) for path in paths]
     elif ch == content_handler['blankpage']:
         click.echo('Opening blankpage...')

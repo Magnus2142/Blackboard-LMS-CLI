@@ -55,7 +55,7 @@ def get_attachments(session: requests.Session, course_id: str, node_id: str):
     response.raise_for_status()
     return response
 
-def download_attachment(session: requests.Session, course_id: str, node_id: str, attachment) -> str:
+def download_attachment(session: requests.Session, course_id: str, node_id: str, attachment, path) -> str:
     attachment_id = attachment['id']
     fn = attachment['fileName']
     url = url_builder.base_v1().add_courses().add_id(
@@ -63,18 +63,24 @@ def download_attachment(session: requests.Session, course_id: str, node_id: str,
         ).add_id(attachment_id).add_download().create()
     response = session.get(url, allow_redirects=True)
     response.raise_for_status()
-    downloads_path = get_download_path(fn)
-    f = open(downloads_path, 'wb')
-    f.write(response.content)
-    f.close()
-    click.echo(f'\"{fn}\" was downloaded to the downloads folder.')
+    downloads_path = get_download_path(fn, path)
+    try:
+        f = open(downloads_path, 'wb')
+        f.write(response.content)
+        f.close()
+    except FileNotFoundError:
+        click.echo(f'\"{fn}\" could not be downloaded, please specify a valid path.')
+        return 
+    path = path if path != None else 'Downloads'
+    click.echo(f'\"{fn}\" was downloaded to \"{path}\".')
     return downloads_path 
 
-def download_attachments(session: requests.Session, course_id: str, node_id: str, attachments):
+def download_attachments(session: requests.Session, course_id: str, node_id: str, attachments, path):
     paths = []
     for attachment in attachments:
-        path = download_attachment(session, course_id, node_id, attachment)
-        paths.append(path)
+        downloads_path = download_attachment(session, course_id, node_id, attachment, path)
+        if downloads_path != None:
+            paths.append(downloads_path)
     return paths
 
 def open_file(path):
