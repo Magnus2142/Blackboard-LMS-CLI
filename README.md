@@ -108,14 +108,14 @@ Test if the installation was successful by running ```$ bb --version``` command.
 $ bb --version
 bb, version 0.1.0
 ```
-
+<!-- 
 **Shell completion:** The CLI also supports shell completion with TAB, but is currently only comaptible with bash, zsh and fish. To activate this, execute the command:
 
 ```Shell
 bb activate-shell-completion {YOUR_SHELL}
 ```
 
-This feauture is still unstable and if you encounter any problems, please check the [Click shell completion help page](https://click.palletsprojects.com/en/8.1.x/shell-completion/).
+This feauture is still unstable and if you encounter any problems, please check the [Click shell completion help page](https://click.palletsprojects.com/en/8.1.x/shell-completion/). -->
 
 ## Usage
 

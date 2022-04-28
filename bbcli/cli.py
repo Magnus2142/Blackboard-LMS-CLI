@@ -94,7 +94,7 @@ def activate_shell_completion(shell: str):
             click.echo('Shell not recognized, or CLI shell completion is not compatible with your Shell')
 
 
-entry_point.add_command(activate_shell_completion)
+# entry_point.add_command(activate_shell_completion)
 
 """
 COURSE COMMANDS ENTRY POINT
