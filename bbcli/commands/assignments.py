@@ -1,5 +1,6 @@
 import json
 import click
+from markdown import markdown
 from bbcli.commands.contents import grading_options, set_dates, standard_options
 from bbcli.entities.content_builder_entitites import GradingOptions, StandardOptions
 from bbcli.services import assignment_service, contents_service
@@ -31,6 +32,7 @@ def attempt_options(function):
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @standard_options
 @grading_options
 @click.pass_context
@@ -39,7 +41,7 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
                       hide_content: bool, reviewable: bool,
                       start_date: str, end_date: str,
                       due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
-                      attachments: tuple, print_json):
+                      attachments: tuple, print_json: bool, markdown: bool):
     standard_options = StandardOptions(hide_content, reviewable)
     grading_options = GradingOptions(
         attempts_allowed=max_attempts, is_unlimited_attemps_allowed=unlimited_attempts, score_possible=score)
@@ -48,7 +50,7 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
     grading_options.due = format_date(due_date)
 
     response = contents_service.create_assignment(
-        ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments)
+        ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments, markdown)
     assignments_view.print_created_assignment(json.loads(response), print_json)
 
 @click.command(name='list', help='List all assignments from a course.')

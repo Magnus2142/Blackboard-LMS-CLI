@@ -121,16 +121,17 @@ def upload_attachment(ctx, course_id: str, content_id: str, file_path: str, prin
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @standard_options
 @click.pass_context
 @create_exception_handler
-def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str = None, end_date: str = None, attachments: tuple = None, print_json: bool=False):
+def create_document(ctx, course_id: str, parent_id: str, title: str, hide_content: bool, reviewable: bool, start_date: str, end_date: str, attachments: tuple, print_json: bool, markdown: bool):
     standard_options = StandardOptions(
         hide_content=hide_content, reviewable=reviewable)
     set_dates(standard_options, start_date, end_date)
 
     response = contents_service.create_document(
-        ctx.obj['SESSION'], course_id, parent_id, title, standard_options, attachments)
+        ctx.obj['SESSION'], course_id, parent_id, title, standard_options, attachments, markdown)
     contents_view.print_created_content_response(json.loads(response), print_json)
 
 
@@ -146,7 +147,7 @@ def create_document(ctx, course_id: str, parent_id: str, title: str, hide_conten
 @create_exception_handler
 def create_file(ctx, course_id: str, parent_id: str, title: str, file_path: str,
                 launch_in_new_window: bool, hide_content: bool, reviewable: bool,
-                start_date: str = None, end_date: str = None, print_json: bool=False):
+                start_date: str, end_date: str, print_json: bool, ):
     file_options = FileOptions(launch_in_new_window)
     standard_options = StandardOptions(
         hide_content=hide_content, reviewable=reviewable)
@@ -183,16 +184,17 @@ def create_web_link(ctx, course_id: str, parent_id: str, title: str, url: str,
 @click.argument('title', required=True, type=str)
 @click.option('--is-bb-page', is_flag=True, help='Make folder a blackboard page')
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_folder(ctx, course_id: str, parent_id: str, title: str,
-                  hide_content: bool, reviewable: bool, is_bb_page: bool = False,
-                  start_date: str = None, end_date: str = None, print_json: bool=False):
+                  hide_content: bool, reviewable: bool, is_bb_page: bool,
+                  start_date: str, end_date: str, print_json: bool, markdown: bool):
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_folder(
-        ctx.obj['SESSION'], course_id, parent_id, title, is_bb_page, standard_options)
+        ctx.obj['SESSION'], course_id, parent_id, title, is_bb_page, standard_options, markdown)
     contents_view.print_created_content_response(json.loads(response), print_json)
 
 
@@ -202,16 +204,17 @@ def create_folder(ctx, course_id: str, parent_id: str, title: str,
 @click.argument('title', required=True, type=str)
 @click.argument('target_id', required=True, type=str)
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @standard_options
 @click.pass_context
 @create_exception_handler
 def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id: str,
                       hide_content: bool, reviewable: bool,
-                      start_date: str = None, end_date: str = None, print_json: bool=False):
+                      start_date: str, end_date: str, print_json: bool, markdown: bool):
     standard_options = StandardOptions(hide_content, reviewable)
     set_dates(standard_options, start_date, end_date)
     response = contents_service.create_courselink(
-        ctx.obj['SESSION'], course_id, parent_id, title, target_id, standard_options)
+        ctx.obj['SESSION'], course_id, parent_id, title, target_id, standard_options, markdown)
     contents_view.print_created_content_response(json.loads(response), print_json)
 
 
@@ -221,6 +224,7 @@ def create_courselink(ctx, course_id: str, parent_id: str, title: str, target_id
 @click.argument('title', required=True, type=str)
 @click.argument('attachments', required=False, nargs=-1, type=click.Path())
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @standard_options
 @grading_options
 @click.pass_context
@@ -229,7 +233,7 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
                                     hide_content: bool, reviewable: bool,
                                     start_date: str, end_date: str,
                                     due_date: str, max_attempts: int, unlimited_attempts: bool, score: int,
-                                    attachments: tuple, print_json: bool=False):
+                                    attachments: tuple, print_json: bool, markdown: bool):
     """
     Create assignment
     """
@@ -241,7 +245,7 @@ def create_assignment_from_contents(ctx, course_id: str, parent_id: str, title: 
     grading_options.due = format_date(due_date)
 
     response = contents_service.create_assignment(
-        ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments)
+        ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments, markdown)
     contents_view.print_created_content_response(json.loads(response), print_json)
 
 
@@ -264,11 +268,16 @@ def delete_content(ctx, course_id: str, content_id: str, delete_grades: bool):
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID.')
 @click.option('-co', '--content', 'content_id', required=True, type=str, help='CONTENT ID')
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
+@click.option('--advanced', required=False, is_flag=True, help='Use this flag if you also want to update the advanced settings of the content')
 @click.pass_context
 @update_exception_handler
-def update_content(ctx, course_id: str, content_id: str, print_json: bool):
-    response = contents_service.update_content(
-        ctx.obj['SESSION'], course_id, content_id)
+def update_content(ctx, course_id: str, content_id: str, print_json: bool, markdown: bool, advanced: bool):
+    if advanced:
+        response = contents_service.update_content_advanced(ctx.obj['SESSION'], course_id, content_id, markdown)
+    else:
+        response = contents_service.update_content(
+            ctx.obj['SESSION'], course_id, content_id, markdown)
     contents_view.print_updated_content_response(json.loads(response), print_json)
 
 

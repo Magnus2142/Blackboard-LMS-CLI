@@ -86,6 +86,7 @@ def get_courses_from_course_memberships(session: requests.Session, course_member
         response = session.get(url)
         response.raise_for_status()
         response = json.loads(response.text)
-        courses.append(response)
+        if response['availability']['available'] == 'Yes':
+            courses.append(response)
     
     return courses

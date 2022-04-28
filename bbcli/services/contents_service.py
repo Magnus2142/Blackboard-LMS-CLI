@@ -8,6 +8,8 @@ from bbcli.entities.content_builder_entitites import FileContent, GradingOptions
 from bbcli.utils.utils import input_body
 import click
 import webbrowser
+import markdown
+import markdownify
 
 from bbcli.utils.utils import check_response, get_download_path
 
@@ -91,9 +93,12 @@ def upload_attachment(session: requests.Session, course_id: str, content_id: str
     return response.text
 
 
-def create_document(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions = None, attachments: tuple = None):
+def create_document(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions = None, attachments: tuple = None, is_markdown: bool = False):
 
     data_body = input_body()
+    if is_markdown:
+        data_body = markdown.markdown(data_body)
+
     data = content_builder\
         .add_parent_id(parent_id)\
         .add_title(title)\
@@ -158,9 +163,11 @@ def create_externallink(session: requests.Session, course_id: str, parent_id: st
     return response.text
 
 
-def create_folder(session: requests.Session, course_id: str, parent_id: str, title: str, is_bb_page: bool, standard_options: StandardOptions):
+def create_folder(session: requests.Session, course_id: str, parent_id: str, title: str, is_bb_page: bool, standard_options: StandardOptions, is_markdown: bool):
 
     data_body = input_body()
+    if is_markdown:
+        data_body = markdown.markdown(data_body)
 
     data = content_builder\
         .add_title(title)\
@@ -183,9 +190,11 @@ def create_folder(session: requests.Session, course_id: str, parent_id: str, tit
 
 
 # TODO:FUNKER IKKE PGA targetType
-def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, target_id: str, standard_options: StandardOptions):
+def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, target_id: str, standard_options: StandardOptions, is_markdown: bool):
 
     data_body = input_body()
+    if is_markdown:
+        data_body = markdown.markdown(data_body)
 
     data = content_builder\
         .add_title(title)\
@@ -201,8 +210,10 @@ def create_courselink(session: requests.Session, course_id: str, parent_id: str,
     response.raise_for_status()
     return response.text
 
-def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions, grading_options: GradingOptions, attachments: tuple = None):
+def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions, grading_options: GradingOptions, attachments: tuple, is_markdown: bool):
     instructions = input_body()
+    if is_markdown:
+        instructions = markdown.markdown(instructions)
 
     data = content_builder\
         .add_parent_id(parent_id)\
@@ -238,22 +249,55 @@ def delete_content(session: requests.Session, course_id: str, content_id: str, d
     response.raise_for_status()
     return response
 
-
-def update_content(session: requests.Session, course_id: str, content_id: str):
+def update_content(session: requests.Session, course_id: str, content_id: str, is_markdown: bool):
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(content_id).create()
     content = session.get(url)
     content = json.loads(content.text)
+    content_type = content['contentHandler']['id']
+
+    if not is_editable_content_type(content_type):
+        click.echo('This content type is not editable')
+        raise click.Abort()
+
+    MARKER_TITLE = '# Edit title. Everything below is ignored.\n'
+    title = click.edit(content['title'] + '\n\n' + MARKER_TITLE)
+    new_title = title if title != None else content['title']
+    if new_title is not None:
+        new_title = new_title.split(MARKER_TITLE, 1)[0].rstrip('\n')
+
+    data = update_content_data(content, is_markdown)
+    data['title'] = new_title
+    data = json.dumps(data)
+
+    response = session.patch(url, data=data)
+    response.raise_for_status()
+    return response.text
+
+def update_content_advanced(session: requests.Session, course_id: str, content_id: str, is_markdown: bool):
+    url = url_builder.base_v1().add_courses().add_id(
+        course_id).add_contents().add_id(content_id).create()
+    content = session.get(url)
+    content = json.loads(content.text)
+    if 'body' in content and is_markdown:
+        content['body'] = markdownify.markdownify(content['body'])
+
     if not is_editable_content_type(content['contentHandler']['id']):
         click.echo('This content type is not editable')
         raise click.Abort()
-    if 'contentHandler' in content:
-        del content['contentHandler']
     if 'links' in content:
         del content['links']
     MARKER = '# Everything below is ignored.\n'
     editable_data = json.dumps(content, indent=2)
-    new_data = click.edit(editable_data + '\n\n' + MARKER)
+    data = click.edit(editable_data + '\n\n' + MARKER)
+    new_data = data if data != None else editable_data
+    if new_data is not None:
+        new_data = new_data.split(MARKER, 1)[0].rstrip('\n')
+
+    if 'body' in content and is_markdown:
+        new_data = json.loads(new_data)
+        new_data['body'] = markdown.markdown(new_data['body'])
+        new_data = json.dumps(new_data, indent=2)
 
     response = session.patch(url, data=new_data)
     response.raise_for_status()
@@ -308,3 +352,49 @@ def is_editable_content_type(content_type: str):
         if content_type == type:
             return True
     return False
+
+def update_default_content(content, is_markdown=False):
+    try:
+        content['body']
+    except KeyError:
+        content['body'] = ''
+    if is_markdown:
+        content['body'] = markdownify.markdownify(content['body'])
+    MARKER_BODY = '# Edit body. Everything below is ignored.\n'
+    data = click.edit(content['body'] + '\n\n' + MARKER_BODY)
+    new_data = data if data != None else content['body']
+    if new_data is not None:
+        new_data = new_data.split(MARKER_BODY, 1)[0].rstrip('\n')
+    if is_markdown:
+        new_data = markdown.markdown(new_data)
+    return {'body': new_data}
+
+def update_external_link_content(content):
+    MARKER_URL = '# Edit URL. Everything below is ignored.\n'
+    data = click.edit(content['contentHandler']['url'] + '\n\n' + MARKER_URL)
+    new_data = data if data != None else content['contentHandler']['url']
+    if new_data is not None:
+        new_data = new_data.split(MARKER_URL, 1)[0].rstrip('\n')
+    return {
+        'contentHandler': {
+            'id': 'resource/x-bb-externallink',
+            'url': new_data
+        }
+    }
+
+
+def update_file_content():
+    return {}
+
+def update_content_data(content, is_markdown):
+    content_type = content['contentHandler']['id']
+    data = {
+        'title': ''
+    }
+    if content_type == 'resource/x-bb-assignment' or content_type == 'resource/x-bb-courselink' or content_type == 'resource/x-bb-document':
+        data = update_default_content(content, is_markdown)
+    elif content_type == 'resource/x-bb-externallink':
+        data = update_external_link_content(content)
+    elif content_type == 'resource/x-bb-file':
+        data = update_file_content()
+    return data
