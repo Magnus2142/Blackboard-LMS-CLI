@@ -71,7 +71,7 @@ def format_date(date: str):
             click.echo('Value format is not valid, please see --help for more info.')
             raise click.Abort()
 
-def get_download_path(file_name):
+def get_download_path(file_name, path: str):
     """Returns the default downloads path for linux or windows"""
     if os.name == 'nt':
         import winreg
@@ -79,9 +79,16 @@ def get_download_path(file_name):
         downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
             location = winreg.QueryValueEx(key, downloads_guid)[0]
-        return f'{location}\{file_name}'
+        downloads_path = f'{location}\{file_name}'
+        if path == None:
+            return donwloads_path
+        else:
+            return downloads_path.replace('Downloads', path)
     else:
-        return os.path.join(os.path.expanduser('~'), f'Downloads/{file_name}')
+        if path == None:
+            return os.path.join(os.path.expanduser('~'), f'Downloads/{file_name}')
+        else:
+            return os.path.join(os.path.expanduser('~'), f'{path}/{file_name}')
 
 
 def authorization_handler(func):

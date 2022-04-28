@@ -93,10 +93,11 @@ def list_contents(ctx, course_id: str, folder_id: str, content_type, folders_onl
 @click.command(name='get', help='Get content')
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
 @click.option('-co', '--content', 'node_id', required=True, type=str, help='CONTENT ID')
+@click.option('-p', '--path', required=False, type=str, help='Path to be downloaded to')
 @click.pass_context
 @list_exception_handler
-def get_content(ctx, course_id: str, node_id: str):
-    content_utils.check_content_handler(ctx, course_id, node_id)
+def get_content(ctx, course_id: str, node_id: str, path: str):
+    content_utils.check_content_handler(ctx, course_id, node_id, path)
 
 
 @click.command(name='attachment', help='Add attachment to content\n\nOnly supports contents of type document and assignment')
