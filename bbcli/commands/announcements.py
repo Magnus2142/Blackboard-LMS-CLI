@@ -45,9 +45,10 @@ def list_announcements(ctx, course_id=None, announcement_id=None, print_json=Fal
 @click.option('--start-date', type=str, help='When to make announcement available. Format: DD/MM/YY HH:MM:SS')
 @click.option('--end-date', type=str, help='When to make announcement unavailable. Format: DD/MM/YY HH:MM:SS')
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print response data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @click.pass_context
 @create_exception_handler
-def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str, print_json: bool):
+def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str, print_json: bool, markdown: bool):
     date_interval = DateInterval()
     if start_date or end_date:
         if start_date:
@@ -56,7 +57,7 @@ def create_announcement(ctx, course_id: str, title: str, start_date: str, end_da
             date_interval.end_date = format_date(end_date)
 
     response = announcements_service.create_announcement(
-        ctx.obj['SESSION'], course_id, title, date_interval)
+        ctx.obj['SESSION'], course_id, title, date_interval, markdown)
     if print_json:
         data = json.loads(response)
         click.echo(json.dumps(data, indent=2))
@@ -79,11 +80,16 @@ def delete_announcement(ctx, course_id: str, announcement_id: str):
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course you want to create an announcement in.')
 @click.option('-a', '--announcement', 'announcement_id', required=True, type=str, help='ANNOUNCEMENT ID, of the annonucement you want to update.')
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print response data in json format')
+@click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
+@click.option('--advanced', required=False, is_flag=True, help='Use this flag if you also want to update the advanced settings of the announcement')
 @click.pass_context
 @update_exception_handler
-def update_announcement(ctx, course_id: str, announcement_id: str, print_json: bool):
-    response = announcements_service.update_announcement(
-        ctx.obj['SESSION'], course_id, announcement_id)
+def update_announcement(ctx, course_id: str, announcement_id: str, print_json: bool, markdown: bool, advanced: bool):
+    if advanced:
+        response = announcements_service.update_announcement_advanced(ctx.obj['SESSION'], course_id, announcement_id, markdown)
+    else:
+        response = announcements_service.update_announcement(
+            ctx.obj['SESSION'], course_id, announcement_id, markdown)
     if print_json:
         data = json.loads(response)
         click.echo(json.dumps(data, indent=2))
