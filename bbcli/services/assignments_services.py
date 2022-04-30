@@ -3,7 +3,7 @@ import json
 import click
 import requests
 import dateutil.parser
-from bbcli.services.contents_service import upload_file
+from bbcli.services.contents_services import upload_file
 from bbcli.services.utils.attempt_builder import AttemptBuilder
 from tabulate import tabulate
 
@@ -57,6 +57,7 @@ def create_column_attempt(session: requests.Session, course_id, column_id, stude
     data = attempt.create_json()
     json_data = json.dumps(data, indent=2)
     response = session.post(url, data=json_data)
+    response.raise_for_status()
     response_json = json.loads(response.text)
 
     if dst is not None and response.status_code == 201:
@@ -66,7 +67,8 @@ def create_column_attempt(session: requests.Session, course_id, column_id, stude
             return
         update_column_attempt(session, course_id, column_id,
                               attempt_id, status='NeedsGrading')
-
+    
+    print(response_json)
     return json.dumps(response_json, indent=2)
 
 

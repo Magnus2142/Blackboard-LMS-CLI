@@ -1,8 +1,9 @@
 import json
+from typing import Dict, List
 import click
 from tabulate import tabulate
 
-def print_courses(courses, print_json):
+def print_courses(courses: List, print_json: bool) -> None:
     if print_json:
         click.echo(json.dumps(courses, indent=2))
     else:
@@ -15,7 +16,7 @@ def print_courses(courses, print_json):
         click.echo(tabulate(table, headers=['Id', 'Course Name']))
         click.echo('\n')
 
-def print_course(course, print_json):
+def print_course(course: Dict, print_json: bool) -> None:
     if print_json:
         click.echo(json.dumps(course, indent=2))
     else:

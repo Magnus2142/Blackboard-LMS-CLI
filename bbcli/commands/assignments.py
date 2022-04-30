@@ -3,10 +3,10 @@ import click
 from markdown import markdown
 from bbcli.commands.contents import grading_options, set_dates, standard_options
 from bbcli.entities.content_builder_entitites import GradingOptions, StandardOptions
-from bbcli.services import assignment_service, contents_service
+from bbcli.services import assignments_services, contents_services
 from bbcli.utils.error_handler import create_exception_handler, list_exception_handler, update_exception_handler
 from bbcli.utils.utils import format_date
-from bbcli.views import assignments_view
+from bbcli.views import assignments_views
 
 
 def attempt_options(function):
@@ -49,9 +49,9 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
     set_dates(standard_options, start_date, end_date)
     grading_options.due = format_date(due_date)
 
-    response = contents_service.create_assignment(
+    response = contents_services.create_assignment(
         ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments, markdown)
-    assignments_view.print_created_assignment(json.loads(response), print_json)
+    assignments_views.print_created_assignment(json.loads(response), print_json)
 
 @click.command(name='list', help='List all assignments from a course.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want assignments from.')
@@ -59,11 +59,11 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
 @click.pass_context
 @list_exception_handler
 def get_assignments(ctx, course_id, print_json):
-    response = assignment_service.get_assignments(ctx.obj['SESSION'], course_id)
+    response = assignments_services.get_assignments(ctx.obj['SESSION'], course_id)
     if print_json:
         click.echo(json.dumps(response, indent=2))
     else:
-        assignments_view.print_assignments(response)
+        assignments_views.print_assignments(response)
 
 @click.command(name='list', help='List attempts for an assignment.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want the assignment attempts from')
@@ -73,11 +73,11 @@ def get_assignments(ctx, course_id, print_json):
 @click.pass_context
 @list_exception_handler
 def get_attempts(ctx, course_id, column_id, submitted, print_json):
-    response = assignment_service.get_column_attempts(ctx.obj['SESSION'], course_id, column_id)
+    response = assignments_services.get_column_attempts(ctx.obj['SESSION'], course_id, column_id)
     if submitted:
-        assignments_view.print_submitted_attempts(response, print_json)
+        assignments_views.print_submitted_attempts(response, print_json)
     else:
-        assignments_view.print_all_attempts(response, print_json)
+        assignments_views.print_all_attempts(response, print_json)
 
 
 # TODO: Retrieve the submission w/ attachments.
@@ -89,29 +89,29 @@ def get_attempts(ctx, course_id, column_id, submitted, print_json):
 @click.pass_context
 @list_exception_handler
 def get_attempt(ctx, course_id, column_id, attempt_id, print_json):
-    response = assignment_service.get_column_attempt(ctx.obj['SESSION'], course_id, column_id, attempt_id)
+    response = assignments_services.get_column_attempt(ctx.obj['SESSION'], course_id, column_id, attempt_id)
     if print_json:
         click.echo(response)
     else:
-        assignments_view.print_get_attempt(json.loads(response))
+        assignments_views.print_get_attempt(json.loads(response))
 
 @click.command(name='submit', help='Submit assignment attempt.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course to submit an assignment to.')
 @click.option('-a', '--assignment', 'column_id', required=True, help='ASSIGNMENT ID, of the assignment you want to submit to.')
 @click.option('--student-comments', help='The student comments associated with this attempt.')
 @click.option('--student-submission', help='The student submission text associated with this attempt.')
-@click.option('--file', help='Attach a file to an attempt for a Student Submission. Relative path of file.')
+@click.option('--file', type=click.Path(exists=True), help='Attach a file to an attempt for a Student Submission. Relative path of file.')
 @click.option('--draft', is_flag=True)
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @click.pass_context
 @create_exception_handler
 def submit_attempt(ctx, course_id, column_id, student_comments, student_submission, file, draft, print_json):
-    response = assignment_service.create_column_attempt(
+    response = assignments_services.create_column_attempt(
         ctx.obj['SESSION'], course_id, column_id, studentComments=student_comments, studentSubmission=student_submission, dst=file, status='needsGrading', draft=draft)
     if print_json:
         click.echo(response)
     else:
-        assignments_view.print_submitted_attempt(json.loads(response))
+        assignments_views.print_submitted_attempt(json.loads(response))
 
 @click.command(name='submit-draft', help='Submit assignment draft.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
@@ -121,12 +121,12 @@ def submit_attempt(ctx, course_id, column_id, student_comments, student_submissi
 @click.pass_context
 @update_exception_handler
 def submit_draft(ctx, course_id, column_id, attempt_id, print_json):
-    response = assignment_service.update_column_attempt(
+    response = assignments_services.update_column_attempt(
         ctx.obj['SESSION'], course_id=course_id, column_id=column_id, attempt_id=attempt_id, status='needsGrading')
     if print_json:
         click.echo(response)
     else:
-        assignments_view.print_submitted_draft(json.loads(response))
+        assignments_views.print_submitted_draft(json.loads(response))
 
 # @click.command(name='update', help='Update assignment.')
 # @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course where the assignment is.')
@@ -158,9 +158,9 @@ def grade_assignment(ctx, course_id, column_id, attempt_id, status, score, text,
     if status is None:
         status = 'Completed'
 
-    response = assignment_service.update_column_attempt(session=ctx.obj['SESSION'], status=status, course_id=course_id, column_id=column_id,
+    response = assignments_services.update_column_attempt(session=ctx.obj['SESSION'], status=status, course_id=course_id, column_id=column_id,
                                              attempt_id=attempt_id, score=score, text=text, notes=notes, feedback=feedback, exempt=exempt)
     if print_json:
         click.echo(response)
     else:
-        assignments_view.print_graded_attempt(json.loads(response))
+        assignments_views.print_graded_attempt(json.loads(response))

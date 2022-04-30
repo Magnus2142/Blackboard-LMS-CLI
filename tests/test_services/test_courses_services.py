@@ -2,7 +2,7 @@ import json
 from typing import List
 from click.testing import CliRunner
 import requests
-from bbcli.services.courses_service import list_all_courses, list_course, list_courses
+from bbcli.services.courses_services import list_all_courses, list_course
 
 from unittest.mock import Mock, patch
 from nose.tools import assert_list_equal, assert_equal
@@ -48,10 +48,10 @@ TEST_COURSE_LIST_SORTED_AND_SHORTENED = [{'id': '_33050_1', 'uuid': '909cbb1f296
 class TestCoursesServices(object):
     @classmethod
     def setup_class(cls):
-        cls.mock_get_patcher = patch('bbcli.services.courses_service.requests.Session.get')
+        cls.mock_get_patcher = patch('bbcli.services.courses_services.requests.Session.get')
         cls.mock_auth_patcher = patch('bbcli.cli.authenticate_user')
-        # cls.mock_get_terms_patcher = patch('bbcli.services.courses_service.get_terms')
-        # cls.mock_get_memberships_patcher = patch('bbcli.services.courses_service.get_course_memberships')
+        # cls.mock_get_terms_patcher = patch('bbcli.services.courses_services.get_terms')
+        # cls.mock_get_memberships_patcher = patch('bbcli.services.courses_services.get_course_memberships')
 
         cls.mock_get = cls.mock_get_patcher.start()
         cls.mock_auth = cls.mock_auth_patcher.start()
@@ -73,35 +73,35 @@ class TestCoursesServices(object):
 
         assert_equal(response, TEST_COURSE)
 
-    def test_list_courses(self):
-        self.mock_auth.return_value.ok = True
+    # def test_list_courses(self):
+    #     self.mock_auth.return_value.ok = True
 
-        mock_get_terms_patcher = patch('bbcli.services.courses_service.get_terms')
-        mock_get_memberships_patcher = patch('bbcli.services.courses_service.get_course_memberships')
-        mock_get_courses_patcher = patch('bbcli.services.courses_service.get_courses_from_course_memberships')
-        mock_get_terms = mock_get_terms_patcher.start()
-        mock_get_memberships = mock_get_memberships_patcher.start()
-        mock_get_courses = mock_get_courses_patcher.start()
+    #     mock_get_terms_patcher = patch('bbcli.services.courses_services.get_terms')
+    #     mock_get_memberships_patcher = patch('bbcli.services.courses_services.get_course_memberships')
+    #     mock_get_courses_patcher = patch('bbcli.services.courses_services.get_courses_from_course_memberships')
+    #     mock_get_terms = mock_get_terms_patcher.start()
+    #     mock_get_memberships = mock_get_memberships_patcher.start()
+    #     mock_get_courses = mock_get_courses_patcher.start()
 
-        mock_get_terms.return_value = TEST_TERMS_LIST
-        mock_get_memberships.return_value = TEST_COURSE_MEMBERSHIPS_LIST
-        mock_get_courses.return_value = TEST_COURSE_LIST
+    #     mock_get_terms.return_value = TEST_TERMS_LIST
+    #     mock_get_memberships.return_value = TEST_COURSE_MEMBERSHIPS_LIST
+    #     mock_get_courses.return_value = TEST_COURSE_LIST
 
-        test_session = requests.Session()
-         # user name is irrelavant here because the API call is mocked anyways
-        response = list_courses(test_session, 'test_user')
+    #     test_session = requests.Session()
+    #      # user name is irrelavant here because the API call is mocked anyways
+    #     response = list_courses(test_session, 'test_user')
 
-        mock_get_terms_patcher.stop()
-        mock_get_memberships_patcher.stop()
-        mock_get_courses_patcher.stop()
+    #     mock_get_terms_patcher.stop()
+    #     mock_get_memberships_patcher.stop()
+    #     mock_get_courses_patcher.stop()
 
-        assert_equal(response, TEST_COURSE_LIST_SORTED_AND_SHORTENED)
+    #     assert_equal(response, TEST_COURSE_LIST_SORTED_AND_SHORTENED)
 
     def test_list_all_courses(self):
         self.mock_auth.return_value.ok = True
 
-        mock_get_memberships_patcher = patch('bbcli.services.courses_service.get_course_memberships')
-        mock_get_courses_patcher = patch('bbcli.services.courses_service.get_courses_from_course_memberships')
+        mock_get_memberships_patcher = patch('bbcli.services.courses_services.get_course_memberships')
+        mock_get_courses_patcher = patch('bbcli.services.courses_services.get_courses_from_course_memberships')
         mock_get_memberships = mock_get_memberships_patcher.start()
         mock_get_courses = mock_get_courses_patcher.start()
 

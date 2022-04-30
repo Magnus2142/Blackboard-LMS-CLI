@@ -2,12 +2,13 @@ from datetime import datetime
 import json
 import click
 from bbcli.entities.content_builder_entitites import DateInterval
-from bbcli.services import announcements_service
+from bbcli.services import announcements_services
 from bbcli.utils.error_handler import create_exception_handler, delete_exception_handler, list_exception_handler, update_exception_handler
 from bbcli.utils.utils import format_date
-from bbcli.views import announcements_view
+from bbcli.views import announcements_views
 import os
 
+# TODO: Find out there is a way to display announcements in a clearer way
 
 @click.command(name='list', help='This command lists your announcements.\nEither all announcements, all announcements from a spesific course, or one announcement.')
 @click.option('-c', '--course', 'course_id', required=False, type=str, help='COURSE ID, list announcements from a spesific course')
@@ -15,25 +16,26 @@ import os
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print data in json format')
 @click.pass_context
 @list_exception_handler
-def list_announcements(ctx, course_id=None, announcement_id=None, print_json=False):
-    response = None
-
+def list_announcements(ctx: click.core.Context, course_id: str, announcement_id: str, print_json: bool) -> None:
     if announcement_id:
-        response = announcements_service.list_announcement(
+        if not course_id:
+            click.echo('Cannot list specific announcement without COURSE ID')
+            raise click.Abort()
+        response = announcements_services.list_announcement(
             ctx.obj['SESSION'], course_id, announcement_id)
         if not print_json:
-            announcements_view.print_announcement(response)
+            announcements_views.print_announcement(response)
     elif course_id:
-        response = announcements_service.list_course_announcements(
+        response = announcements_services.list_course_announcements(
             ctx.obj['SESSION'], course_id)
         if not print_json:
-            announcements_view.print_course_announcements(response)
+            announcements_views.print_course_announcements(response)
     else:
         user_name = os.getenv('BB_USERNAME')
-        response = announcements_service.list_announcements(
+        response = announcements_services.list_announcements(
             ctx.obj['SESSION'], user_name)
         if not print_json:
-            announcements_view.print_announcements(response)
+            announcements_views.print_announcements(response)
     
     if print_json:
         click.echo(json.dumps(response, indent=2))
@@ -48,33 +50,29 @@ def list_announcements(ctx, course_id=None, announcement_id=None, print_json=Fal
 @click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @click.pass_context
 @create_exception_handler
-def create_announcement(ctx, course_id: str, title: str, start_date: str, end_date: str, print_json: bool, markdown: bool):
+def create_announcement(ctx: click.core.Context, course_id: str, title: str, start_date: str, end_date: str, print_json: bool, markdown: bool) -> None:
     date_interval = DateInterval()
-    if start_date or end_date:
-        if start_date:
-            date_interval.start_date = format_date(start_date)
-        if end_date:
-            date_interval.end_date = format_date(end_date)
+    if start_date:
+        date_interval.start_date = format_date(start_date)
+    if end_date:
+        date_interval.end_date = format_date(end_date)
 
-    response = announcements_service.create_announcement(
+    response = announcements_services.create_announcement(
         ctx.obj['SESSION'], course_id, title, date_interval, markdown)
     if print_json:
-        data = json.loads(response)
-        click.echo(json.dumps(data, indent=2))
+        click.echo(json.dumps(response, indent=2))
     else:
-        announcements_view.print_announcement_created(response)
-
+        announcements_views.print_announcement_created(response)
 
 @click.command(name='delete', help='Deletes an announcement. Add --help for all options available')
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course you want to create an announcement in.')
 @click.option('-a', '--announcement', 'announcement_id', required=True, type=str, help='ANNOUNCEMENT ID, of the announcement you want to delete.')
 @click.pass_context
 @delete_exception_handler
-def delete_announcement(ctx, course_id: str, announcement_id: str):
-    announcements_service.delete_announcement(
+def delete_announcement(ctx: click.core.Context, course_id: str, announcement_id: str) -> None:
+    announcements_services.delete_announcement(
         ctx.obj['SESSION'], course_id, announcement_id)
-    announcements_view.print_announcement_deleted()
-
+    announcements_views.print_announcement_deleted()
 
 @click.command(name='update', help='Updates an announcement. Add --help for all options available.')
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID of the course you want to create an announcement in.')
@@ -84,14 +82,13 @@ def delete_announcement(ctx, course_id: str, announcement_id: str):
 @click.option('--advanced', required=False, is_flag=True, help='Use this flag if you also want to update the advanced settings of the announcement')
 @click.pass_context
 @update_exception_handler
-def update_announcement(ctx, course_id: str, announcement_id: str, print_json: bool, markdown: bool, advanced: bool):
+def update_announcement(ctx: click.core.Context, course_id: str, announcement_id: str, print_json: bool, markdown: bool, advanced: bool) -> None:
     if advanced:
-        response = announcements_service.update_announcement_advanced(ctx.obj['SESSION'], course_id, announcement_id, markdown)
+        response = announcements_services.update_announcement_advanced(ctx.obj['SESSION'], course_id, announcement_id, markdown)
     else:
-        response = announcements_service.update_announcement(
+        response = announcements_services.update_announcement(
             ctx.obj['SESSION'], course_id, announcement_id, markdown)
     if print_json:
-        data = json.loads(response)
-        click.echo(json.dumps(data, indent=2))
+        click.echo(json.dumps(response, indent=2))
     else:
-        announcements_view.print_announcement_updated(response)
+        announcements_views.print_announcement_updated(response)

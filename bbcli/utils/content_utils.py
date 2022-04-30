@@ -1,11 +1,11 @@
 import click
 import webbrowser
 
-from bbcli.services import contents_service
+from bbcli.services import contents_services
 from bbcli.utils.utils import check_response, html_to_text
 from bbcli.entities.Node import Node
 from bbcli.utils.content_handler import content_handler
-from bbcli.views import contents_view
+from bbcli.views import contents_views
 
 def is_folder(node):
     key = 'contentHandler'
@@ -17,7 +17,7 @@ def get_children(ctx, course_id, worklist, folder_ids, node_ids):
     else:
         node = worklist.pop(0)
         node_id = node.data['id']
-        response = contents_service.get_children(
+        response = contents_services.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
             return
@@ -41,7 +41,7 @@ def get_folders(ctx, course_id, worklist, folder_ids, node_ids):
     else:
         node = worklist.pop(0)
         node_id = node.data['id']
-        response = contents_service.get_children(
+        response = contents_services.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
             return
@@ -63,7 +63,7 @@ def get_content_type(ctx, course_id, worklist, folder_ids, node_ids, content_typ
     else:
         node = worklist.pop(0)
         node_id = node.data['id']
-        response = contents_service.get_children(
+        response = contents_services.get_children(
             ctx.obj['SESSION'], course_id, node_id)
         if check_response(response) == False:
             return
@@ -108,25 +108,25 @@ def list_contents_thread(
 
 def check_content_handler(ctx, course_id: str, node_id: str):
     session = ctx.obj['SESSION']
-    response = contents_service.get_content(
+    response = contents_services.get_content(
         ctx.obj['SESSION'], course_id, node_id)
     if check_response(response) == False:
         return
     data = response.json()
     ch = data['contentHandler']['id']
     if ch == content_handler['document']:
-        response = contents_service.get_attachments(session, course_id, node_id)
+        response = contents_services.get_attachments(session, course_id, node_id)
         attachments = response.json()['results']
         str = data['title'] + '\n'
         body = '' if 'body' not in data else html_to_text(data['body'])
         str += body
-        contents_view.open_less_page(str)
+        contents_views.open_less_page(str)
         if len(attachments) > 0:
             click.confirm(
                 "This is a document with an attachment(s), do you want to download it?",
                 abort=True)
-            paths = contents_service.download_attachments(session, course_id, node_id, attachments)
-            [contents_service.open_file(path) for path in paths]
+            paths = contents_services.download_attachments(session, course_id, node_id, attachments)
+            [contents_services.open_file(path) for path in paths]
         else:
             click.echo('The document has no attachments.')
     elif ch == content_handler['externallink']:
@@ -142,7 +142,7 @@ def check_content_handler(ctx, course_id: str, node_id: str):
         worklist = [root]
         get_children(ctx, course_id, worklist, folder_ids, node_ids)
         root_node = root.preorder()
-        contents_view.list_tree(root_node, folder_ids, node_ids)
+        contents_views.list_tree(root_node, folder_ids, node_ids)
     elif ch == content_handler['courselink']:
         click.echo('Opening the contents of a courselink...')
         key = 'targetId'
@@ -150,34 +150,34 @@ def check_content_handler(ctx, course_id: str, node_id: str):
             target_id = data['contentHandler'][key]
             check_content_handler(ctx, course_id, target_id)
     elif ch == content_handler['file']:
-        response = contents_service.get_attachments(
+        response = contents_services.get_attachments(
             session, course_id, node_id)
         attachments = response.json()['results']
         if len(attachments) > 0:
             click.confirm(
                 "This is a file, do you want to download and open it?",
                 abort=True)
-        paths = contents_service.download_attachments(
+        paths = contents_services.download_attachments(
             session, course_id, node_id, attachments)
-        [contents_service.open_file(path) for path in paths]
+        [contents_services.open_file(path) for path in paths]
     elif ch == content_handler['assignment']:
         click.echo('Opening assignment...')
         str = data['title'] + '\n' + html_to_text(data['body'])
-        contents_view.open_less_page(str)
-        response = contents_service.get_attachments(
+        contents_views.open_less_page(str)
+        response = contents_services.get_attachments(
             session, course_id, node_id)
         attachments = response.json()['results']
         if len(attachments) > 0:
             click.confirm(
                 "The assignment contains attachment(s), do you want to download?",
                 abort=True)
-            paths = contents_service.download_attachments(
+            paths = contents_services.download_attachments(
                 session, course_id, node_id, attachments)
-            [contents_service.open_file(path) for path in paths]
+            [contents_services.open_file(path) for path in paths]
     elif ch == content_handler['blankpage']:
         click.echo('Opening blankpage...')
         str = data['title'] + '\n' + html_to_text(data['body'])
-        contents_view.open_less_page(str)
+        contents_views.open_less_page(str)
     else:
         click.echo('The cli does not currently support the content type.')
 

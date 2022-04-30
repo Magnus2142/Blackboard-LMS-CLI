@@ -1,1 +1,0 @@
-_BB_COMPLETE=bash_source bb > ~/.bb-complete.bash
