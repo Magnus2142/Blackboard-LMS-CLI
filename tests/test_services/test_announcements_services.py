@@ -8,12 +8,12 @@ from unittest.mock import Mock, patch
 from nose.tools import assert_list_equal, assert_equal, raises
 from bbcli.entities.content_builder_entitites import DateInterval
 
-from bbcli.services.announcements_service import create_announcement, delete_announcement, list_announcement, list_announcements, list_course_announcements, update_announcement
+from bbcli.services.announcements_services import create_announcement, delete_announcement, list_announcement, list_announcements, list_course_announcements, update_announcement
 from bbcli.utils.utils import format_date
 
 
 TEST_ANNOUNCEMENT = {"id":"_388961_1","title":"TEST annonucement","body":"This is a test announcement","creator":"_140040_1","draft":False,"availability":{"duration":{"type":"Restricted","start":"2022-04-12T08:06:33.422Z","end":None}},"created":"2022-04-12T08:06:33.423Z","modified":"2022-04-12T08:06:33.452Z","position":2}
-UPDATED_TEST_ANNOUNCEMENT = {"id":"_388961_1","title":"TEST annonucement updated","body":"This is a test announcement updated","creator":"_140040_1","draft":False,"availability":{"duration":{"type":"Restricted","start":"2022-04-12T08:06:33.422Z","end":None}},"created":"2022-04-12T08:06:33.423Z","modified":"2022-04-12T08:06:33.452Z","position":2}
+UPDATED_TEST_ANNOUNCEMENT = {"id":"_388961_1","title":"TEST TITLE","body":"TEST BODY","creator":"_140040_1","draft":False,"availability":{"duration":{"type":"Restricted","start":"2022-04-12T08:06:33.422Z","end":None}},"created":"2022-04-12T08:06:33.423Z","modified":"2022-04-12T08:06:33.452Z","position":2}
 
 
 TEST_COURSE_ANNOUNCEMENTS_LIST = [{'id': '_389054_1', 'title': 'Test announcement', 'body': 'This is a test announcement', 'creator': '_140040_1', 'draft': False, 'availability': {'duration': {'type': 'Restricted', 'start': '2022-04-15T22:04:00.000Z', 'end': None}}, 'created': '2022-04-15T13:50:15.623Z', 'modified': '2022-04-15T14:38:43.049Z', 'position': 2}, {'id': '_389055_1', 'title': 'Test announcement', 'creator': '_140040_1', 'draft': False, 'availability': {'duration': {'type': 'Restricted', 'start': '2022-04-15T22:04:00.000Z', 'end': None}}, 'created': '2022-04-15T13:55:57.898Z', 'modified': '2022-04-15T13:55:57.926Z', 'position': 1}, {'id': '_389026_1', 'title': 'Testing announcement', 'body': 'Here is a new announcement. Here is a \n<a href="https://ntnu.no">link</a>.', 'creator': '_36000_1', 'draft': False, 'availability': {'duration': {'type': 'Restricted', 'start': '2022-04-13T16:33:01.758Z', 'end': None}}, 'created': '2022-04-13T16:33:01.759Z', 'modified': '2022-04-13T16:33:01.811Z', 'position': 3}]
@@ -58,7 +58,7 @@ class TestAnnouncementsServices(object):
     def setup_class(cls):
         cls.test_session = requests.Session()
 
-        cls.mock_get_patcher = patch('bbcli.services.announcements_service.requests.Session.get')
+        cls.mock_get_patcher = patch('bbcli.services.announcements_services.requests.Session.get')
         cls.mock_auth_patcher = patch('bbcli.cli.authenticate_user')
 
         cls.mock_get = cls.mock_get_patcher.start()
@@ -102,10 +102,10 @@ class TestAnnouncementsServices(object):
                 'results': TEST_COURSE_ANNOUNCEMENTS_LIST
             })
         
-        mock_get_courses_patcher = patch('bbcli.services.announcements_service.list_courses')
+        mock_get_courses_patcher = patch('bbcli.services.announcements_services.list_all_courses')
         mock_get_courses = mock_get_courses_patcher.start()
 
-        mock_get_course_announcements_patcher = patch('bbcli.services.announcements_service.list_course_announcements')
+        mock_get_course_announcements_patcher = patch('bbcli.services.announcements_services.list_course_announcements')
         mock_get_course_announcements = mock_get_course_announcements_patcher.start()
 
         mock_get_courses.return_value = TEST_COURSES_LIST
@@ -122,18 +122,18 @@ class TestAnnouncementsServices(object):
 
     def test_create_annonucement(self):
         self.mock_auth.return_value.ok = True
-        mock_input_body_patcher = patch('bbcli.services.announcements_service.input_body')
-        mock_post_patcher = patch('bbcli.services.announcements_service.requests.Session.post')
+        mock_input_body_patcher = patch('bbcli.services.announcements_services.input_body')
+        mock_post_patcher = patch('bbcli.services.announcements_services.requests.Session.post')
         mock_input_body = mock_input_body_patcher.start()
         mock_post = mock_post_patcher.start()
         
         
         mock_input_body.return_value = 'This is a test announcement'
         mock_post.return_value.ok = True
-        mock_post.return_value.text = TEST_CREATED_ANNOUNCEMENT
+        mock_post.return_value.text = json.dumps(TEST_CREATED_ANNOUNCEMENT)
 
         test_date_interval = DateInterval(start_date=format_date('15/04/22 22:00:00'))
-        response = create_announcement(self.test_session, '_33050_1', 'Test announcement', test_date_interval)
+        response = create_announcement(self.test_session, '_33050_1', 'Test announcement', test_date_interval, False)
 
         mock_input_body_patcher.stop()
         mock_post_patcher.stop()
@@ -144,32 +144,33 @@ class TestAnnouncementsServices(object):
     def test_create_announcement_with_empty_title(self):
         self.mock_auth.return_value.ok = True
 
-        create_announcement(self.test_session, '_33050_1', '', date_interval=DateInterval())
+        create_announcement(self.test_session, '_33050_1', '', DateInterval(), False)
 
     @raises(Abort)
     def test_create_annonucement_with_wrong_date_format(self):
         self.mock_auth.return_value.ok = True
 
-        create_announcement(self.test_session, '_33050_1', 'Test annonucement', DateInterval(start=format_date('16-04-22 12:00')))
+        create_announcement(self.test_session, '_33050_1', 'Test annonucement', DateInterval(start=format_date('16-04-22 12:00')), False)
 
 
     def test_delete_announcement(self):
         self.mock_auth.return_value.ok = True
 
-        mock_delete_patcher = patch('bbcli.services.announcements_service.requests.Session.delete')
+        mock_delete_patcher = patch('bbcli.services.announcements_services.requests.Session.delete')
         mock_delete = mock_delete_patcher.start()
         mock_delete.return_value.ok = True
         mock_delete.return_value.status_code = 204
+        mock_delete.return_value.text = ''
 
         response = delete_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
-        
-        assert_equal(response.status_code, 204)
+
+        assert_equal(response, '')
 
     @raises(requests.exceptions.HTTPError)
     def test_delete_announcement_with_wrong_announcement_id(self):
         self.mock_auth.return_value.ok = True
 
-        mock_delete_patcher = patch('bbcli.services.announcements_service.requests.Session.delete')
+        mock_delete_patcher = patch('bbcli.services.announcements_services.requests.Session.delete')
         mock_delete = mock_delete_patcher.start()
         mock_delete.return_value.ok = False
         mock_delete.return_value = requests.models.Response()
@@ -181,30 +182,27 @@ class TestAnnouncementsServices(object):
         self.mock_auth.return_value.ok = True
         mock_update_patcher = patch('bbcli.cli.requests.Session.patch')
         mock_update = mock_update_patcher.start()
-        mock_list_annonucement_patcher = patch('bbcli.services.announcements_service.list_announcement')
+        mock_list_annonucement_patcher = patch('bbcli.services.announcements_services.list_announcement')
         mock_list_announcement = mock_list_annonucement_patcher.start()
         mock_list_announcement.return_value.ok = True
         mock_list_announcement.return_value = TEST_ANNOUNCEMENT
-        mock_input_body_patcher = patch('bbcli.services.announcements_service.click.edit')
-        mock_input_body = mock_input_body_patcher.start()
+        mock_edit_title_patcher = patch('bbcli.services.announcements_services.edit_title')
+        mock_edit_title = mock_edit_title_patcher.start()
+        mock_edit_body_patcher = patch('bbcli.services.announcements_services.edit_body')
+        mock_edit_body = mock_edit_body_patcher.start()
 
 
-
-        mock_input_body.return_value = {
-            'title': UPDATED_TEST_ANNOUNCEMENT['title'],
-            'body': UPDATED_TEST_ANNOUNCEMENT['body'],
-            'created': UPDATED_TEST_ANNOUNCEMENT['created'],
-            'availability': UPDATED_TEST_ANNOUNCEMENT['availability'],
-            'draft': UPDATED_TEST_ANNOUNCEMENT['draft']
-        }
+        mock_edit_title.return_value = 'TEST TITLE'
+        mock_edit_body.return_value = 'TEST BODY'
 
         mock_update.return_value.ok = True
         mock_update.return_value.text = json.dumps(UPDATED_TEST_ANNOUNCEMENT)
 
-        response = update_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
+        response = update_announcement(self.test_session, 'test_course_id', 'test_announcement_id', False)
         
         mock_update_patcher.stop()
         mock_list_annonucement_patcher.stop()
-        mock_input_body_patcher.stop()
+        mock_edit_title_patcher.stop()
+        mock_edit_body_patcher.stop()
 
-        assert_equal(json.loads(response), UPDATED_TEST_ANNOUNCEMENT)
+        assert_equal(response, UPDATED_TEST_ANNOUNCEMENT)

@@ -22,7 +22,9 @@ requires = [
     'python-magic',
     'python-dateutil',
     'tabulate==0.8.9',
-    'pwinput'
+    'pwinput',
+    'Markdown==3.3.6',
+    'markdownify==0.11.2'
 ]
 
 def setup_package():

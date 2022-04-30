@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 import mmap
-from typing import List
+from typing import Dict, List
 from requests import Session
 import html2text
 import click
@@ -116,3 +116,11 @@ def handle_fish_shell_completion():
         with open(path, 'a') as f:
             f.write(f'\n{append_text}\n')
             click.echo('Shell completion activated! Restart shell to load the changes.')
+
+def print_keys_in_dict(dictionary: Dict):
+    for key in dictionary:
+        if isinstance(dictionary[key], dict):
+            print_keys_in_dict(dictionary[key])
+        elif dictionary[key] != None:
+            click.echo('{:<20} {:20}'.format(f'{key}:', str(dictionary[key])))
+

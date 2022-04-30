@@ -21,7 +21,6 @@ saml_response = None
 
 # TODO: Add better error handling here. WIth try catch etc.
 
-
 def login():
     click.echo("Logging in...")
 # TODO: Let user choose between feide log in or ID-gate

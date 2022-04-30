@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Dict, List
 import requests
 import magic
 from bbcli.utils.URL_builder import Builder, URL_builder
@@ -8,47 +9,43 @@ from bbcli.entities.content_builder_entitites import FileContent, GradingOptions
 from bbcli.utils.utils import input_body
 import click
 import webbrowser
+import markdown
+import markdownify
 
-from bbcli.utils.utils import check_response, get_download_path
+from bbcli.utils.utils import get_download_path
 
 url_builder = URL_builder()
 content_builder = ContentBuilder()
 
 # User gets a tree structure view of the courses content
 # where each content is listed something like this: _030303_1 Lectures Folder
-def list_contents(session: requests.Session, course_id):
+def list_contents(session: requests.Session, course_id: str) -> requests.models.Response:
     url = url_builder.base_v1().add_courses().add_id(course_id).add_contents().create()
     response = session.get(url)
     response.raise_for_status()
     return response
 
 # get the children of a specific folder
-def get_children(session: requests.Session, course_id: str, node_id: str):
+def get_children(session: requests.Session, course_id: str, node_id: str) -> requests.models.Response:
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).add_children().create()
     response = session.get(url)
     response.raise_for_status()
     return response
 
-# If it is a folder, list it like a tree structure view like mentioned above.
-# If it is a document, download and open the document maybe?
-# Find all types of content and have an appropriate response for them. This
-# should maybe be handled in the view...
-
-
-def get_content(session: requests.Session, course_id: str, node_id: str):
+def get_content(session: requests.Session, course_id: str, node_id: str) -> requests.models.Response:
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).create()
     response = session.get(url)
     response.raise_for_status()
     return response
 
-def get_content_targetid(session: requests.Session, course_id: str, target_id: str):
+def get_content_targe_tid(session: requests.Session, course_id: str, target_id: str) -> requests.models.Response:
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(target_id).create()
     return session.get(url)
 
-def get_attachments(session: requests.Session, course_id: str, node_id: str):
+def get_attachments(session: requests.Session, course_id: str, node_id: str) -> requests.models.Response:
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).add_attachments().create()
     response = session.get(url)
@@ -75,7 +72,7 @@ def download_attachment(session: requests.Session, course_id: str, node_id: str,
     click.echo(f'\"{fn}\" was downloaded to \"{path}\".')
     return downloads_path 
 
-def download_attachments(session: requests.Session, course_id: str, node_id: str, attachments, path):
+def download_attachments(session: requests.Session, course_id: str, node_id: str, attachments: List, path: str) -> List:
     paths = []
     for attachment in attachments:
         downloads_path = download_attachment(session, course_id, node_id, attachment, path)
@@ -83,10 +80,10 @@ def download_attachments(session: requests.Session, course_id: str, node_id: str
             paths.append(downloads_path)
     return paths
 
-def open_file(path):
+def open_file(path: str) -> None:
     webbrowser.open(r'file:'+path)
 
-def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str):
+def upload_attachment(session: requests.Session, course_id: str, content_id: str, file_dst: str) -> Dict:
     uploaded_file = upload_file(session, file_dst)
     data = json.dumps(uploaded_file)
 
@@ -94,11 +91,16 @@ def upload_attachment(session: requests.Session, course_id: str, content_id: str
         course_id).add_contents().add_id(content_id).add_attachments().create()
     response = session.post(url, data=data)
     response.raise_for_status()
+    response = json.loads(response.text)
+    return response
 
-
-def create_document(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions = None, attachments: tuple = None):
+def create_document(session: requests.Session, course_id: str, parent_id: str, title: str, 
+                    standard_options: StandardOptions, attachments: tuple, is_markdown: bool) -> Dict:
 
     data_body = input_body()
+    if is_markdown:
+        data_body = markdown.markdown(data_body)
+
     data = content_builder\
         .add_parent_id(parent_id)\
         .add_title(title)\
@@ -111,15 +113,15 @@ def create_document(session: requests.Session, course_id: str, parent_id: str, t
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
     response.raise_for_status()
+    response = json.loads(response.text)
 
-    created_content_id = json.loads(response.text)['id']
+    created_content_id = response['id']
     handle_attachments(session, course_id, created_content_id, attachments)
 
-    return response.text
+    return response
 
-# TODO: Bug that if a file is created with an attachment, the attachment takes the place of the actual file for the content. In addition,
-#       if two attachments is added, only the last one is added/overwrite the first one
-def create_file(session: requests.Session, course_id: str, parent_id: str, title: str, file_dst: str, file_options: FileOptions, standard_options: StandardOptions):
+def create_file(session: requests.Session, course_id: str, parent_id: str, title: str, 
+                file_dst: str, file_options: FileOptions, standard_options: StandardOptions) -> Dict:
 
     uploaded_file = upload_file(session, file_dst)
     mime = magic.Magic(mime=True)
@@ -142,11 +144,12 @@ def create_file(session: requests.Session, course_id: str, parent_id: str, title
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
     response.raise_for_status()
+    response = json.loads(response.text)
+    return response
 
-    return response.text
 
-
-def create_externallink(session: requests.Session, course_id: str, parent_id: str, title: str, url: str, web_link_options: WeblinkOptions, standard_options: StandardOptions):
+def create_externallink(session: requests.Session, course_id: str, parent_id: str, title: str, 
+                        url: str, web_link_options: WeblinkOptions, standard_options: StandardOptions) -> Dict:
 
     data = content_builder\
         .add_parent_id(parent_id)\
@@ -160,12 +163,16 @@ def create_externallink(session: requests.Session, course_id: str, parent_id: st
     url = generate_create_content_url(course_id, parent_id)
     response = session.post(url, data=data)
     response.raise_for_status()
-    return response.text
+    response = json.loads(response.text)
+    return response
 
 
-def create_folder(session: requests.Session, course_id: str, parent_id: str, title: str, is_bb_page: bool, standard_options: StandardOptions):
+def create_folder(session: requests.Session, course_id: str, parent_id: str,title: str, 
+                is_bb_page: bool, standard_options: StandardOptions, is_markdown: bool) -> Dict:
 
     data_body = input_body()
+    if is_markdown:
+        data_body = markdown.markdown(data_body)
 
     data = content_builder\
         .add_title(title)\
@@ -184,13 +191,17 @@ def create_folder(session: requests.Session, course_id: str, parent_id: str, tit
     data = json.dumps(data)
     response = session.post(url, data=data)
     response.raise_for_status()
-    return response.text
+    response = json.loads(response.text)
+    return response
 
 
 # TODO:FUNKER IKKE PGA targetType
-def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, target_id: str, standard_options: StandardOptions):
+def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, 
+                    target_id: str, standard_options: StandardOptions, is_markdown: bool) -> Dict:
 
     data_body = input_body()
+    if is_markdown:
+        data_body = markdown.markdown(data_body)
 
     data = content_builder\
         .add_title(title)\
@@ -204,10 +215,15 @@ def create_courselink(session: requests.Session, course_id: str, parent_id: str,
 
     response = session.post(url, data=data)
     response.raise_for_status()
-    return response.text
+    response = json.loads(response.text)
+    return response
 
-def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, standard_options: StandardOptions, grading_options: GradingOptions, attachments: tuple = None):
+def create_assignment(session: requests.Session, course_id: str, parent_id: str, title: str, 
+                    standard_options: StandardOptions, grading_options: GradingOptions, 
+                    attachments: tuple, is_markdown: bool) -> Dict:
     instructions = input_body()
+    if is_markdown:
+        instructions = markdown.markdown(instructions)
 
     data = content_builder\
         .add_parent_id(parent_id)\
@@ -230,10 +246,10 @@ def create_assignment(session: requests.Session, course_id: str, parent_id: str,
         course_id).add_contents().add_create_assignment().create()
     response = session.post(url, data=data)
     response.raise_for_status()
-    return response.text
+    response = json.loads(response.text)
+    return response
 
-
-def delete_content(session: requests.Session, course_id: str, content_id: str, delete_grades: bool):
+def delete_content(session: requests.Session, course_id: str, content_id: str, delete_grades: bool) -> requests.models.Response:
     parameters = {
         'deleteGrades': delete_grades
     }
@@ -243,26 +259,55 @@ def delete_content(session: requests.Session, course_id: str, content_id: str, d
     response.raise_for_status()
     return response
 
-
-def update_content(session: requests.Session, course_id: str, content_id: str):
+def update_content(session: requests.Session, course_id: str, content_id: str, is_markdown: bool) -> Dict:
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(content_id).create()
     content = session.get(url)
     content = json.loads(content.text)
+    content_type = content['contentHandler']['id']
+
+    validate_content_type(content_type)
+
+    new_title = edit_title(content)
+
+    data = update_content_data(content, is_markdown)
+    data['title'] = new_title
+    data = json.dumps(data)
+
+    response = session.patch(url, data=data)
+    response.raise_for_status()
+    response = json.loads(response.text)
+    return response
+
+def update_content_advanced(session: requests.Session, course_id: str, content_id: str, is_markdown: bool) -> Dict:
+    url = url_builder.base_v1().add_courses().add_id(
+        course_id).add_contents().add_id(content_id).create()
+    content = session.get(url)
+    content = json.loads(content.text)
+    if 'body' in content and is_markdown:
+        content['body'] = markdownify.markdownify(content['body'])
+
     if not is_editable_content_type(content['contentHandler']['id']):
         click.echo('This content type is not editable')
         raise click.Abort()
-    if 'contentHandler' in content:
-        del content['contentHandler']
     if 'links' in content:
         del content['links']
     MARKER = '# Everything below is ignored.\n'
     editable_data = json.dumps(content, indent=2)
-    new_data = click.edit(editable_data + '\n\n' + MARKER)
+    data = click.edit(editable_data + '\n\n' + MARKER)
+    new_data = data if data != None else editable_data
+    if new_data is not None:
+        new_data = new_data.split(MARKER, 1)[0].rstrip('\n')
+
+    if 'body' in content and is_markdown:
+        new_data = json.loads(new_data)
+        new_data['body'] = markdown.markdown(new_data['body'])
+        new_data = json.dumps(new_data, indent=2)
 
     response = session.patch(url, data=new_data)
     response.raise_for_status()
-    return response.text
+    response = json.loads(response.text)
+    return response
 
 
 """
@@ -272,7 +317,7 @@ HELPER FUNCTIONS
 """
 
 
-def upload_file(session: requests.Session, dst: str):
+def upload_file(session: requests.Session, dst: str) -> Dict:
 
     del session.headers['Content-Type']
     with open(dst, 'rb') as f:
@@ -289,7 +334,7 @@ def upload_file(session: requests.Session, dst: str):
     return file
 
 
-def generate_create_content_url(course_id: str, content_id: str):
+def generate_create_content_url(course_id: str, content_id: str) -> str:
     return url_builder\
         .base_v1()\
         .add_courses()\
@@ -300,16 +345,72 @@ def generate_create_content_url(course_id: str, content_id: str):
         .create()
 
 
-def handle_attachments(session: requests.Session, course_id: str, content_id: str, attachments: tuple or None):
+def handle_attachments(session: requests.Session, course_id: str, content_id: str, attachments: tuple or None) -> None:
     if attachments:
         for attachment in attachments:
             upload_attachment(session, course_id, content_id, attachment)
 
 
-def is_editable_content_type(content_type: str):
+def is_editable_content_type(content_type: str) -> bool:
     valid_content_types = ['resource/x-bb-assignment', 'resource/x-bb-externallink',
                            'resource/x-bb-courselink', 'resource/x-bb-file', 'resource/x-bb-document']
     for type in valid_content_types:
         if content_type == type:
             return True
     return False
+
+def validate_content_type(content_type: str) -> None:
+    if not is_editable_content_type(content_type):
+        click.echo('This content type is not editable')
+        raise click.Abort()
+
+def update_default_content(content: Dict, is_markdown: bool=False) -> Dict:
+    try:
+        content['body']
+    except KeyError:
+        content['body'] = ''
+    if is_markdown:
+        content['body'] = markdownify.markdownify(content['body'])
+    MARKER_BODY = '# Edit body. Everything below is ignored.\n'
+    data = click.edit(content['body'] + '\n\n' + MARKER_BODY)
+    new_data = data if data != None else content['body']
+    if new_data is not None:
+        new_data = new_data.split(MARKER_BODY, 1)[0].rstrip('\n')
+    if is_markdown:
+        new_data = markdown.markdown(new_data)
+    return {'body': new_data}
+
+def update_external_link_content(content: Dict) -> Dict:
+    MARKER_URL = '# Edit URL. Everything below is ignored.\n'
+    data = click.edit(content['contentHandler']['url'] + '\n\n' + MARKER_URL)
+    new_data = data if data != None else content['contentHandler']['url']
+    if new_data is not None:
+        new_data = new_data.split(MARKER_URL, 1)[0].rstrip('\n')
+    return {
+        'contentHandler': {
+            'id': 'resource/x-bb-externallink',
+            'url': new_data
+        }
+    }
+
+def edit_title(data: Dict) -> str:
+    MARKER_TITLE = '# Edit title. Everything below is ignored.\n'
+    title = click.edit(data['title'] + '\n\n' + MARKER_TITLE)
+    new_title = title if title != None else data['title']
+    if new_title is not None:
+        new_title = new_title.split(MARKER_TITLE, 1)[0].rstrip('\n')
+    return new_title
+
+def update_file_content() -> None:
+    return {}
+
+def update_content_data(content: Dict, is_markdown: bool) -> Dict:
+    content_type = content['contentHandler']['id']
+
+    if content_type == 'resource/x-bb-assignment' or content_type == 'resource/x-bb-courselink' or content_type == 'resource/x-bb-document':
+        data = update_default_content(content, is_markdown)
+    elif content_type == 'resource/x-bb-externallink':
+        data = update_external_link_content(content)
+    elif content_type == 'resource/x-bb-file':
+        data = update_file_content()
+    return data
