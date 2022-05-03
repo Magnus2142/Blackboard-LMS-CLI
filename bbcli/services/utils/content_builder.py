@@ -71,7 +71,7 @@ class Builder(ABC):
     # ModulePage
 
     @abstractmethod
-    def add_content_handler_courselink(self, target_id: str, target_type: str = 'Unset') -> Builder:
+    def add_content_handler_courselink(self, target_id: str, target_type: str = 'Forum') -> Builder:
         pass
 
 
@@ -204,7 +204,7 @@ class ContentBuilder(Builder):
         })
         return self
 
-    def add_content_handler_courselink(self, target_id: str, target_type: str = 'Unset') -> Builder:
+    def add_content_handler_courselink(self, target_id: str, target_type: str = 'Content') -> Builder:
         self._product.add({
             'contentHandler': {
                 'id': 'resource/x-bb-courselink',

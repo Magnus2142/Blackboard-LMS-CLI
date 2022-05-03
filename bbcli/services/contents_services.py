@@ -195,7 +195,6 @@ def create_folder(session: requests.Session, course_id: str, parent_id: str,titl
     return response
 
 
-# TODO:FUNKER IKKE PGA targetType
 def create_courselink(session: requests.Session, course_id: str, parent_id: str, title: str, 
                     target_id: str, standard_options: StandardOptions, is_markdown: bool) -> Dict:
 
