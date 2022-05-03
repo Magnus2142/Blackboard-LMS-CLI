@@ -198,8 +198,8 @@ def create_folder(ctx: click.core.Context, course_id: str, parent_id: str, title
 @click.command(name='course-link', help='Create course link content\n\nRedirects user to the target content')
 @click.option('-c', '--course', 'course_id', required=True, type=str, help='COURSE ID')
 @click.option('-f', '--folder', 'parent_id', required=True, type=str, help='FOLDER ID')
+@click.option('-t', '--target', 'target_id', required=True, type=str, help='TARGET ID')
 @click.argument('title', required=True, type=str)
-@click.argument('target_id', required=True, type=str)
 @click.option('-j', '--json', 'print_json', required=False, is_flag=True, help='Print the data in json format')
 @click.option('-md', '--markdown', required=False, is_flag=True, help='Use this flag if you want to use markdown in body')
 @standard_options

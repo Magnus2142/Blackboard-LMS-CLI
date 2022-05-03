@@ -135,7 +135,7 @@ create.add_command(create_document)
 create.add_command(create_file)
 create.add_command(create_web_link)
 create.add_command(create_folder)
-# create.add_command(create_courselink)
+create.add_command(create_courselink)
 create.add_command(upload_attachment)
 create.add_command(create_assignment_from_contents)
 
