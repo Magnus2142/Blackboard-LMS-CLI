@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, List
 import requests
-import magic
+import mimetypes
 from bbcli.utils.URL_builder import Builder, URL_builder
 from bbcli.services.utils.content_builder import ContentBuilder
 from bbcli.entities.content_builder_entitites import FileContent, GradingOptions, StandardOptions, FileOptions, WeblinkOptions
@@ -124,13 +124,15 @@ def create_file(session: requests.Session, course_id: str, parent_id: str, title
                 file_dst: str, file_options: FileOptions, standard_options: StandardOptions) -> Dict:
 
     uploaded_file = upload_file(session, file_dst)
-    mime = magic.Magic(mime=True)
-    mime_type = mime.from_file(file_dst)
 
     with open(file_dst, 'rb') as f:
         file_name = os.path.basename(f.name)
+        mime_type = mimetypes.guess_type(f.name)
 
-    file_content = FileContent(uploaded_file['id'], file_name, mime_type)
+    if mime_type:
+        file_content = FileContent(uploaded_file['id'], file_name, mime_type[0])
+    else:
+        click.Abort()
 
     data = content_builder\
         .add_parent_id(parent_id)\
