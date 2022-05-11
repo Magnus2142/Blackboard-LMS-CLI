@@ -4,8 +4,9 @@ from typing import List
 from click import Abort, BadParameter
 import requests
 
+import pytest
+
 from unittest.mock import Mock, patch
-from nose.tools import assert_list_equal, assert_equal, raises
 from bbcli.entities.content_builder_entitites import DateInterval
 
 from bbcli.services.announcements_services import create_announcement, delete_announcement, list_announcement, list_announcements, list_course_announcements, update_announcement
@@ -78,7 +79,7 @@ class TestAnnouncementsServices(object):
         # Id is irrelavant here because the API call is mocked anyways
         response = list_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
 
-        assert_equal(response, TEST_ANNOUNCEMENT)
+        assert response == TEST_ANNOUNCEMENT
 
 
     def test_list_course_announcements(self):
@@ -91,9 +92,9 @@ class TestAnnouncementsServices(object):
         # Id is irrelavant here because the API call is mocked anyways
         response = list_course_announcements(self.test_session, 'test_course_id')
 
-        assert_equal(response, {
+        assert response == {
             'results': TEST_COURSE_ANNOUNCEMENTS_LIST
-        })
+        }
 
     def test_list_announcements(self):
         self.mock_auth.return_value.ok = True
@@ -118,7 +119,7 @@ class TestAnnouncementsServices(object):
         mock_get_course_announcements_patcher.stop()
         mock_get_courses_patcher.stop()
 
-        assert_equal(response, TEST_ANNOUNCEMENTS_LIST)
+        assert response == TEST_ANNOUNCEMENTS_LIST
 
     def test_create_annonucement(self):
         self.mock_auth.return_value.ok = True
@@ -138,19 +139,17 @@ class TestAnnouncementsServices(object):
         mock_input_body_patcher.stop()
         mock_post_patcher.stop()
 
-        assert_equal(response, TEST_CREATED_ANNOUNCEMENT)
+        assert response == TEST_CREATED_ANNOUNCEMENT
 
-    @raises(BadParameter)
     def test_create_announcement_with_empty_title(self):
         self.mock_auth.return_value.ok = True
+        with pytest.raises(BadParameter):
+            create_announcement(self.test_session, '_33050_1', '', DateInterval(), False)
 
-        create_announcement(self.test_session, '_33050_1', '', DateInterval(), False)
-
-    @raises(Abort)
     def test_create_annonucement_with_wrong_date_format(self):
         self.mock_auth.return_value.ok = True
-
-        create_announcement(self.test_session, '_33050_1', 'Test annonucement', DateInterval(start=format_date('16-04-22 12:00')), False)
+        with pytest.raises(Abort):
+            create_announcement(self.test_session, '_33050_1', 'Test annonucement', DateInterval(start=format_date('16-04-22 12:00')), False)
 
 
     def test_delete_announcement(self):
@@ -164,9 +163,8 @@ class TestAnnouncementsServices(object):
 
         response = delete_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
 
-        assert_equal(response, '')
+        assert response == ''
 
-    @raises(requests.exceptions.HTTPError)
     def test_delete_announcement_with_wrong_announcement_id(self):
         self.mock_auth.return_value.ok = True
 
@@ -176,7 +174,8 @@ class TestAnnouncementsServices(object):
         mock_delete.return_value = requests.models.Response()
         mock_delete.return_value.status_code = 404
 
-        delete_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
+        with pytest.raises(requests.exceptions.HTTPError):
+            delete_announcement(self.test_session, 'test_course_id', 'test_announcement_id')
 
     def test_update_announcement(self):
         self.mock_auth.return_value.ok = True
@@ -205,4 +204,4 @@ class TestAnnouncementsServices(object):
         mock_edit_title_patcher.stop()
         mock_edit_body_patcher.stop()
 
-        assert_equal(response, UPDATED_TEST_ANNOUNCEMENT)
+        assert response == UPDATED_TEST_ANNOUNCEMENT

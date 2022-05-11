@@ -5,7 +5,6 @@ from click import Abort, BadParameter
 import requests
 
 from unittest.mock import Mock, patch
-from nose.tools import assert_list_equal, assert_equal, raises
 from bbcli.entities.content_builder_entitites import DateInterval, FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services.assignments_services import create_column_attempt, get_assignments, get_column_attempt, get_column_attempts, update_column_attempt
 
@@ -67,7 +66,7 @@ class TestAssignmentsServices(object):
 
         response = get_assignments(self.test_session, 'test_course_id')
 
-        assert_equal(response, TEST_ASSIGNMENTS_LIST['results'])
+        assert response == TEST_ASSIGNMENTS_LIST['results']
 
     def test_get_column_attempts(self):
         self.mock_auth.return_value.ok = True
@@ -76,7 +75,7 @@ class TestAssignmentsServices(object):
 
         response = get_column_attempts(self.test_session, 'test_course_id', 'test_column_id')
 
-        assert_equal(json.dumps(response), json.dumps(TEST_ASSIGNMENT_ATTEMPTS_LIST['results']))
+        assert json.dumps(response) == json.dumps(TEST_ASSIGNMENT_ATTEMPTS_LIST['results'])
 
     def test_get_column_attempt(self):
         self.mock_auth.return_value.ok = True
@@ -85,7 +84,7 @@ class TestAssignmentsServices(object):
 
         response = get_column_attempt(self.test_session, 'test_course_id', 'test_column_id', 'test_attempt_id')
 
-        assert_equal(response, json.dumps(TEST_ATTEMPT, indent=2))
+        assert response == json.dumps(TEST_ATTEMPT, indent=2)
 
     def create_column_attempt(self):
         self.mock_auth.return_value.ok = True
@@ -94,7 +93,7 @@ class TestAssignmentsServices(object):
         
         response = create_column_attempt(self.test_session, 'test_course_id', 'test_column_id')
 
-        assert_equal(response, TEST_SUBMITTED_ATTEMPT)
+        assert response == TEST_SUBMITTED_ATTEMPT
 
     def test_update_column_attempt(self):
         self.mock_auth.return_value.ok = True
@@ -103,5 +102,5 @@ class TestAssignmentsServices(object):
 
         response = update_column_attempt(self.test_session, 'test_course_id', 'test_column_id', 'test_attempt_id')
 
-        assert_equal(json.loads(response), TEST_GRADE_ATTEMPT)
+        assert json.loads(response) == TEST_GRADE_ATTEMPT
 

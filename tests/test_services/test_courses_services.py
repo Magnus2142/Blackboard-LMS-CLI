@@ -5,7 +5,6 @@ import requests
 from bbcli.services.courses_services import list_all_courses, list_course
 
 from unittest.mock import Mock, patch
-from nose.tools import assert_list_equal, assert_equal
 
 TEST_COURSE = {
         'id':'_33050_1',
@@ -71,7 +70,7 @@ class TestCoursesServices(object):
         # Id is irrelavant here because the API call is mocked anyways
         response = list_course(test_session, '_33050_1')
 
-        assert_equal(response, TEST_COURSE)
+        assert response == TEST_COURSE
 
     # def test_list_courses(self):
     #     self.mock_auth.return_value.ok = True
@@ -111,4 +110,4 @@ class TestCoursesServices(object):
         test_session = requests.Session()
         response = list_all_courses(test_session, 'test_user')
 
-        assert_equal(response, TEST_COURSE_LIST)
+        assert response == TEST_COURSE_LIST

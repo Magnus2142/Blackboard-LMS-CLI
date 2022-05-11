@@ -5,7 +5,6 @@ from click import Abort, BadParameter
 import requests
 
 from unittest.mock import Mock, patch
-from nose.tools import assert_list_equal, assert_equal, raises
 from bbcli.entities.content_builder_entitites import DateInterval, FileOptions, GradingOptions, StandardOptions, WeblinkOptions
 from bbcli.services.contents_services import create_assignment, create_document, create_externallink, create_file, create_folder, delete_content, update_content
 
@@ -55,7 +54,7 @@ class TestContentsServices(object):
 
         mock_input_body_patcher.stop()
 
-        assert_equal(response, TEST_CREATED_DOCUMENT)
+        assert response == TEST_CREATED_DOCUMENT
 
     def test_create_file(self):
         self.mock_auth.return_value.ok = True
@@ -72,7 +71,7 @@ class TestContentsServices(object):
 
         mock_upload_file_patcher.stop()
 
-        assert_equal(response, TEST_CREATED_FILE)
+        assert response == TEST_CREATED_FILE
 
     
     def test_create_externallink(self):
@@ -84,7 +83,7 @@ class TestContentsServices(object):
 
         response = create_externallink(self.test_session, 'test_course_id', 'test_parent_id', 'Test web-link', 'https://vg.no/', WeblinkOptions(), standard_options)
 
-        assert_equal(response, TEST_CREATED_EXTERNALLINK)
+        assert response == TEST_CREATED_EXTERNALLINK
 
     def test_create_folder(self):
         self.mock_auth.return_value.ok = True
@@ -102,7 +101,7 @@ class TestContentsServices(object):
 
         mock_input_body_patcher.stop()
 
-        assert_equal(response, TEST_CREATED_FOLDER)
+        assert response == TEST_CREATED_FOLDER
 
     def test_create_assignment(self):
         self.mock_auth.return_value.ok = True
@@ -122,7 +121,7 @@ class TestContentsServices(object):
         mock_input_body_patcher.stop()
         mock_upload_file_patcher.stop()
 
-        assert_equal(response, TEST_CREATED_ASSIGNMENT)
+        assert response == TEST_CREATED_ASSIGNMENT
 
 
     def test_delete_content(self):
@@ -136,7 +135,7 @@ class TestContentsServices(object):
 
         mock_delete_patcher.stop()
 
-        assert_equal(response.status_code, 204)
+        assert response.status_code == 204
 
     def test_update_content(self):
         self.mock_auth.return_value.ok = True
@@ -160,4 +159,4 @@ class TestContentsServices(object):
         mock_edit_title_patcher.stop()
         mock_edit_body_patcher.stop()
 
-        assert_equal(response, TEST_GET_CONTENT_UPDATED)
+        assert response == TEST_GET_CONTENT_UPDATED

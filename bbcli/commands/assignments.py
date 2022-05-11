@@ -51,7 +51,7 @@ def create_assignment(ctx, course_id: str, parent_id: str, title: str,
 
     response = contents_services.create_assignment(
         ctx.obj['SESSION'], course_id, parent_id, title, standard_options, grading_options, attachments, markdown)
-    assignments_views.print_created_assignment(json.loads(response), print_json)
+    assignments_views.print_created_assignment(response, print_json)
 
 @click.command(name='list', help='List all assignments from a course.')
 @click.option('-c', '--course', 'course_id', required=True, help='COURSE ID, of the course you want assignments from.')
