@@ -19,7 +19,6 @@ requires = [
     'shellingham',
     'anytree',
     'html2text',
-    'python-magic',
     'python-dateutil',
     'tabulate==0.8.9',
     'pwinput',
