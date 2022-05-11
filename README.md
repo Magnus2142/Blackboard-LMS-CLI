@@ -85,22 +85,10 @@ To run this CLI you need python and pip installed, as well as ```magic``` librar
 
 **NB!** Currently, this CLI can only be installed using pip, but we are planning to support other installation methods later.
 
-1. Install pip package
 
-    ```Shell
-    pip install Blackboard-LMS-CLI
-    ```
-2. Install ```magic``` dependecy
-    ```Shell
-    # Windows:
-    pip install python-magic-bin
-
-    # Linux:
-    sudo apt-get install libmagic1
-
-    # Mac OS X
-    brew install libmagic
-    ```
+```Shell
+pip install Blackboard-LMS-CLI
+```
 
 Test if the installation was successful by running ```$ bb --version``` command. You should see something like this:
 
