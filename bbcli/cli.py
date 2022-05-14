@@ -3,6 +3,7 @@ import requests
 from bbcli.utils.utils import set_cookies, set_headers
 from bbcli import __app_name__, __version__
 import os
+from bbcli.__version__ import generate_version, VERSION
 from dotenv import load_dotenv
 from bbcli import check_valid_date
 import click
@@ -19,7 +20,7 @@ ENTRY POINT WHERE ALL COMMANDS GO THROUGH
 
 @click.group()
 @click.pass_context
-@click.version_option(__version__)
+@click.version_option(generate_version(VERSION))
 def entry_point(ctx):
     ctx.ensure_object(dict)
 
