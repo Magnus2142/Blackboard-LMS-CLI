@@ -1,3 +1,0 @@
-include bbcli/shell-completion/.bb-complete.bash
-include bbcli/shell-completion/.bb-complete.fish
-include bbcli/shell-completion/.bb-complete.zsh
