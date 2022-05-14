@@ -237,19 +237,13 @@ If you have questions, concerns, bug reports, etc, please file an issue in this 
 
 ## Getting involved
 
-TODO:
+This started as a project for our Bachelor Thesis in Computer Engineering and we designed and developed the project in such a way that it was easy to understand and contribute. It was not enough time to implement all desired functionality and invite anyone who wants, to help fix bugs, implement new functionality, etc. One the biggest motivating factors when developing the CLI, was that if it was successful, with useful functionality and a more effective alternative to the Blackboard web interface, both teachers and students on NTNU will use it in their everyday student/work-life.
 
-This section should detail why people should get involved and describe key areas you are
-currently focusing on; e.g., trying to get feedback on features, fixing certain bugs, building
-important pieces, etc.
-
-General instructions on _how_ to contribute should be stated with a link to [CONTRIBUTING](CONTRIBUTING.md).
+If you think this is a cool project and want to help us make it great by contributing, please read the [CONTRIBUTING](CONTRIBUTING.md) file to see how.
 
 ---
 
 ## Open source licensing info
-
-TODO:
 
 1. [TERMS](TERMS.md)
 2. [LICENSE](LICENSE)
@@ -259,24 +253,7 @@ TODO:
 
 ## Credits and references
 
-TODO:
+Below is a list of useful reasources and guides that had a meaningful impact or influence on this project:
 
-1. Projects that inspired you
-2. Related projects
-3. Books, papers, talks, or other sources that have meaningful impact or influence on this project
-
-#### CFPB Open Source Project Template Instructions
-
-1. Create a new project.
-2. [Copy these files into the new project](#installation)
-3. Update the README, replacing the contents below as prescribed.
-4. Add any libraries, assets, or hard dependencies whose source code will be included
-   in the project's repository to the _Exceptions_ section in the [TERMS](TERMS.md).
-
--   If no exceptions are needed, remove that section from TERMS.
-
-5. If working with an existing code base, answer the questions on the [open source checklist](opensource-checklist.md)
-6. Delete these instructions and everything up to the _Project Title_ from the README.
-7. Write some great software and tell people about it.
-
-> Keep the README fresh! It's the first thing people see and will make the initial impression.
+* [How to build a python CLI](https://medium.com/nerd-for-tech/how-to-build-and-distribute-a-cli-tool-with-python-537ae41d9d78) - Gave us a quick introduction on how to setup a python project with some basic Click commands.
+* [Build a Command-Line To-Do App With Python and Typer](https://realpython.com/python-typer-cli/) - Another quick introduction to create a command-line tool in python, but with typer instead of click. Typer is a pyhton library based on Click, so the syntax was pretty much the same and this article gave us the idea of using the Model-View-Controller software design pattern.
