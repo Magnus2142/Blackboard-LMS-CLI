@@ -3,6 +3,7 @@ import requests
 from bbcli.utils.utils import set_cookies, set_headers
 from bbcli import __app_name__, __version__
 import os
+from bbcli.__version__ import VERSION
 from dotenv import load_dotenv
 from bbcli import check_valid_date
 import click
