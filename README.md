@@ -40,7 +40,6 @@ Options:
   --help     Show this message and exit.
 
 Commands:
-  activate-shell-completion  Activate shell completion for your shell
   announcements              Commands for listing, creating, deleting and...
   assignments                Commands for creating, listing and...
   contents                   Commands for listing, creating, deleting,...
@@ -68,9 +67,13 @@ Blackboard LMS CLI is a command-line tool suite that students and staff can use 
 
 ### Built With
 
-The software is written in python and built with:
+The software is written in python. Several libraries were used, but the most essential ones are:
 
 * [Click](https://click.palletsprojects.com/en/8.1.x/) - A python package for creating beautiful command line interfaces in a composable way with as little code as necessary.
+* [Requests](https://docs.python-requests.org/en/latest/) - A library used to send HTTP requests in a simple and elegant way.
+* [Beautiful Soup](crummy.com/software/BeautifulSoup/bs4/doc/) - A library used to pull data out from HTML and XML files.
+
+A complete list of all libraries can be found in the [dependencies](https://gitlab.stud.idi.ntnu.no/-/ide/project/mattiaae/idatt2900-072/tree/main/-/README.md/#L179) section.
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -79,7 +82,7 @@ Some instructions on how to quickly make the CLI available on your computer!
 
 ### Prerequisites
 
-To run this CLI you need python and pip installed, as well as ```magic``` library, which is installed by following the installation guide beneath.
+To run this CLI you need python and pip installed.
 
 ### Installation
 
@@ -156,7 +159,7 @@ Using the ```--help``` flag is very useful, because many commands have many poss
 
 ## Dependencies
 
-For this CLI to work you need python and pip installed on your computer. The CLI also uses the library [magic](https://pypi.org/project/python-magic/).
+For this CLI to work you need python and pip installed on your computer.
 
 **The following libraries are required:**
 
