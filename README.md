@@ -73,7 +73,7 @@ The software is written in python. Several libraries were used, but the most ess
 -   [Requests](https://docs.python-requests.org/en/latest/) - A library used to send HTTP requests in a simple and elegant way.
 -   [Beautiful Soup](crummy.com/software/BeautifulSoup/bs4/doc/) - A library used to pull data out from HTML and XML files.
 
-A complete list of all libraries can be found in the [dependencies](https://gitlab.stud.idi.ntnu.no/-/ide/project/mattiaae/idatt2900-072/tree/main/-/README.md/#L179) section.
+A complete list of all libraries can be found in the [dependencies](https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072#dependencies) section.
 
 <!-- GETTING STARTED -->
 
