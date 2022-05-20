@@ -38,15 +38,15 @@ Follow this quick guide to clone and setup the project and be able to run and de
     **With SSH:**
 
     ```Shell
-    git clone git@gitlab.stud.idi.ntnu.no:mattiaae/idatt2900-072.git
-    cd idatt2900-072
+    git clone git@github.com:Magnus2142/Blackboard-LMS-CLI.git
+    cd Blackboard-LMS-CLI
     ```
 
     **With HTTPS:**
 
     ```Shell
-    git clone https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072.git
-    cd idatt2900-072
+    git clone https://github.com/Magnus2142/Blackboard-LMS-CLI.git
+    cd Blackboard-LMS-CLI
     ```
 
 2. Create a virtual environment inside project folder
@@ -54,14 +54,13 @@ Follow this quick guide to clone and setup the project and be able to run and de
     ```Shell
     virtualenv venv
     source venv/bin/activate
-    Install all the requirements
+    #Install all the requirements
     python -m pip install -r requirements.txt
     ```
 
-3. Setup bb script inside the root of the
+3. Setup bb script inside the root of the project
 
     ```Shell
-    project
     pip install --editable . OR pip3 install --editable .
     ```
 
