@@ -30,7 +30,6 @@ def get_children(session: requests.Session, course_id: str, node_id: str) -> req
     url = url_builder.base_v1().add_courses().add_id(
         course_id).add_contents().add_id(node_id).add_children().create()
     response = session.get(url)
-    response.raise_for_status()
     return response
 
 def get_content(session: requests.Session, course_id: str, node_id: str) -> requests.models.Response:
