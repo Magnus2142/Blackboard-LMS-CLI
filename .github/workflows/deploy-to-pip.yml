@@ -15,7 +15,7 @@ jobs:
         strategy:
             matrix:
                 # Run in all these versions of Python
-                python-version: [3.7, 3.8, 3.9]
+                python-version: [3.8]
 
         steps:
             # Checkout the latest code from the repo
@@ -35,7 +35,7 @@ jobs:
               # Install pytest (you can use some other testing utility)
             - name: Install dependencies
               run: |
-                  apt-get update -q -y
+                  sudo apt-get update -q -y
                   python -m pip install --upgrade pip
                   pip install virtualenv
                   virtualenv venv
