@@ -9,8 +9,9 @@ on:
             - 'main'
 
 jobs:
-    test:
+    deploy:
         runs-on: ubuntu-latest
+        environment: BB-PIP-ENV
 
         strategy:
             matrix:
