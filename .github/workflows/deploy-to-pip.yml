@@ -40,8 +40,8 @@ jobs:
                   virtualenv venv
                   source venv/bin/activate
                   python -m pip install -r requirements.txt
-                  pip install -U twine
-                  pip install wheel
+                  python -m pip install -U twine
+                  python -m pip install wheel
             - name: Upload to pip
               run: |
                   python setup.py bdist_wheel
