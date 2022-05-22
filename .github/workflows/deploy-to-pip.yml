@@ -41,9 +41,13 @@ jobs:
                   virtualenv venv
                   source venv/bin/activate
                   python -m pip install -r requirements.txt
-            - name: Upload to pip
+            - name: Setup package
               run: |
                   pip install -U twine
                   pip install wheel
                   python setup.py bdist_wheel
-                  echo ${{ secrets.PYPI_API_TOKEN }}
+            - name: Publish package to PyPi
+              uses: pypa/gh-action-pypi-publish@release/v1
+              with:
+                  user: __token__
+                  password: ${{ secrets.PYPI_API_TOKEN }}
