@@ -23,7 +23,7 @@ jobs:
                   if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
             - name: Setup virtualenv
               run: |
-                  virtualevn venv
+                  virtualenv venv
                   source venv/bin/activate
             - name: Test with pytest
               run: |
