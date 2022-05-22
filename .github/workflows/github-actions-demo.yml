@@ -19,7 +19,12 @@ jobs:
               run: |
                   python -m pip install --upgrade pip
                   pip install pytest
+                  pip install virtualenv
                   if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            - name: Setup virtualenv
+              run: |
+                  virtualevn venv
+                  source venv/bin/activate
             - name: Test with pytest
               run: |
                   python -m pytest
