@@ -49,8 +49,8 @@ jobs:
             - name: test
               env:
                   SUPER_SECRET: ${{secrets.PYPI_API_TOKEN}}
-                  run: |
-                      echo "$SUPER_SECRET"
+              run: |
+                  echo "$SUPER_SECRET"
             - name: Publish package to PyPi
               uses: pypa/gh-action-pypi-publish@release/v1
               with:
