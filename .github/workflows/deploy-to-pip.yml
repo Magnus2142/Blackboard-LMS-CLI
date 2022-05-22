@@ -46,4 +46,4 @@ jobs:
                   pip install -U twine
                   pip install wheel
                   python setup.py bdist_wheel
-                  twine upload dist/*
+                  echo ${{ secrets.PYPI_API_TOKEN }}
