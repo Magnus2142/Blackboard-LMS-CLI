@@ -46,13 +46,7 @@ jobs:
                   pip install -U twine
                   pip install wheel
                   python setup.py bdist_wheel
-            - name: test
-              env:
-                  SUPER_SECRET: ${{secrets.PYPI_API_TOKEN}}
-              run: |
-                  echo "$SUPER_SECRET"
-            - name: Publish package to PyPi
-              uses: pypa/gh-action-pypi-publish@release/v1
+            - name: Publish distribution 📦 to PyPI
+              uses: pypa/gh-action-pypi-publish@master
               with:
-                  user: __token__
                   password: ${{ secrets.PYPI_API_TOKEN }}
