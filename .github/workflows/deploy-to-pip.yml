@@ -35,13 +35,14 @@ jobs:
               # Install pytest (you can use some other testing utility)
             - name: Install dependencies
               run: |
+                  apt-get update -q -y
                   python -m pip install --upgrade pip
                   pip install virtualenv
                   virtualenv venv
                   source venv/bin/activate
                   python -m pip install -r requirements.txt
-                  python -m pip install -U twine
-                  python -m pip install wheel
+                  pip install -U twine
+                  pip install wheel
             - name: Upload to pip
               run: |
                   python setup.py bdist_wheel
