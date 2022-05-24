@@ -1,6 +1,10 @@
 name: Deploy to pip
 
 on:
+    workflow:
+        workflows: ['Run tests']
+        types:
+            - completed
     push:
         branches:
             - 'main'

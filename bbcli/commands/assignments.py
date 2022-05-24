@@ -164,3 +164,4 @@ def grade_assignment(ctx, course_id, column_id, attempt_id, status, score, text,
         click.echo(response)
     else:
         assignments_views.print_graded_attempt(json.loads(response))
+
