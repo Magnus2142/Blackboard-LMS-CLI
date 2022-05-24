@@ -13,45 +13,52 @@ on:
             - 'main'
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        environment: BB-PIP-ENV
+    on-success:
+        deploy:
+            runs-on: ubuntu-latest
+            if: ${{ github.event.workflow_run.conclusion == 'success' }}
+            environment: BB-PIP-ENV
 
-        strategy:
-            matrix:
-                # Run in all these versions of Python
-                python-version: [3.8]
+            strategy:
+                matrix:
+                    # Run in all these versions of Python
+                    python-version: [3.8]
 
-        steps:
-            # Checkout the latest code from the repo
-            - name: Checkout repo
-              uses: actions/checkout@v2
-              # Setup which version of Python to use
-            - name: Set Up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v2
-              with:
-                  python-version: ${{ matrix.python-version }}
-              # Display the Python version being used
-            - name: Display Python version
-              run: python -c "import sys; print(sys.version)"
-              # Install the package using the setup.py
-            - name: Install package
-              run: python setup.py install
-              # Install pytest (you can use some other testing utility)
-            - name: Install dependencies
-              run: |
-                  sudo apt-get update -q -y
-                  python -m pip install --upgrade pip
-                  pip install virtualenv
-                  virtualenv venv
-                  source venv/bin/activate
-                  python -m pip install -r requirements.txt
-            - name: Setup package
-              run: |
-                  pip install -U twine
-                  pip install wheel
-                  python setup.py bdist_wheel
-            - name: Publish distribution 📦 to PyPI
-              uses: pypa/gh-action-pypi-publish@master
-              with:
-                  password: ${{ secrets.PYPI_API_TOKEN }}
+            steps:
+                # Checkout the latest code from the repo
+                - name: Checkout repo
+                  uses: actions/checkout@v2
+                  # Setup which version of Python to use
+                - name: Set Up Python ${{ matrix.python-version }}
+                  uses: actions/setup-python@v2
+                  with:
+                      python-version: ${{ matrix.python-version }}
+                  # Display the Python version being used
+                - name: Display Python version
+                  run: python -c "import sys; print(sys.version)"
+                  # Install the package using the setup.py
+                - name: Install package
+                  run: python setup.py install
+                  # Install pytest (you can use some other testing utility)
+                - name: Install dependencies
+                  run: |
+                      sudo apt-get update -q -y
+                      python -m pip install --upgrade pip
+                      pip install virtualenv
+                      virtualenv venv
+                      source venv/bin/activate
+                      python -m pip install -r requirements.txt
+                - name: Setup package
+                  run: |
+                      pip install -U twine
+                      pip install wheel
+                      python setup.py bdist_wheel
+                - name: Publish distribution 📦 to PyPI
+                  uses: pypa/gh-action-pypi-publish@master
+                  with:
+                      password: ${{ secrets.PYPI_API_TOKEN }}
+    on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+        - run: echo 'The triggering workflow failed'
