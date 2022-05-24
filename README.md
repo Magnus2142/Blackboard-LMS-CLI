@@ -4,7 +4,7 @@
 
 <br />
 <div align="center">
-  <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/issues">
+  <a href="https://github.com/Magnus2142/Blackboard-LMS-CLI/issues">
     <img src="https://user-images.githubusercontent.com/54250237/162905944-761af968-d419-42ba-9864-3a443782cd4a.png" alt="Logo" width="140" height="140">
   </a>
 
@@ -13,14 +13,14 @@
   <p align="center">
     Command-line tool suite for Blackboard LMS
     <br />
-    <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Magnus2142/Blackboard-LMS-CLI"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://asciinema.org/a/6OQm4JDG0Uh71YrX1BXF7Hi6P">View Demo</a>
     ·
-    <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/issues">Report Bug</a>
+    <a href="https://github.com/Magnus2142/Blackboard-LMS-CLI/issues">Report Bug</a>
     ·
-    <a href="https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/issues">Request Feature</a>
+    <a href="https://github.com/Magnus2142/Blackboard-LMS-CLI/issues">Request Feature</a>
   </p>
 </div>
 
@@ -73,7 +73,7 @@ The software is written in python. Several libraries were used, but the most ess
 -   [Requests](https://docs.python-requests.org/en/latest/) - A library used to send HTTP requests in a simple and elegant way.
 -   [Beautiful Soup](crummy.com/software/BeautifulSoup/bs4/doc/) - A library used to pull data out from HTML and XML files.
 
-A complete list of all libraries can be found in the [dependencies](https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072#dependencies) section.
+A complete list of all libraries can be found in the [dependencies](https://github.com/Magnus2142/Blackboard-LMS-CLI#dependencies) section.
 
 <!-- GETTING STARTED -->
 
@@ -219,7 +219,7 @@ Unit tests have been created for almost all service methods, in other words, whe
 
 ## Known issues
 
-Even though this CLI aims to be more effective than the Blackboard web interface, we do acknowledge that it has its weaknesses. However, this is issues that isn't about bugs or needed functionality, but limitations of the CLI that either isn't possible to change or requires a comprehensive rework of the project. For bugs or desirable functionality, an issue should be created or [contact us by mail](https://gitlab.stud.idi.ntnu.no/mattiaae/idatt2900-072/-/tree/main#known-issues).
+Even though this CLI aims to be more effective than the Blackboard web interface, we do acknowledge that it has its weaknesses. However, this is issues that isn't about bugs or needed functionality, but limitations of the CLI that either isn't possible to change or requires a comprehensive rework of the project. For bugs or desirable functionality, an issue should be created or [contact us by mail](https://github.com/Magnus2142/Blackboard-LMS-CLI#getting-help).
 
 **Cryptic IDs:**
 
@@ -255,5 +255,5 @@ If you think this is a cool project and want to help us make it great by contrib
 
 Below is a list of useful reasources and guides that had a meaningful impact or influence on this project:
 
-* [How to build a python CLI](https://medium.com/nerd-for-tech/how-to-build-and-distribute-a-cli-tool-with-python-537ae41d9d78) - Gave us a quick introduction on how to setup a python project with some basic Click commands.
-* [Build a Command-Line To-Do App With Python and Typer](https://realpython.com/python-typer-cli/) - Another quick introduction to create a command-line tool in python, but with typer instead of click. Typer is a pyhton library based on Click, so the syntax was pretty much the same and this article gave us the idea of using the Model-View-Controller software design pattern.
+-   [How to build a python CLI](https://medium.com/nerd-for-tech/how-to-build-and-distribute-a-cli-tool-with-python-537ae41d9d78) - Gave us a quick introduction on how to setup a python project with some basic Click commands.
+-   [Build a Command-Line To-Do App With Python and Typer](https://realpython.com/python-typer-cli/) - Another quick introduction to create a command-line tool in python, but with typer instead of click. Typer is a pyhton library based on Click, so the syntax was pretty much the same and this article gave us the idea of using the Model-View-Controller software design pattern.

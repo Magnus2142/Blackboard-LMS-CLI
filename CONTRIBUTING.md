@@ -33,7 +33,7 @@ and patterns in the existing code-base.
 
 Follow this quick guide to clone and setup the project and be able to run and develop the project on your own computer.
 
-1. Clone GitLab project
+1. Clone github project
 
     **With SSH:**
 
@@ -67,7 +67,7 @@ Follow this quick guide to clone and setup the project and be able to run and de
     At last, enter “bb” and a help page with list of commands should pop up like this:
 
 ```Shell
-(venv) user@data:~/gitlab/idatt2900-072$ bb
+(venv) user@data:~/Blackboard-LMS-CLI$ bb
 Usage: bb [OPTIONS] COMMAND [ARGS]...
 
 Options:
